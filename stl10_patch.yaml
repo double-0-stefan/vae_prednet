@@ -1,0 +1,74 @@
+exp_name : 
+    - "stl10_patch"
+
+sb_patch_size : 7
+
+train_gx: True
+train_fx: False
+
+dynamic: False
+interactive: False
+generate_data: False
+rotating: False
+
+e    :  25000
+b    :  200
+lr   :  0.0005
+
+err_noise:
+    - True
+
+plot_iter : 500
+gpu     : True
+early_stopping : True
+patience : 5
+
+
+layers: 
+    - 1
+
+n_actions: 2
+
+dataset: 
+    - stl10
+
+enc_h : 
+    - [100, 600]
+    
+enc_temp: 
+    - 0.67
+
+nz_dis:
+    - [[10], 0, 0]
+
+nz_con: 
+    - [65, 0,  0]  
+        
+z_dis_capacity:
+
+    - [[0.0, 10.0, 100000, 100.0]]
+
+z_con_capacity:
+    - [[0.0, 50.0, 100000, 100.0]]    
+    
+    
+z_dist:
+    - laplace
+
+x_dist:
+    - False
+
+elbo_loss: 
+    - True
+
+prednet: 
+    - False
+
+vae: 
+    - True
+    
+conv:
+    - True
+
+foveate:
+    - False

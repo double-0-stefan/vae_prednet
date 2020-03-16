@@ -1,0 +1,122 @@
+exp_name : 
+    - "saccades"
+
+train_gx: True
+train_fx: False
+
+generate_data: False
+
+e    :  100
+b    :  60
+lr   :  0.0005
+
+model_inner : 4
+n_steps: 5
+
+err_noise:
+    - True
+
+plot_iter : 1000
+gpu     : True
+early_stopping : True
+patience : 5
+
+layers: 
+    - 1
+
+n_actions: 2
+
+dataset: 
+    - mnist
+
+rotating : False
+
+enc_h : 
+    - [512, 600]
+    
+lstm_h:
+    - [256, 0]
+    
+enc_temp: 
+    #- 1.0
+    - 0.67
+
+
+nz_dis:
+    - [[1], 0, 0]
+    
+z_dis_capacity:
+    #- [[0.0, 2.5, 50000, 20.0]]
+    #- [[0.0, 2.5, 100000, 30.0]]
+    #- [[0.0, 2.5, 100000, 20.0]]
+    #- [[0.0, 2.5, 50000, 30.0]]
+    #
+    #- [[0.0, 5, 50000, 20.0]]
+    #- [[0.0, 5, 100000, 30.0]]
+    #- [[0.0, 5, 100000, 20.0]]
+    - [[0.0, 5, 25000, 30.0]]
+
+
+err_loss_algo:
+    - 6
+   
+
+# nz_c  (literally everything else)
+   
+nz_con: 
+    - [2, 0,  0]
+    
+z_dist:
+    - normal
+    #- laplace
+    #- flow
+
+x_dist:
+    - False
+
+elbo_loss: 
+    - True
+    #- False
+
+prednet: 
+    #- True
+    - False
+
+tcvae: 
+    - False
+vae: 
+    - True
+    
+conv:
+    - True
+
+use_rf:
+    - False
+
+rf_reduce:
+    - None
+
+rf_algo:
+    - None
+
+# RNN Params
+
+lstm_l:
+    - 3
+
+
+foveate: 
+    - False
+
+patch_size    : 7
+num_patches   : 1
+glimpse_scale : 1
+
+#metrics:
+
+
+calc_disentanglement : False
+mss              : True
+include_mutinfo  : True
+beta_annealing   : True
+lambda_annealing : True
