@@ -1,7 +1,7 @@
-exp_name : 
+exp_name: 
     - "pc_cnn_mnist"
 
-pc_cnn
+pc_cnn:
     - True
 
 train_gx: True
