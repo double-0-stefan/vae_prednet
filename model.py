@@ -346,7 +346,7 @@ class pc_conv_network(nn.Module):
 		self.iter = p['iter']
 		self.nlayers = p['layers_sb']
 		self.chan = p['chan']
-		self.imdim = p['imdim_sb'] - (p['kb'] - 1)
+		self.imdim = p['imdim_sb'] - (p['ks'] - 1)
 		self.imchan = p['imchan']
 
 		self.F = None
