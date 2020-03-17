@@ -22,6 +22,9 @@ early_stopping : True
 patience : 5
 
 layers: 
+    - 0
+
+layers_sb:
     - 5
 
 imchan:
@@ -39,12 +42,9 @@ iter:
 bs:
     - 200
 
-imdim:
-    - 21
-    - 21
-    - 21
-    - 21
-    - 21
+imdim_sb:
+    - [32,32,32,32,32]
+
 
 vae:
     - 0
