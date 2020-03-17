@@ -270,6 +270,34 @@ class Trainer(object):
 
 		epoch_loss = epoch_loss / len(self.train_loader.dataset)
 		self.logger.info('Mean Epoch Loss - {}'.format(epoch_loss))
+
+	def train_epoch_pc_cnn(self):
+		""" All items from dataloader are passed to forward.
+			Handle input data in the model's forward function, 
+			or overwrite this function in a subordinate class. """
+		epoch_loss = 0
+
+		for data in self.train_loader:
+	
+			data = [x.cuda() for x in data]	
+
+			# prepare model for training
+			self.model.reset()
+
+			# forward 
+			self.model(self.iteration, *data)
+			
+			# backward
+			self.optimizer.zero_grad()			
+			self.model.iter_loss.backward(retain_graph=True)
+			self.optimizer.step()
+			
+			epoch_loss += self.model.iter_loss.item()
+			
+			self.iteration += 1
+
+		epoch_loss = epoch_loss / len(self.train_loader.dataset)
+		self.logger.info('Mean Epoch Loss - {}'.format(epoch_loss))
 				
 	def eval_batch(self, e, force_write=None):
 		
@@ -629,7 +657,7 @@ class pc_cnn_Trainer(Trainer):
 			self.logger.info(' Training Epoch {} of {} '.format(e+1,self.p['e']))
 			self.model.train()
 			
-			self.train_epoch()
+			self.train_epoch_pc_cnn()
 			with no_grad():
 				self.model.eval()
 				self.eval_batch(e)

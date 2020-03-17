@@ -346,7 +346,7 @@ class pc_conv_network(nn.Module):
 		self.iter = p['iter']
 		self.nlayers = p['layers_sb']
 		self.chan = p['chan']
-		self.imdim = p['imdim_sb']
+		self.imdim = p['imdim_sb'] - (p['kb'] - 1)
 		self.imchan = p['imchan']
 
 		self.F = None
@@ -478,7 +478,8 @@ class pc_conv_network(nn.Module):
 			self.optimizer.step()
 
 
-	def forward(self, images, learn=0):
+	def forward(self, iteration, images, learn=1):
+		self.iteration = iteration
 		self.F_last = self.F
 		self.images = images.view(self.bs, -1)
 
