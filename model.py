@@ -384,21 +384,10 @@ class pc_conv_network(nn.Module):
 			 for i in range(-1,self.nlayers)])
 
 	def reset(self):
-		
+
 		self.F = None
 		self.F_last = None
-
 		self.baseline = None
-		
-
-		self.init_conv_trans(p)
-
-		if p['vae'] == 1:
-			self.init_vae(p)
-
-
-		# at end
-		self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
 
 	def loss(self, i):
 
@@ -496,6 +485,11 @@ class pc_conv_network(nn.Module):
 		self.inference()
 		if learn == 1:
 			self.learn()
+
+
+
+
+
 
 class ObservationModel(Module):
 	def __init__(self, p):
