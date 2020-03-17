@@ -30,6 +30,9 @@ layers:
 layers_sb:
     - 5
 
+ks:
+    - [5,9,13,17,21]
+
 imchan:
     - 1
 
