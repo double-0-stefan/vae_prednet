@@ -54,7 +54,9 @@ def main(args):
 			else:
 				
 				if mvars['prednet']:
-					obs_model = GenerativeModel(mvars).cuda()	
+					obs_model = GenerativeModel(mvars).cuda()
+				elif mvars['pc_cnn']:
+					obs_model = pc_conv_network(mvars).cuda()
 				else:
 					obs_model = ObservationVAE(mvars).cuda()
 				

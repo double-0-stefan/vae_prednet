@@ -11,7 +11,7 @@ rotating: False
 
 e    :  25000
 b    :  200
-lr   :  0.0005
+lr   :  0.005
 
 err_noise:
     - True
@@ -32,6 +32,22 @@ chan:
 
 pad:
     - [1, 1, 1, 1, 1]
+
+iter:
+    - 50
+
+bs:
+    - 200
+
+imdim:
+    - 21
+    - 21
+    - 21
+    - 21
+    - 21
+
+vae:
+    - 0
 
 n_actions: 2
 
@@ -70,8 +86,8 @@ elbo_loss:
 prednet: 
     - False
 
-vae: 
-    - True
+#vae: 
+#    - True
     
 conv:
     - True
