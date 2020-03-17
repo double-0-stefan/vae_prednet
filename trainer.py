@@ -596,7 +596,7 @@ class ObservationTrainer(Trainer):
 
 class pc_cnn_Trainer(Trainer):
 	def __init__(self, p, dataloader, model):
-		super(ObservationTrainer, self).__init__(p, dataloader)
+		super(pc_cnn_Trainer, self).__init__(p, dataloader)
 		
 		self.model = model
 		try:
@@ -606,7 +606,7 @@ class pc_cnn_Trainer(Trainer):
 		self.model.p['n_batches'] = len(dataloader[0])
 		self.model.p['n_iter']    = self.model.p['datasize'] * p['e']
 
-		self.optimizer = Adam(self.model.parameters(), lr=p['lr'])		
+		#self.optimizer = Adam(self.model.parameters(), lr=p['lr'])		
 		
 	def train(self):
 		
@@ -628,6 +628,7 @@ class pc_cnn_Trainer(Trainer):
 			self.e = e # add iteration number to self
 			self.logger.info(' Training Epoch {} of {} '.format(e+1,self.p['e']))
 			self.model.train()
+			
 			self.train_epoch()
 			with no_grad():
 				self.model.eval()
