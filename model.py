@@ -330,6 +330,157 @@ class TransitionModel(Module):
 				self.d_pred[l][:,t] = done
 				self.r_pred[l][:,t] = rew
 
+
+# thi is what you would build
+class pc_conv_network(nn.Module):
+	def __init__(self,p):
+		super(pc_conv_network, self).__init__()
+
+		self.err_plot_flag = True
+		self.plot_errs = []
+		self.enc_mode = False
+
+		self.p = p
+		self.bs = p['bs']
+		self.iter = p['iter']
+		self.nlayers = p['layers']
+		self.chan = p['chan']
+		self.imdim = p['imdim']
+		self.imchan = p['imchan']
+
+		self.F = None
+		self.F_last = None
+
+		self.baseline = None
+		
+
+		self.init_conv_trans(p)
+
+		if p['vae'] == 1:
+			self.init_vae(p)
+
+
+		# at end
+		self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
+
+
+	def init_conv_trans(self, p):
+
+		self.conv_trans = ModuleList(
+			[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i])
+			for i in range(self.nlayers)])
+
+
+		phi = []
+		for i in range(self.nlayers):
+			phi.append(nn.Parameter(torch.rand(p['bs'],self.chan[i+1] * self.imdim[i] * self.imdim[i] )))
+		#phi.append(nn.Parameter(torch.ones(p['bs'],self.chan[self.nlayers] * self.imdim[self.nlayers]^2)))
+		self.phi = nn.ParameterList(phi)
+		self.top_cause = torch.ones_like(phi[self.nlayers-1])
+
+		# should be one Sigma matrix over whole batch ***
+		self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
+			 for i in range(-1,self.nlayers)])
+
+
+
+	def loss(self, i):
+
+		Theta__h_of_phi = (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+
+		if i == self.nlayers-1:
+			Theta__h_of_phi_above = self.top_cause
+
+		else:
+			Theta__h_of_phi_above = (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
+	 
+		if i > 0:
+
+			self.F += - torch.sum(0.5*(
+				- torch.logdet(self.Sigma[i+1])
+				- torch.squeeze(torch.matmul(torch.matmul(
+					(self.phi[i] - Theta__h_of_phi_above).unsqueeze(1),
+					torch.inverse(self.Sigma[i+1])),
+				(self.phi[i] - Theta__h_of_phi_above).unsqueeze(2)))
+
+				- torch.logdet(self.Sigma[i]) 
+				- torch.squeeze(torch.matmul(torch.matmul(
+					(self.phi[i-1] - Theta__h_of_phi).unsqueeze(1),   
+					torch.inverse(self.Sigma[i])),	
+				(self.phi[i-1] - Theta__h_of_phi).unsqueeze(2)))
+				))
+
+		if i == 0:
+			self.F += - torch.sum(0.5*(	 # minus here so treated as loss
+				- torch.logdet(self.Sigma[i+1])
+				- torch.squeeze(torch.matmul(torch.matmul(
+					(self.phi[i] - Theta__h_of_phi_above).unsqueeze(1), 
+					torch.inverse(self.Sigma[i+1])),
+				(self.phi[i] - Theta__h_of_phi_above).unsqueeze(2)))
+
+				- torch.logdet(self.Sigma[i]) 
+				- torch.squeeze(torch.matmul(
+					torch.matmul((self.images - Theta__h_of_phi).unsqueeze(1),   
+					torch.inverse(self.Sigma[i])),
+				(self.images - Theta__h_of_phi).unsqueeze(2)))
+				))
+
+		if i == 0:
+			self.estimate = Theta__h_of_phi
+
+		
+	def inference(self):
+
+		self.conv_trans.requires_grad_(False)
+		self.Sigma.requires_grad_(False)
+		self.phi.requires_grad_(True)
+		self.optimizer.lr = self.p['lr']
+
+		for i in range(self.iter):
+			self.optimizer.zero_grad()
+			self.F_old = self.F
+			self.F = 0
+			self.phi_old = self.phi
+			# will need to code reset for phi
+			for l in range(self.nlayers):
+				self.loss(l)
+
+			self.F.backward()
+			self.optimizer.step()
+
+			# end inference if starting to diverge
+			if i > 0:
+				if self.F > self.F_old:
+					self.F = self.F_old
+					self.phi = self.phi_old
+					break
+
+			print(self.F)
+			print(torch.sum(self.images-self.estimate))
+
+
+	def learn(self):
+
+		self.conv_trans.requires_grad_(True)
+		self.Sigma.requires_grad_(True)
+		self.phi.requires_grad_(False)
+		self.optimizer.lr = 0.001
+
+		for l in range(self.nlayers):
+			self.optimizer.zero_grad()
+			self.loss(l)
+			self.F.backward()
+			self.optimizer.step()
+
+
+	def forward(self, images, learn=0):
+		self.F_last = self.F
+		self.images = images.view(self.bs, -1)
+
+		self.inference()
+		if learn == 1:
+			self.learn()
+
 class ObservationModel(Module):
 	def __init__(self, p):
 		super(ObservationModel,self).__init__()
