@@ -17,8 +17,9 @@ from argparse import ArgumentParser
 import torch
 import glob 
 import scipy.io as sio
-#from animalai.envs.brain import BrainParameters
 from torchvision.utils import save_image
+from torch.optim import Adam
+
 
 class GenerativeModel(Module):
 	# Use this model for inference 
