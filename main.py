@@ -62,11 +62,18 @@ def main(args):
 				
 				# Initialise Dataloader(s)
 				if largs['train_gx']:
-					logger.info('Training Observation Model')
-					data = dutils.get_dataset(mvars, split='train',static= not mvars['dynamic'])
-					gx_trainer  = ObservationTrainer(mvars, data, obs_model)
-					gx_trainer.train()
-					del gx_trainer, obs_model
+					if largs['pc_cnn']:
+						logger.info('Training Observation Model - pc_cnn')
+						data = dutils.get_dataset(mvars, split='train',static= not mvars['dynamic'])
+						gx_trainer  = pc_cnn_Trainer(mvars, data, obs_model)
+						gx_trainer.train()
+						del gx_trainer, obs_model
+					else:
+						logger.info('Training Observation Model')
+						data = dutils.get_dataset(mvars, split='train',static= not mvars['dynamic'])
+						gx_trainer  = ObservationTrainer(mvars, data, obs_model)
+						gx_trainer.train()
+						del gx_trainer, obs_model
 					
 
 				if largs['train_fx']:

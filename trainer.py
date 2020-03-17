@@ -592,3 +592,45 @@ class ObservationTrainer(Trainer):
 				self.eval_batch(e)
 		self.eval_batch(e, force_write=True)
 		self.plot_loss()
+
+
+class pc_cnn_Trainer(Trainer):
+	def __init__(self, p, dataloader, model):
+		super(ObservationTrainer, self).__init__(p, dataloader)
+		
+		self.model = model
+		try:
+			self.model.p['datasize']  = len(dataloader[0].dataset)
+		except:
+			self.model.p['datasize']  = 50000
+		self.model.p['n_batches'] = len(dataloader[0])
+		self.model.p['n_iter']    = self.model.p['datasize'] * p['e']
+
+		self.optimizer = Adam(self.model.parameters(), lr=p['lr'])		
+		
+	def train(self):
+		
+		self.model.train() 
+
+		self.model.p = tutils.set_paths(self.p, 'obs_model')
+
+
+		self.logger.info('\n Training Observation Model \n ')
+		self.logger.info('Model Overview: \n {} \n'.format(self.model.parameters))
+		trainp  = sum(_p.numel() for _p in self.model.parameters() if _p.requires_grad)
+		ntrainp = sum(_p.numel() for _p in self.model.parameters() if not _p.requires_grad)
+		self.logger.info('Trainable Params {} \n'.format(tutils.group(trainp)))
+		self.logger.info('Non-Trainable Params {} \n'.format(tutils.group(ntrainp)))
+
+		#while self.iteration < self.model.p['n_iter']:
+		for e in range(self.p['e']):
+		#while self.iteration < 1:
+			self.e = e # add iteration number to self
+			self.logger.info(' Training Epoch {} of {} '.format(e+1,self.p['e']))
+			self.model.train()
+			self.train_epoch()
+			with no_grad():
+				self.model.eval()
+				self.eval_batch(e)
+		self.eval_batch(e, force_write=True)
+		self.plot_loss()

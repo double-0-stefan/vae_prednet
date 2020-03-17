@@ -383,7 +383,22 @@ class pc_conv_network(nn.Module):
 		self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
 			 for i in range(-1,self.nlayers)])
 
+	def reset(self):
+		
+		self.F = None
+		self.F_last = None
 
+		self.baseline = None
+		
+
+		self.init_conv_trans(p)
+
+		if p['vae'] == 1:
+			self.init_vae(p)
+
+
+		# at end
+		self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
 
 	def loss(self, i):
 
