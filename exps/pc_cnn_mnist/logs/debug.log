@@ -1,0 +1,133 @@
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 5
+'int' object is not iterable
+Traceback (most recent call last):
+  File "main.py", line 43, in main
+    mvars = tutils.arg_check(mvars, perm)
+  File "/content/drive/My Drive/vae_prednet/utils/train_utils.py", line 149, in arg_check
+    p['z_dim'].append(p['nz_con'][l] + sum(p['nz_dis'][l]))
+TypeError: 'int' object is not iterable
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 1
+'pc_cnn'
+Traceback (most recent call last):
+  File "main.py", line 58, in main
+    elif mvars['pc_cnn']:
+KeyError: 'pc_cnn'
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 1
+'ks'
+Traceback (most recent call last):
+  File "main.py", line 59, in main
+    obs_model = pc_conv_network(mvars).cuda()
+  File "/content/drive/My Drive/vae_prednet/model.py", line 357, in __init__
+    self.init_conv_trans(p)
+  File "/content/drive/My Drive/vae_prednet/model.py", line 371, in init_conv_trans
+    for i in range(self.nlayers)])
+  File "/content/drive/My Drive/vae_prednet/model.py", line 371, in <listcomp>
+    for i in range(self.nlayers)])
+KeyError: 'ks'
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 1
+list index out of range
+Traceback (most recent call last):
+  File "main.py", line 59, in main
+    obs_model = pc_conv_network(mvars).cuda()
+  File "/content/drive/My Drive/vae_prednet/model.py", line 357, in __init__
+    self.init_conv_trans(p)
+  File "/content/drive/My Drive/vae_prednet/model.py", line 371, in init_conv_trans
+    for i in range(self.nlayers)])
+  File "/content/drive/My Drive/vae_prednet/model.py", line 371, in <listcomp>
+    for i in range(self.nlayers)])
+IndexError: list index out of range
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 1
+list index out of range
+Traceback (most recent call last):
+  File "main.py", line 59, in main
+    obs_model = pc_conv_network(mvars).cuda()
+  File "/content/drive/My Drive/vae_prednet/model.py", line 357, in __init__
+    self.init_conv_trans(p)
+  File "/content/drive/My Drive/vae_prednet/model.py", line 371, in init_conv_trans
+    for i in range(self.nlayers)])
+  File "/content/drive/My Drive/vae_prednet/model.py", line 371, in <listcomp>
+    for i in range(self.nlayers)])
+IndexError: list index out of range
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 1
+list index out of range
+Traceback (most recent call last):
+  File "main.py", line 59, in main
+    obs_model = pc_conv_network(mvars).cuda()
+  File "/content/drive/My Drive/vae_prednet/model.py", line 357, in __init__
+    self.init_conv_trans(p)
+  File "/content/drive/My Drive/vae_prednet/model.py", line 371, in init_conv_trans
+    for i in range(self.nlayers)])
+  File "/content/drive/My Drive/vae_prednet/model.py", line 371, in <listcomp>
+    for i in range(self.nlayers)])
+IndexError: list index out of range
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 1
+list index out of range
+Traceback (most recent call last):
+  File "main.py", line 59, in main
+    obs_model = pc_conv_network(mvars).cuda()
+  File "/content/drive/My Drive/vae_prednet/model.py", line 357, in __init__
+    self.init_conv_trans(p)
+  File "/content/drive/My Drive/vae_prednet/model.py", line 383, in init_conv_trans
+    for i in range(-1,self.nlayers)])
+  File "/content/drive/My Drive/vae_prednet/model.py", line 383, in <listcomp>
+    for i in range(-1,self.nlayers)])
+IndexError: list index out of range
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 1
+name 'Adam' is not defined
+Traceback (most recent call last):
+  File "main.py", line 59, in main
+    obs_model = pc_conv_network(mvars).cuda()
+  File "/content/drive/My Drive/vae_prednet/model.py", line 364, in __init__
+    self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
+NameError: name 'Adam' is not defined
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 1
+cuda runtime error (100) : no CUDA-capable device is detected at /pytorch/aten/src/THC/THCGeneral.cpp:50
+Traceback (most recent call last):
+  File "main.py", line 59, in main
+    obs_model = pc_conv_network(mvars).cuda()
+  File "/usr/local/lib/python3.6/dist-packages/torch/nn/modules/module.py", line 304, in cuda
+    return self._apply(lambda t: t.cuda(device))
+  File "/usr/local/lib/python3.6/dist-packages/torch/nn/modules/module.py", line 201, in _apply
+    module._apply(fn)
+  File "/usr/local/lib/python3.6/dist-packages/torch/nn/modules/module.py", line 201, in _apply
+    module._apply(fn)
+  File "/usr/local/lib/python3.6/dist-packages/torch/nn/modules/module.py", line 223, in _apply
+    param_applied = fn(param)
+  File "/usr/local/lib/python3.6/dist-packages/torch/nn/modules/module.py", line 304, in <lambda>
+    return self._apply(lambda t: t.cuda(device))
+  File "/usr/local/lib/python3.6/dist-packages/torch/cuda/__init__.py", line 197, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: cuda runtime error (100) : no CUDA-capable device is detected at /pytorch/aten/src/THC/THCGeneral.cpp:50
+Namespace(config='pc_cnn.yaml')
+Training
+Reading permutation : 0 of 1
+Training Observation Model
+'pc_conv_network' object has no attribute 'reset'
+Traceback (most recent call last):
+  File "main.py", line 68, in main
+    gx_trainer.train()
+  File "/content/drive/My Drive/vae_prednet/trainer.py", line 589, in train
+    self.train_epoch()
+  File "/content/drive/My Drive/vae_prednet/trainer.py", line 257, in train_epoch
+    self.model.reset()
+  File "/usr/local/lib/python3.6/dist-packages/torch/nn/modules/module.py", line 576, in __getattr__
+    type(self).__name__, name))
+AttributeError: 'pc_conv_network' object has no attribute 'reset'
