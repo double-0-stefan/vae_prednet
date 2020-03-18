@@ -332,7 +332,6 @@ class TransitionModel(Module):
 				self.r_pred[l][:,t] = rew
 
 
-# this is what you would build
 class pc_conv_network(nn.Module):
 	def __init__(self,p):
 		super(pc_conv_network, self).__init__()
@@ -346,7 +345,7 @@ class pc_conv_network(nn.Module):
 		self.iter = p['iter']
 		self.nlayers = p['layers_sb']
 		self.chan = p['chan']
-		self.imdim = p['imdim_sb'] - p['ks'] * np.ones(self.nlayers+1)
+		self.imdim = (p['imdim_sb'] - p['ks'] * np.ones(self.nlayers+1)).astype(int)
 		self.imchan = p['imchan']
 
 		self.F = None
