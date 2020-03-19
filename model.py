@@ -19,6 +19,7 @@ import glob
 import scipy.io as sio
 from torchvision.utils import save_image
 from torch.optim import Adam
+import torch_scatter, torch_sparse
 
 
 class GenerativeModel(Module):
@@ -378,9 +379,23 @@ class pc_conv_network(nn.Module):
 		self.phi = nn.ParameterList(phi)
 		self.top_cause = torch.ones_like(phi[self.nlayers-1])
 
-		# should be one Sigma matrix over whole batch ***
-		self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
-			 for i in range(-1,self.nlayers)])
+		# Needs to be sparse
+		# Sigma = []
+		# for i in range(-1,self.nlayers):
+		# 	dimension = self.chan[i+1] * self.imdim[i+1]^2
+		# 	ii = torch.LongTensor(list(range(dimension)))
+		# 	vv = torch.ones(dimension)
+		# 	Sigma.append(nn.Parameter(torch.sparse.FloatTensor(ii,vv,torch.Size([dimension,dimension]))))
+		# self.Sigma = nn.ParameterList(Sigma)
+
+		### Precision ### 
+		dimension = self.chan[i+1] * self.imdim[i+1]^2
+		self.Precision = ModuleList(
+			[Bilinear(dimension, dimension, 1, bias=False)
+			for i in range(-1,self.nlayers)])
+
+		#self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
+		#	 for i in range(-1,self.nlayers)])
 
 	def reset(self):
 
@@ -390,53 +405,70 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i):
 
-		Theta__h_of_phi = (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+		if i > 0:
+			PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+		else:
+			PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 
 		if i == self.nlayers-1:
-			Theta__h_of_phi_above = self.top_cause
-
+			PE_1 = self.phi[i] - self.top_cause
 		else:
-			Theta__h_of_phi_above = (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
+			PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
 	 
-		if i > 0:
 
-			self.F += - torch.sum(0.5*(
-				- torch.logdet(self.Sigma[i+1])
-				- torch.squeeze(torch.matmul(torch.matmul(
-					(self.phi[i] - Theta__h_of_phi_above).unsqueeze(1),
-					torch.inverse(self.Sigma[i+1])),
-				(self.phi[i] - Theta__h_of_phi_above).unsqueeze(2)))
+		# sparse
+		self.F += - 0.5*(
+			# logdet cov = -logdet precision
+			  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
-				- torch.logdet(self.Sigma[i]) 
-				- torch.squeeze(torch.matmul(torch.matmul(
-					(self.phi[i-1] - Theta__h_of_phi).unsqueeze(1),   
-					torch.inverse(self.Sigma[i])),	
-				(self.phi[i-1] - Theta__h_of_phi).unsqueeze(2)))
-				))
+			- self.Precision[i+1](PE_1, PE_1)
 
-		if i == 0:
-			self.F += - torch.sum(0.5*(	 # minus here so treated as loss
-				- torch.logdet(self.Sigma[i+1])
-				- torch.squeeze(torch.matmul(torch.matmul(
-					(self.phi[i] - Theta__h_of_phi_above).unsqueeze(1), 
-					torch.inverse(self.Sigma[i+1])),
-				(self.phi[i] - Theta__h_of_phi_above).unsqueeze(2)))
+			+ torch.logdet(torch.squeeze(self.Precision[i].weight))
 
-				- torch.logdet(self.Sigma[i]) 
-				- torch.squeeze(torch.matmul(
-					torch.matmul((self.images - Theta__h_of_phi).unsqueeze(1),   
-					torch.inverse(self.Sigma[i])),
-				(self.images - Theta__h_of_phi).unsqueeze(2)))
-				))
+			- self.Precision[i](PE_0, PE_0)
+			)
 
-		if i == 0:
-			self.estimate = Theta__h_of_phi
+
+		# if i > 0:
+
+		# 	self.F += - torch.sum(0.5*(
+		# 		- torch.logdet(self.Sigma[i+1])
+		# 		- torch.squeeze(torch.matmul(torch.matmul(
+		# 			(self.phi[i] - Theta__h_of_phi_above).unsqueeze(1),
+		# 			torch.inverse(self.Sigma[i+1])),
+		# 		(self.phi[i] - Theta__h_of_phi_above).unsqueeze(2)))
+
+		# 		- torch.logdet(self.Sigma[i]) 
+		# 		- torch.squeeze(torch.matmul(torch.matmul(
+		# 			(self.phi[i-1] - Theta__h_of_phi).unsqueeze(1),   
+		# 			torch.inverse(self.Sigma[i])),	
+		# 		(self.phi[i-1] - Theta__h_of_phi).unsqueeze(2)))
+		# 		))
+
+		# if i == 0:
+		# 	self.F += - torch.sum(0.5*(	 # minus here so treated as loss
+		# 		- torch.logdet(self.Sigma[i+1])
+		# 		- torch.squeeze(torch.matmul(torch.matmul(
+		# 			(self.phi[i] - Theta__h_of_phi_above).unsqueeze(1), 
+		# 			torch.inverse(self.Sigma[i+1])),
+		# 		(self.phi[i] - Theta__h_of_phi_above).unsqueeze(2)))
+
+		# 		- torch.logdet(self.Sigma[i]) 
+		# 		- torch.squeeze(torch.matmul(
+		# 			torch.matmul((self.images - Theta__h_of_phi).unsqueeze(1),   
+		# 			torch.inverse(self.Sigma[i])),
+		# 		(self.images - Theta__h_of_phi).unsqueeze(2)))
+		# 		))
+
+		# if i == 0:
+		# 	self.estimate = Theta__h_of_phi
 
 		
 	def inference(self):
 
 		self.conv_trans.requires_grad_(False)
-		self.Sigma.requires_grad_(False)
+		self.Precision.requires_grad_(False)
+		#self.Sigma.requires_grad_(False)
 		self.phi.requires_grad_(True)
 		self.optimizer.lr = self.p['lr']
 
@@ -466,7 +498,8 @@ class pc_conv_network(nn.Module):
 	def learn(self):
 
 		self.conv_trans.requires_grad_(True)
-		self.Sigma.requires_grad_(True)
+		#self.Sigma.requires_grad_(True)
+		self.Precision.requires_grad_(True)
 		self.phi.requires_grad_(False)
 		self.optimizer.lr = 0.001
 
