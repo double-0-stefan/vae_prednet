@@ -348,10 +348,15 @@ class pc_conv_network(nn.Module):
 		self.nlayers = p['layers_sb']
 		self.chan = p['chan']
 
-		imdim = [p['imdim_sb'],p['imdim_sb']]
-		for i in range(self.nlayers):
-			imdim.append(imdim[i] - (p['ks'][i] - 1))
-		self.imdim = imdim
+		self.init_conv_trans(p)
+		self.init_phi(p)
+		self.init_precision(p)
+
+		# self.imdim =
+		# imdim = [p['imdim_sb'],p['imdim_sb']]
+		# for i in range(self.nlayers):
+		# 	imdim.append(imdim[i] - (p['ks'][i] - 1))
+		# self.imdim = imdim
 
 		#self.imdim =  [p['imdim_sb']] + (p['imdim_sb']*np.ones_like(p['ks']) - p['ks']).astype(int)
 		self.imchan = p['imchan']
@@ -361,8 +366,6 @@ class pc_conv_network(nn.Module):
 
 		self.baseline = None
 		
-
-		self.init_conv_trans(p)
 
 		if p['vae'] == 1:
 			self.init_vae(p)
@@ -375,16 +378,32 @@ class pc_conv_network(nn.Module):
 	def init_conv_trans(self, p):
 
 		self.conv_trans = ModuleList(
-			[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,0)#p['pad'][i])
+			[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i])
 			for i in range(self.nlayers)])
 
+	def init_phi(self,p):
+		conv = ModuleList(
+			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
+			for i in range(self.nlayers)])
+		x = torch.zeros(self.bs,32,32)
+		phi = [torch.zeros(self.bs,1*32*32)] # mnist
+		imdim = [x]
+		for i in range(self.nlayers):
+			x = conv[i](x) # mnist
+			imdim.append(x.size())
+			phi.append((torch.zeros_like(x)).view(self.bs,-1))
+		phi.append((torch.zeros_like(x)).view(self.bs,-1)) # top level
+		self.imdim = imdim
+		self.phi = phi
 
-		phi = []
-		for i in range(-1,self.nlayers):
-			phi.append(nn.Parameter(torch.rand(p['bs'],self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1] )))
-		#phi.append(nn.Parameter(torch.ones(p['bs'],self.chan[self.nlayers] * self.imdim[self.nlayers]^2)))
-		self.phi = nn.ParameterList(phi)
-		self.top_cause = torch.ones_like(phi[self.nlayers-1])
+	# def init_phi(self,p):
+
+	# 	phi = []
+	# 	for i in range(-1,self.nlayers):
+	# 		phi.append(nn.Parameter(torch.rand(p['bs'],self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1] )))
+	# 	#phi.append(nn.Parameter(torch.ones(p['bs'],self.chan[self.nlayers] * self.imdim[self.nlayers]^2)))
+	# 	self.phi = nn.ParameterList(phi)
+	# 	self.top_cause = torch.ones_like(phi[self.nlayers-1])
 
 		# Needs to be sparse
 		# Sigma = []
@@ -397,9 +416,10 @@ class pc_conv_network(nn.Module):
 
 		### Precision ### 
 		#dimension = self.chan[i+1] * self.imdim[i+1]^2
+	def init_precision(self,p):
 		self.Precision = ModuleList(
-			[nn.Bilinear(self.chan[i+1] * self.imdim[i+1]^2, self.chan[i+1] * self.imdim[i+1]^2, 1, bias=False)
-			for i in range(-1,self.nlayers)])
+			[nn.Bilinear(self.imdim[i][1], self.imdim[i][1], 1, bias=False)
+			for i in range(self.nlayers)])
 
 		#self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
 		#	 for i in range(-1,self.nlayers)])
