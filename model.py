@@ -350,7 +350,7 @@ class pc_conv_network(nn.Module):
 
 		imdim = [p['imdim_sb']]
 		for i in range(self.nlayers):
-			imdim.append(p['imdim_sb'] - (p['ks'][i] - 1))
+			imdim.append(imdim[i] - (p['ks'][i] - 1))
 		self.imdim = imdim
 
 		#self.imdim =  [p['imdim_sb']] + (p['imdim_sb']*np.ones_like(p['ks']) - p['ks']).astype(int)
