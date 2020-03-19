@@ -386,7 +386,7 @@ class pc_conv_network(nn.Module):
 			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
 			for i in range(self.nlayers)])
 		x = torch.zeros(self.bs,1,32,32)
-		phi = nn.ParameterList(nn.Parameter(torch.zeros(self.bs,1*32*32))) # mnist
+		phi = nn.Parameter(torch.zeros(self.bs,1*32*32)) # mnist
 		imdim = [x.size(2)]
 		for i in range(self.nlayers):
 			x = conv[i](x) # mnist
