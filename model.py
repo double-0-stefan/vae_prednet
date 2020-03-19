@@ -392,7 +392,7 @@ class pc_conv_network(nn.Module):
 		### Precision ### 
 		dimension = self.chan[i+1] * self.imdim[i+1]^2
 		self.Precision = ModuleList(
-			[Bilinear(dimension, dimension, 1, bias=False)
+			[nn.Bilinear(dimension, dimension, 1, bias=False)
 			for i in range(-1,self.nlayers)])
 
 		#self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
