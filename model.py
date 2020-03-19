@@ -418,7 +418,7 @@ class pc_conv_network(nn.Module):
 		#dimension = self.chan[i+1] * self.imdim[i+1]^2
 	def init_precision(self,p):
 		self.Precision = ModuleList(
-			[nn.Bilinear(self.chan[i]*self.imdim[i], self.chan[i]*self.imdim[i], 1, bias=False)
+			[nn.Bilinear(self.chan[i]*self.imdim[i]*self.imdim[i], self.chan[i]*self.imdim[i]*self.imdim[i], 1, bias=False)
 			for i in range(self.nlayers)])
 
 		#self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
@@ -507,7 +507,7 @@ class pc_conv_network(nn.Module):
 			self.phi_old = self.phi
 			
 			# will need to code reset for phi
-			for l in range(self.nlayers-1):
+			for l in range(1, self.nlayers-1):
 				self.loss(l)
 
 			self.F.backward()
