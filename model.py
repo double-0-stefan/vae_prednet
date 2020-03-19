@@ -385,7 +385,7 @@ class pc_conv_network(nn.Module):
 		conv = ModuleList(
 			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
 			for i in range(self.nlayers)])
-		x = torch.zeros(self.bs,32,32)
+		x = torch.zeros(self.bs,1,32,32)
 		phi = [torch.zeros(self.bs,1*32*32)] # mnist
 		imdim = [x]
 		for i in range(self.nlayers):
