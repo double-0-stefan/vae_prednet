@@ -19,7 +19,7 @@ import glob
 import scipy.io as sio
 from torchvision.utils import save_image
 from torch.optim import Adam
-import torch_scatter, torch_sparse
+#import torch_scatter, torch_sparse
 
 
 class GenerativeModel(Module):
