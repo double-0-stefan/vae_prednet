@@ -381,7 +381,7 @@ class pc_conv_network(nn.Module):
 
 		phi = []
 		for i in range(self.nlayers):
-			phi.append(nn.Parameter(torch.rand(p['bs'],self.chan[i+1] * self.imdim[i] * self.imdim[i] )))
+			phi.append(nn.Parameter(torch.rand(p['bs'],self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1] )))
 		#phi.append(nn.Parameter(torch.ones(p['bs'],self.chan[self.nlayers] * self.imdim[self.nlayers]^2)))
 		self.phi = nn.ParameterList(phi)
 		self.top_cause = torch.ones_like(phi[self.nlayers-1])
