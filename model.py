@@ -415,7 +415,7 @@ class pc_conv_network(nn.Module):
 		if i > 0:
 			PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 		else:
-			PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i], self.imdim[i])))).view(self.bs,-1)
+			PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 
 		if i == self.nlayers-1:
 			PE_1 = self.phi[i] - self.top_cause
@@ -518,6 +518,7 @@ class pc_conv_network(nn.Module):
 
 
 	def forward(self, iteration, images, learn=1):
+		print(self.imdim)
 		self.iteration = iteration
 		self.F_last = self.F
 		self.images = images.view(self.bs, -1)
