@@ -392,7 +392,7 @@ class pc_conv_network(nn.Module):
 			x = conv[i](x) # mnist
 			imdim.append(x.size(2))
 			phi.append(nn.Parameter((torch.zeros_like(x)).view(self.bs,-1)))
-		phi.append((torch.zeros_like(x)).view(self.bs,-1)) # top level
+		phi.append(nn.Parameter((torch.zeros_like(x)).view(self.bs,-1))) # top level
 		self.imdim = imdim
 		self.phi = nn.ParameterList(phi)
 
@@ -438,8 +438,8 @@ class pc_conv_network(nn.Module):
 #			PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 			PE_0 = self.images   - self.phi[i].view(self.bs,-1)
 
-		if i == self.nlayers-1:
-			PE_1 = self.phi[i] - self.top_cause
+		if i == self.nlayers-2:
+			PE_1 = self.phi[i] - self.phi[i+1]
 		else:
 			PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
 	 
@@ -507,7 +507,7 @@ class pc_conv_network(nn.Module):
 			self.phi_old = self.phi
 			
 			# will need to code reset for phi
-			for l in range(self.nlayers):
+			for l in range(self.nlayers-1):
 				self.loss(l)
 
 			self.F.backward()
