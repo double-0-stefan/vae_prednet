@@ -7,6 +7,7 @@ from modules import *
 from os.path import join
 from pprint import pprint, pformat
 from scipy.io import savemat
+from torch import nn
 from logging import getLogger, shutdown
 from torch.nn import MSELoss, Module, CrossEntropyLoss, L1Loss
 from torch.nn.utils import clip_grad_norm_
