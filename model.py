@@ -393,6 +393,10 @@ class pc_conv_network(nn.Module):
 			imdim.append(x.size(2))
 			phi.append(nn.Parameter((torch.zeros_like(x)).view(self.bs,-1)))
 		phi.append(nn.Parameter((torch.zeros_like(x)).view(self.bs,-1))) # top level
+
+		for i in reversed(range(self.nlayers)):
+			x = conv_trans[i](x) # mnist
+		
 		self.imdim = imdim
 		self.phi = nn.ParameterList(phi)
 
