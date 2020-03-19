@@ -433,7 +433,7 @@ class pc_conv_network(nn.Module):
 	def loss(self, i):
 
 		if i > 0:
-			PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i], self.imdim[i], self.imdim[i])))).view(self.bs,-1)
+			PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i], self.imdim[i])))).view(self.bs,-1)
 		else:
 #			PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 			PE_0 = self.images   - self.phi[i].view(self.bs,-1)
@@ -441,7 +441,7 @@ class pc_conv_network(nn.Module):
 		if i == self.nlayers-2:
 			PE_1 = self.phi[i] - self.phi[i+1]
 		else:
-			PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+			PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 	 
 
 		# sparse
