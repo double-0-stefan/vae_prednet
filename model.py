@@ -387,10 +387,10 @@ class pc_conv_network(nn.Module):
 			for i in range(self.nlayers)])
 		x = torch.zeros(self.bs,1,32,32)
 		phi = [torch.zeros(self.bs,1*32*32)] # mnist
-		imdim = [x]
+		imdim = [x.size(2)]
 		for i in range(self.nlayers):
 			x = conv[i](x) # mnist
-			imdim.append(x.size())
+			imdim.append(x.size(2))
 			phi.append((torch.zeros_like(x)).view(self.bs,-1))
 		phi.append((torch.zeros_like(x)).view(self.bs,-1)) # top level
 		self.imdim = imdim
@@ -418,7 +418,7 @@ class pc_conv_network(nn.Module):
 		#dimension = self.chan[i+1] * self.imdim[i+1]^2
 	def init_precision(self,p):
 		self.Precision = ModuleList(
-			[nn.Bilinear(self.imdim[i][1], self.imdim[i][1], 1, bias=False)
+			[nn.Bilinear(self.imdim[i], self.imdim[i], 1, bias=False)
 			for i in range(self.nlayers)])
 
 		#self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
