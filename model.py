@@ -394,7 +394,7 @@ class pc_conv_network(nn.Module):
 			phi.append(nn.Parameter((torch.zeros_like(x)).view(self.bs,-1)))
 		phi.append((torch.zeros_like(x)).view(self.bs,-1)) # top level
 		self.imdim = imdim
-		self.phi = phi
+		self.phi = nn.ParameterList(phi)
 
 	# def init_phi(self,p):
 
