@@ -348,7 +348,7 @@ class pc_conv_network(nn.Module):
 		self.nlayers = p['layers_sb']
 		self.chan = p['chan']
 
-		imdim = p['imdim_sb']
+		imdim = [p['imdim_sb']]
 		for i in range(self.nlayers):
 			imdim.append(p['imdim_sb'] - (p['ks'][i] - 1))
 		self.imdim = imdim
