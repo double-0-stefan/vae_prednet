@@ -394,7 +394,7 @@ class pc_conv_network(nn.Module):
 			phi.append(nn.Parameter((torch.zeros_like(x)).view(self.bs,-1)))
 		phi.append(nn.Parameter((torch.zeros_like(x)).view(self.bs,-1))) # top level
 
-		for i in reversed(range(self.nlayers)):
+		for i in reversed(range(self.nlayers)): # works
 			x = self.conv_trans[i](x) # mnist
 		
 		self.imdim = imdim
@@ -511,7 +511,7 @@ class pc_conv_network(nn.Module):
 			self.phi_old = self.phi
 			
 			# will need to code reset for phi
-			for l in range(1, self.nlayers-1):
+			for l in range(1, self.nlayers-2):
 				self.loss(l)
 
 			self.F.backward()
@@ -536,7 +536,7 @@ class pc_conv_network(nn.Module):
 		#self.phi.requires_grad_(False)
 		self.optimizer.lr = 0.001
 
-		for l in range(1,self.nlayers-1):
+		for l in range(1,self.nlayers-2):
 			self.optimizer.zero_grad()
 			self.loss(l)
 			self.F.backward()
