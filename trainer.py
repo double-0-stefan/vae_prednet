@@ -288,12 +288,12 @@ class Trainer(object):
 			self.model(self.iteration, *data)
 			
 			# backward
-			self.optimizer.zero_grad()			
-			self.model.iter_loss.backward(retain_graph=True)
-			self.optimizer.step()
+			# self.optimizer.zero_grad()			
+			# self.model.iter_loss.backward(retain_graph=True)
+			# self.optimizer.step()
 			
 			epoch_loss += self.model.iter_loss.item()
-			
+			epoch loss = self.model.F
 			self.iteration += 1
 
 		epoch_loss = epoch_loss / len(self.train_loader.dataset)
