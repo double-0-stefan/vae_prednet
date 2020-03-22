@@ -524,7 +524,7 @@ class pc_conv_network(nn.Module):
 					break
 
 			print(self.F)
-			print(torch.sum(self.images-self.estimate))
+			print(torch.sum(self.images-self.F_old))
 
 
 	def learn(self):
