@@ -293,7 +293,7 @@ class Trainer(object):
 			# self.optimizer.step()
 			
 			epoch_loss += self.model.iter_loss.item()
-			epoch loss = self.model.F
+			epoch_loss = self.model.F
 			self.iteration += 1
 
 		epoch_loss = epoch_loss / len(self.train_loader.dataset)
