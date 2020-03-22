@@ -506,7 +506,7 @@ class pc_conv_network(nn.Module):
 		for i in range(self.iter):
 			self.optimizer.zero_grad()
 			self.F_old = self.F
-			self.F = torch.zeros(1)
+			self.F = nn.Paramter(torch.zeros(1))
 			self.phi_old = self.phi
 			
 			# will need to code reset for phi
