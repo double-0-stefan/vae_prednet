@@ -292,7 +292,7 @@ class Trainer(object):
 			# self.model.iter_loss.backward(retain_graph=True)
 			# self.optimizer.step()
 			
-			epoch_loss += self.model.iter_loss.item()
+			# epoch_loss += self.model.iter_loss.item()
 			epoch_loss = self.model.F
 			self.iteration += 1
 
