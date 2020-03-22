@@ -549,8 +549,8 @@ class pc_conv_network(nn.Module):
 		self.images = images.view(self.bs, -1)
 
 		self.inference()
-		if learn == 1:
-			self.learn()
+		# if learn == 1:
+		self.learn()
 
 
 
