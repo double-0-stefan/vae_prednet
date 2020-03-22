@@ -460,7 +460,6 @@ class pc_conv_network(nn.Module):
 			- self.Precision[i](PE_0, PE_0)
 			)
 
-
 		# if i > 0:
 
 		# 	self.F += - torch.sum(0.5*(
