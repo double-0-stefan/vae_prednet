@@ -361,7 +361,7 @@ class pc_conv_network(nn.Module):
 		#self.imdim =  [p['imdim_sb']] + (p['imdim_sb']*np.ones_like(p['ks']) - p['ks']).astype(int)
 		self.imchan = p['imchan']
 
-		self.F = None
+		self.F = nn.Parameter(None)
 		self.F_last = None
 
 		self.baseline = None
