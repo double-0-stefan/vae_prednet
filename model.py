@@ -439,6 +439,8 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i):
 
+		print(i)
+
 		if i > 0:
 			self.PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i], self.imdim[i], self.imdim[i])))).view(self.bs,-1)
 		else:
@@ -512,7 +514,7 @@ class pc_conv_network(nn.Module):
 			self.phi_old = self.phi
 			
 			# will need to code reset for phi
-			for l in range(1, self.nlayers):
+			for l in range(1, self.nlayers-1):
 				self.loss(l)
 
 			self.F.backward()
@@ -537,7 +539,7 @@ class pc_conv_network(nn.Module):
 		self.phi.requires_grad_(False)
 		self.optimizer.lr = 0.001
 
-		for l in range(1,self.nlayers-2):
+		for l in range(1,self.nlayers-1):
 			self.optimizer.zero_grad()
 			self.loss(l)
 			self.F.backward()
