@@ -509,7 +509,7 @@ class pc_conv_network(nn.Module):
 			self.phi_old = self.phi
 			
 			# will need to code reset for phi
-			for l in range(1, self.nlayers-1):
+			for l in range(1, self.nlayers):
 				self.loss(l)
 
 			self.F.backward()
