@@ -500,7 +500,7 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(False)
 		self.Precision.requires_grad_(False)
 		#self.Sigma.requires_grad_(False)
-		#self.phi.requires_grad_(True)
+		self.phi.requires_grad_(True)
 		self.optimizer.lr = self.p['lr']
 
 		for i in range(self.iter):
@@ -532,7 +532,7 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(True)
 		#self.Sigma.requires_grad_(True)
 		self.Precision.requires_grad_(True)
-		#self.phi.requires_grad_(False)
+		self.phi.requires_grad_(False)
 		self.optimizer.lr = 0.001
 
 		for l in range(1,self.nlayers-2):

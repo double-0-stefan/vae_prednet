@@ -658,8 +658,8 @@ class pc_cnn_Trainer(Trainer):
 			self.model.train()
 			
 			self.train_epoch_pc_cnn()
-			with no_grad():
-				self.model.eval()
-				self.eval_batch(e)
-		self.eval_batch(e, force_write=True)
-		self.plot_loss()
+		# 	with no_grad():
+		# 		self.model.eval()
+		# 		self.eval_batch(e)
+		# self.eval_batch(e, force_write=True)
+		# self.plot_loss()
