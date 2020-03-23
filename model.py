@@ -386,8 +386,8 @@ class pc_conv_network(nn.Module):
 	def init_phi(self,p):
 		conv = ModuleList(
 			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
-			for i in range(self.nlayers)])
-		x = torch.zeros(self.bs,1,32,32)
+			for i in range(self.nlayers)]).cuda()
+		x = torch.zeros(self.bs,1,32,32).cuda()
 		phi = [nn.Parameter(torch.rand(self.bs,1*32*32))] # mnist
 		imdim = [x.size(2)]
 		for i in range(self.nlayers):
@@ -396,11 +396,12 @@ class pc_conv_network(nn.Module):
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1))) # top level
 
+		self.phi = nn.ParameterList(phi).cuda()
 		for i in reversed(range(self.nlayers)): # works
 			x = self.conv_trans[i](x) # mnist
 		
 		self.imdim = imdim
-		self.phi = nn.ParameterList(phi).cuda()
+		
 
 	# def init_phi(self,p):
 
