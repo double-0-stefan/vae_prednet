@@ -27,8 +27,7 @@ patience : 5
 layers: 
     - 0
 
-layers_sb:
-    - 3
+layers_sb: 3
 
 ks:
     - [5, 7, 9, 9]
