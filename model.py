@@ -379,26 +379,28 @@ class pc_conv_network(nn.Module):
 
 		self.conv_trans = ModuleList(
 			[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i])
-			for i in range(self.nlayers)])
+			for i in range(self.nlayers)]).cuda()
+	#	for i in range(self.layers):
+	#		self.conv_trans[i].weight = torch.nn.Parameter(torch.eye())
 
 	def init_phi(self,p):
 		conv = ModuleList(
 			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
 			for i in range(self.nlayers)])
 		x = torch.zeros(self.bs,1,32,32)
-		phi = [nn.Parameter(torch.zeros(self.bs,1*32*32).cuda())] # mnist
+		phi = [nn.Parameter(torch.rand(self.bs,1*32*32))] # mnist
 		imdim = [x.size(2)]
 		for i in range(self.nlayers):
 			x = conv[i](x) # mnist
 			imdim.append(x.size(2))
-			phi.append(nn.Parameter((torch.zeros_like(x)).view(self.bs,-1)).cuda())
-		phi.append(nn.Parameter((torch.zeros_like(x)).view(self.bs,-1)).cuda()) # top level
+			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
+		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1))) # top level
 
 		for i in reversed(range(self.nlayers)): # works
 			x = self.conv_trans[i](x) # mnist
 		
 		self.imdim = imdim
-		self.phi = nn.ParameterList(phi)
+		self.phi = nn.ParameterList(phi).cuda()
 
 	# def init_phi(self,p):
 
@@ -423,7 +425,7 @@ class pc_conv_network(nn.Module):
 	def init_precision(self,p):
 		self.Precision = ModuleList(
 			[nn.Bilinear(self.chan[i]*self.imdim[i]*self.imdim[i], self.chan[i]*self.imdim[i]*self.imdim[i], 1, bias=False)
-			for i in range(self.nlayers)])
+			for i in range(self.nlayers)]).cuda()
 
 		#self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
 		#	 for i in range(-1,self.nlayers)])
@@ -516,11 +518,11 @@ class pc_conv_network(nn.Module):
 			self.optimizer.step()
 
 			# end inference if starting to diverge
-			if i > 0:
-				if self.F > self.F_old:
-					self.F = self.F_old
-					self.phi = self.phi_old
-					break
+			# if i > 0:
+			# 	if self.F > self.F_old:
+			# 		self.F = self.F_old
+			# 		self.phi = self.phi_old
+			# 		break
 
 			print(self.F)
 			# print(torch.sum(self.images-self.F_old))
