@@ -450,7 +450,7 @@ class pc_conv_network(nn.Module):
 		if i == self.nlayers-2:
 			self.PE_1 = self.phi[i] - self.phi[i+1]
 		else:
-			self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+			self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 	 
 
 		self.F += - 0.5*(
@@ -514,7 +514,7 @@ class pc_conv_network(nn.Module):
 			self.phi_old = self.phi
 			
 			# will need to code reset for phi
-			for l in range(1, self.nlayers-1):
+			for l in range(0, self.nlayers-1):
 				self.loss(l)
 
 			self.F.backward()
@@ -539,7 +539,7 @@ class pc_conv_network(nn.Module):
 		self.phi.requires_grad_(False)
 		self.optimizer.lr = 0.001
 
-		for l in range(1,self.nlayers-1):
+		for l in range(0,self.nlayers-1):
 			self.optimizer.zero_grad()
 			self.loss(l)
 			self.F.backward()
@@ -550,7 +550,7 @@ class pc_conv_network(nn.Module):
 		print(self.imdim)
 		self.iteration = iteration
 		self.F_last = self.F
-		self.images = images.view(self.bs, -1)
+		self.images = images.view(self.bs, -1).cuda()
 
 		self.inference()
 		# if learn == 1:
