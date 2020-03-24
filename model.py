@@ -412,7 +412,7 @@ class pc_conv_network(nn.Module):
 			for i in range(self.nlayers+1)]).cuda()
 
 		for i in range(self.nlayers+1):
-			weights = torch.exp(torch.tensor(8)) * torch.eye(self.chan[i]*self.imdim[i]*self.imdim[i]).unsqueeze(0)
+			weights = torch.exp(torch.tensor(8.)) * torch.eye(self.chan[i]*self.imdim[i]*self.imdim[i]).unsqueeze(0)
 			self.Precision[i].weight = nn.Parameter(weights.cuda())
 
 	def reset(self):
