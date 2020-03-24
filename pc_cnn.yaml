@@ -13,7 +13,7 @@ generate_data: False
 rotating: False
 
 e    :  25000
-b    :  5
+b    :  100
 lr   :  0.005
 
 err_noise:
