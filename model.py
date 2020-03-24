@@ -361,7 +361,7 @@ class pc_conv_network(nn.Module):
 		#self.imdim =  [p['imdim_sb']] + (p['imdim_sb']*np.ones_like(p['ks']) - p['ks']).astype(int)
 		self.imchan = p['imchan']
 
-		self.F = nn.Parameter(None)
+		self.F = None
 		self.F_last = None
 
 		self.baseline = None
@@ -388,7 +388,8 @@ class pc_conv_network(nn.Module):
 			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
 			for i in range(self.nlayers)]).cuda()
 		x = torch.zeros(self.bs,1,32,32).cuda()
-		phi = [nn.Parameter(torch.rand(self.bs,1*32*32))] # mnist
+		#phi = [nn.Parameter(torch.rand(self.bs,1*32*32))] # mnist
+		phi = []
 		imdim = [x.size(2)]
 		for i in range(self.nlayers):
 			x = conv[i](x) # mnist
@@ -402,34 +403,16 @@ class pc_conv_network(nn.Module):
 		
 		self.imdim = imdim
 		
-
-	# def init_phi(self,p):
-
-	# 	phi = []
-	# 	for i in range(-1,self.nlayers):
-	# 		phi.append(nn.Parameter(torch.rand(p['bs'],self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1] )))
-	# 	#phi.append(nn.Parameter(torch.ones(p['bs'],self.chan[self.nlayers] * self.imdim[self.nlayers]^2)))
-	# 	self.phi = nn.ParameterList(phi)
-	# 	self.top_cause = torch.ones_like(phi[self.nlayers-1])
-
-		# Needs to be sparse
-		# Sigma = []
-		# for i in range(-1,self.nlayers):
-		# 	dimension = self.chan[i+1] * self.imdim[i+1]^2
-		# 	ii = torch.LongTensor(list(range(dimension)))
-		# 	vv = torch.ones(dimension)
-		# 	Sigma.append(nn.Parameter(torch.sparse.FloatTensor(ii,vv,torch.Size([dimension,dimension]))))
-		# self.Sigma = nn.ParameterList(Sigma)
-
-		### Precision ### 
-		#dimension = self.chan[i+1] * self.imdim[i+1]^2
 	def init_precision(self,p):
+		# need one of these for each *prediction error*
+		# so one more than the phi's - additional one at level of imahe itself
 		self.Precision = ModuleList(
 			[nn.Bilinear(self.chan[i]*self.imdim[i]*self.imdim[i], self.chan[i]*self.imdim[i]*self.imdim[i], 1, bias=False)
-			for i in range(self.nlayers)]).cuda()
+			for i in range(self.nlayers+1)]).cuda()
 
-		#self.Sigma = nn.ParameterList([nn.Parameter(torch.diag(torch.ones(self.chan[i+1] * self.imdim[i+1] * self.imdim[i+1])))
-		#	 for i in range(-1,self.nlayers)])
+		for i in range(self.nlayers+1):
+			weights = torch.eye(self.chan[i]*self.imdim[i]*self.imdim[i]).unsqueeze(0)
+			self.Precision[i].weight = nn.Parameter(weights.cuda())
 
 	def reset(self):
 
@@ -439,85 +422,49 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i):
 
-		print(i)
-
-		if i > 0:
-			self.PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i], self.imdim[i], self.imdim[i])))).view(self.bs,-1)
+		if i == 0:
+			self.PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 		else:
-#			PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
-			self.PE_0 = self.images   - self.phi[i].view(self.bs,-1)
+			self.PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 
-		if i == self.nlayers-2:
+		if i == self.nlayers-1:
 			self.PE_1 = self.phi[i] - self.phi[i+1]
 		else:
-			self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
-	 
+			self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
 
 		self.F += - 0.5*(
 			# logdet cov = -logdet precision
 			  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
-			- self.Precision[i+1](self.PE_1, self.PE_1)
+			- sum(self.Precision[i+1](self.PE_1, self.PE_1))  # this is problematic
 
 			+ torch.logdet(torch.squeeze(self.Precision[i].weight))
 
-			- self.Precision[i](self.PE_0, self.PE_0)
+			- sum(self.Precision[i](self.PE_0, self.PE_0))
 			)
-
-		# if i > 0:
-
-		# 	self.F += - torch.sum(0.5*(
-		# 		- torch.logdet(self.Sigma[i+1])
-		# 		- torch.squeeze(torch.matmul(torch.matmul(
-		# 			(self.phi[i] - Theta__h_of_phi_above).unsqueeze(1),
-		# 			torch.inverse(self.Sigma[i+1])),
-		# 		(self.phi[i] - Theta__h_of_phi_above).unsqueeze(2)))
-
-		# 		- torch.logdet(self.Sigma[i]) 
-		# 		- torch.squeeze(torch.matmul(torch.matmul(
-		# 			(self.phi[i-1] - Theta__h_of_phi).unsqueeze(1),   
-		# 			torch.inverse(self.Sigma[i])),	
-		# 		(self.phi[i-1] - Theta__h_of_phi).unsqueeze(2)))
-		# 		))
-
-		# if i == 0:
-		# 	self.F += - torch.sum(0.5*(	 # minus here so treated as loss
-		# 		- torch.logdet(self.Sigma[i+1])
-		# 		- torch.squeeze(torch.matmul(torch.matmul(
-		# 			(self.phi[i] - Theta__h_of_phi_above).unsqueeze(1), 
-		# 			torch.inverse(self.Sigma[i+1])),
-		# 		(self.phi[i] - Theta__h_of_phi_above).unsqueeze(2)))
-
-		# 		- torch.logdet(self.Sigma[i]) 
-		# 		- torch.squeeze(torch.matmul(
-		# 			torch.matmul((self.images - Theta__h_of_phi).unsqueeze(1),   
-		# 			torch.inverse(self.Sigma[i])),
-		# 		(self.images - Theta__h_of_phi).unsqueeze(2)))
-		# 		))
-
-		# if i == 0:
-		# 	self.estimate = Theta__h_of_phi
-
 		
 	def inference(self):
 
 		self.conv_trans.requires_grad_(False)
 		self.Precision.requires_grad_(False)
-		#self.Sigma.requires_grad_(False)
 		self.phi.requires_grad_(True)
 		self.optimizer.lr = self.p['lr']
 
 		for i in range(self.iter):
 			self.optimizer.zero_grad()
 			self.F_old = self.F
-			self.F = nn.Parameter(torch.zeros(1))
+			self.F = 0#nn.Parameter(torch.zeros(1))
 			self.phi_old = self.phi
 			
 			# will need to code reset for phi
-			for l in range(0, self.nlayers-1):
+			for l in range(0, self.nlayers):
 				self.loss(l)
 
+			# if i < self.iter-1:
+			# 	self.F.backward(retain_graph=True)
+			# else:
 			self.F.backward()
+
 			self.optimizer.step()
 
 			# end inference if starting to diverge
@@ -534,16 +481,16 @@ class pc_conv_network(nn.Module):
 	def learn(self):
 
 		self.conv_trans.requires_grad_(True)
-		#self.Sigma.requires_grad_(True)
 		self.Precision.requires_grad_(True)
 		self.phi.requires_grad_(False)
 		self.optimizer.lr = 0.001
 
-		for l in range(0,self.nlayers-1):
-			self.optimizer.zero_grad()
+		self.optimizer.zero_grad()
+		self.F = 0
+		for l in range(0,self.nlayers):
 			self.loss(l)
-			self.F.backward()
-			self.optimizer.step()
+		self.F.backward()
+		self.optimizer.step()
 
 
 	def forward(self, iteration, images, learn=1):
