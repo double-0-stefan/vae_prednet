@@ -378,8 +378,7 @@ class pc_conv_network(nn.Module):
 	def init_conv_trans(self, p):
 
 		self.conv_trans = ModuleList(
-			[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i])
-			for i in range(self.nlayers)])
+			[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]) for i in range(self.nlayers)])
 		self.conv_trans.cuda()
 	#	for i in range(self.layers):
 	#		self.conv_trans[i].weight = torch.nn.Parameter(torch.eye())
