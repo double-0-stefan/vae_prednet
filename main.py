@@ -68,7 +68,7 @@ def main(args):
 					if largs['pc_cnn']:
 						logger.info('Training Observation Model - pc_cnn')
 						data = dutils.get_dataset(mvars, split='train',static= not mvars['dynamic'])
-						gx_trainer  = pc_cnn_Trainer(mvars, data, obs_model)
+						gx_trainer  = pc_cnn_Trainer(mvars, data, obs_model).to(xm.xla_device())
 						gx_trainer.train()
 						del gx_trainer, obs_model
 					else:
