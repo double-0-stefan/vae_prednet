@@ -20,7 +20,199 @@ import glob
 import scipy.io as sio
 from torchvision.utils import save_image
 from torch.optim import Adam
-#import torch_scatter, torch_sparse
+import torch_xla
+import torch_xla.core.xla_model as xm
+
+
+class pc_conv_network(nn.Module):
+	def __init__(self,p):
+		super(pc_conv_network, self).__init__()
+
+		self.err_plot_flag = True
+		self.plot_errs = []
+		self.enc_mode = False
+
+		self.p = p
+		self.bs = p['bs']
+		self.iter = p['iter']
+		self.nlayers = p['layers_sb']
+		self.chan = p['chan']
+
+		self.init_conv_trans(p)
+		self.init_phi(p)
+		self.init_precision(p)
+
+		# self.imdim =
+		# imdim = [p['imdim_sb'],p['imdim_sb']]
+		# for i in range(self.nlayers):
+		# 	imdim.append(imdim[i] - (p['ks'][i] - 1))
+		# self.imdim = imdim
+
+		#self.imdim =  [p['imdim_sb']] + (p['imdim_sb']*np.ones_like(p['ks']) - p['ks']).astype(int)
+		self.imchan = p['imchan']
+
+		self.F = None
+		self.F_last = None
+
+		self.baseline = None
+		
+
+		if p['vae'] == 1:
+			self.init_vae(p)
+
+
+		# at end
+		self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
+
+
+	def init_conv_trans(self, p):
+		if p['xla']:
+			self.conv_trans = ModuleList(
+				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]).to(xm.xla_device())
+				for i in range(self.nlayers)])
+		else:
+			self.conv_trans = ModuleList(
+				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]).cuda() 
+				for i in range(self.nlayers)])
+
+	def init_phi(self,p):
+		conv = ModuleList(
+			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
+			for i in range(self.nlayers)])
+		x = torch.zeros(self.bs,1,32,32).cuda()
+		phi = []
+		imdim = [x.size(2)]
+		for i in range(self.nlayers):
+			x = conv[i](x) # mnist
+			imdim.append(x.size(2))
+			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
+		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1))) # top level
+
+		if p['xla']:
+			self.phi = nn.ParameterList(phi).to(xm.xla_device())
+		else:
+			self.phi = nn.ParameterList(phi).cuda()
+
+		# for i in reversed(range(self.nlayers)): # works
+			# x = self.conv_trans[i](x) # mnist
+		
+		self.imdim = imdim
+		
+	def init_precision(self,p):
+		# need one of these for each *prediction error*
+		# so one more than the phi's - additional one at level of imahe itself
+		if p['xla']:
+			self.Precision = ModuleList(
+				[nn.Bilinear(self.chan[i]*self.imdim[i]*self.imdim[i], self.chan[i]*self.imdim[i]*self.imdim[i], 1, bias=False).to(xm.xla_device())
+				for i in range(self.nlayers+1)])
+		else:
+			self.Precision = ModuleList(
+			[nn.Bilinear(self.chan[i]*self.imdim[i]*self.imdim[i], self.chan[i]*self.imdim[i]*self.imdim[i], 1, bias=False).cuda()
+			for i in range(self.nlayers+1)])
+
+		for i in range(self.nlayers+1):
+			weights = torch.exp(torch.tensor(8.)) * torch.eye(self.chan[i]*self.imdim[i]*self.imdim[i]).unsqueeze(0)
+			self.Precision[i].weight = nn.Parameter(weights.cuda())
+
+	def reset(self):
+
+		self.F = None
+		self.F_last = None
+		self.baseline = None
+
+	def loss(self, i):
+
+		if i == 0:
+			self.PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+		else:
+			self.PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+
+		if i == self.nlayers-1:
+			self.PE_1 = self.phi[i] - self.phi[i+1]
+		else:
+			self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
+
+		self.F += - 0.5*(
+			# logdet cov = -logdet precision
+			  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
+
+			- sum(self.Precision[i+1](self.PE_1, self.PE_1))  # this is problematic
+
+			+ torch.logdet(torch.squeeze(self.Precision[i].weight))
+
+			- sum(self.Precision[i](self.PE_0, self.PE_0))
+			)
+		
+	def inference(self):
+
+		self.conv_trans.requires_grad_(False)
+		self.Precision.requires_grad_(False)
+		self.phi.requires_grad_(True)
+		self.optimizer.lr = self.p['lr']
+
+		for i in range(self.iter):
+			self.optimizer.zero_grad()
+			self.F_old = self.F
+			self.F = 0#nn.Parameter(torch.zeros(1))
+			self.phi_old = self.phi
+			
+			# will need to code reset for phi
+			for l in range(0, self.nlayers):
+				self.loss(l)
+
+			# if i < self.iter-1:
+			# 	self.F.backward(retain_graph=True)
+			# else:
+			self.F.backward()
+
+			self.optimizer.step()
+
+			# end inference if starting to diverge
+			# if i > 0:
+			# 	if self.F > self.F_old:
+			# 		self.F = self.F_old
+			# 		self.phi = self.phi_old
+			# 		break
+
+			print(self.F)
+			# print(torch.sum(self.images-self.F_old))
+
+
+	def learn(self):
+
+		self.conv_trans.requires_grad_(True)
+		self.Precision.requires_grad_(True)
+		self.phi.requires_grad_(False)
+		self.optimizer.lr = 0.001
+
+		self.optimizer.zero_grad()
+		self.F = 0
+		for l in range(0,self.nlayers):
+			self.loss(l)
+		self.F.backward()
+		self.optimizer.step()
+		print(self.Precision[0].weight)
+
+
+	def forward(self, iteration, images, learn=1):
+
+		self.iteration = iteration
+		self.F_last = self.F
+		if self.p['xla']:
+			self.images = images.view(self.bs, -1).to(xm.xla_device())
+		else:	
+			self.images = images.view(self.bs, -1).cuda()
+
+		self.inference()
+		# if learn == 1:
+		self.learn()
+
+
+
+
+
+
+
 
 
 class GenerativeModel(Module):
@@ -333,177 +525,6 @@ class TransitionModel(Module):
 				self.d_pred[l][:,t] = done
 				self.r_pred[l][:,t] = rew
 
-
-class pc_conv_network(nn.Module):
-	def __init__(self,p):
-		super(pc_conv_network, self).__init__()
-
-		self.err_plot_flag = True
-		self.plot_errs = []
-		self.enc_mode = False
-
-		self.p = p
-		self.bs = p['bs']
-		self.iter = p['iter']
-		self.nlayers = p['layers_sb']
-		self.chan = p['chan']
-
-		self.init_conv_trans(p)
-		self.init_phi(p)
-		self.init_precision(p)
-
-		# self.imdim =
-		# imdim = [p['imdim_sb'],p['imdim_sb']]
-		# for i in range(self.nlayers):
-		# 	imdim.append(imdim[i] - (p['ks'][i] - 1))
-		# self.imdim = imdim
-
-		#self.imdim =  [p['imdim_sb']] + (p['imdim_sb']*np.ones_like(p['ks']) - p['ks']).astype(int)
-		self.imchan = p['imchan']
-
-		self.F = None
-		self.F_last = None
-
-		self.baseline = None
-		
-
-		if p['vae'] == 1:
-			self.init_vae(p)
-
-
-		# at end
-		self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
-
-
-	def init_conv_trans(self, p):
-
-		self.conv_trans = ModuleList(
-			[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]) for i in range(self.nlayers)])
-		self.conv_trans.cuda()
-	#	for i in range(self.layers):
-	#		self.conv_trans[i].weight = torch.nn.Parameter(torch.eye())
-
-	def init_phi(self,p):
-		conv = ModuleList(
-			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
-			for i in range(self.nlayers)])
-		conv.cuda()
-		x = torch.zeros(self.bs,1,32,32).cuda()
-		#phi = [nn.Parameter(torch.rand(self.bs,1*32*32))] # mnist
-		phi = []
-		imdim = [x.size(2)]
-		for i in range(self.nlayers):
-			x = conv[i](x) # mnist
-			imdim.append(x.size(2))
-			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
-		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1))) # top level
-
-		self.phi = nn.ParameterList(phi).cuda()
-		for i in reversed(range(self.nlayers)): # works
-			x = self.conv_trans[i](x) # mnist
-		
-		self.imdim = imdim
-		
-	def init_precision(self,p):
-		# need one of these for each *prediction error*
-		# so one more than the phi's - additional one at level of imahe itself
-		self.Precision = ModuleList(
-			[nn.Bilinear(self.chan[i]*self.imdim[i]*self.imdim[i], self.chan[i]*self.imdim[i]*self.imdim[i], 1, bias=False)
-			for i in range(self.nlayers+1)]).cuda()
-
-		for i in range(self.nlayers+1):
-			weights = torch.exp(torch.tensor(8.)) * torch.eye(self.chan[i]*self.imdim[i]*self.imdim[i]).unsqueeze(0)
-			self.Precision[i].weight = nn.Parameter(weights.cuda())
-
-	def reset(self):
-
-		self.F = None
-		self.F_last = None
-		self.baseline = None
-
-	def loss(self, i):
-
-		if i == 0:
-			self.PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
-		else:
-			self.PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
-
-		if i == self.nlayers-1:
-			self.PE_1 = self.phi[i] - self.phi[i+1]
-		else:
-			self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
-
-		self.F += - 0.5*(
-			# logdet cov = -logdet precision
-			  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
-
-			- sum(self.Precision[i+1](self.PE_1, self.PE_1))  # this is problematic
-
-			+ torch.logdet(torch.squeeze(self.Precision[i].weight))
-
-			- sum(self.Precision[i](self.PE_0, self.PE_0))
-			)
-		
-	def inference(self):
-
-		self.conv_trans.requires_grad_(False)
-		self.Precision.requires_grad_(False)
-		self.phi.requires_grad_(True)
-		self.optimizer.lr = self.p['lr']
-
-		for i in range(self.iter):
-			self.optimizer.zero_grad()
-			self.F_old = self.F
-			self.F = 0#nn.Parameter(torch.zeros(1))
-			self.phi_old = self.phi
-			
-			# will need to code reset for phi
-			for l in range(0, self.nlayers):
-				self.loss(l)
-
-			# if i < self.iter-1:
-			# 	self.F.backward(retain_graph=True)
-			# else:
-			self.F.backward()
-
-			self.optimizer.step()
-
-			# end inference if starting to diverge
-			# if i > 0:
-			# 	if self.F > self.F_old:
-			# 		self.F = self.F_old
-			# 		self.phi = self.phi_old
-			# 		break
-
-			print(self.F)
-			# print(torch.sum(self.images-self.F_old))
-
-
-	def learn(self):
-
-		self.conv_trans.requires_grad_(True)
-		self.Precision.requires_grad_(True)
-		self.phi.requires_grad_(False)
-		self.optimizer.lr = 0.001
-
-		self.optimizer.zero_grad()
-		self.F = 0
-		for l in range(0,self.nlayers):
-			self.loss(l)
-		self.F.backward()
-		self.optimizer.step()
-		print(self.Precision[0].weight)
-
-
-	def forward(self, iteration, images, learn=1):
-		print(self.imdim)
-		self.iteration = iteration
-		self.F_last = self.F
-		self.images = images.view(self.bs, -1).cuda()
-
-		self.inference()
-		# if learn == 1:
-		self.learn()
 
 
 

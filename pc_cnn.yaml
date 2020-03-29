@@ -4,6 +4,9 @@ exp_name:
 pc_cnn:
     - True
 
+xla:
+    - True
+
 train_gx: True
 train_fx: False
 
@@ -37,7 +40,7 @@ imchan:
     - 1
 
 chan:
-    - [1,17,9,11]
+    - [1,32,16,16]
 
 pad:
     - [1, 0, 0, 0]
