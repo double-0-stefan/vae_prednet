@@ -68,7 +68,7 @@ class pc_conv_network(nn.Module):
 	def init_conv_trans(self, p):
 		if p['xla']:
 			self.conv_trans = ModuleList(
-				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]).to(xm.xla_device())
+				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i])#.to(xm.xla_device())
 				for i in range(self.nlayers)])
 		else:
 			self.conv_trans = ModuleList(
@@ -89,7 +89,7 @@ class pc_conv_network(nn.Module):
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1))) # top level
 
 		if p['xla']:
-			self.phi = nn.ParameterList(phi).to(xm.xla_device())
+			self.phi = nn.ParameterList(phi)#.to(xm.xla_device())
 		else:
 			self.phi = nn.ParameterList(phi).cuda()
 
@@ -103,7 +103,7 @@ class pc_conv_network(nn.Module):
 		# so one more than the phi's - additional one at level of imahe itself
 		if p['xla']:
 			self.Precision = ModuleList(
-				[nn.Bilinear(self.chan[i]*self.imdim[i]*self.imdim[i], self.chan[i]*self.imdim[i]*self.imdim[i], 1, bias=False).to(xm.xla_device())
+				[nn.Bilinear(self.chan[i]*self.imdim[i]*self.imdim[i], self.chan[i]*self.imdim[i]*self.imdim[i], 1, bias=False)#.to(xm.xla_device())
 				for i in range(self.nlayers+1)])
 		else:
 			self.Precision = ModuleList(
@@ -113,7 +113,7 @@ class pc_conv_network(nn.Module):
 		for i in range(self.nlayers+1):
 			weights = torch.exp(torch.tensor(8.)) * torch.eye(self.chan[i]*self.imdim[i]*self.imdim[i]).unsqueeze(0)
 			if p['xla']:
-				self.Precision[i].weight = nn.Parameter(weights).to(xm.xla_device())
+				self.Precision[i].weight = nn.Parameter(weights)#.to(xm.xla_device())
 			else:
 				elf.Precision[i].weight = nn.Parameter(weights).cuda()
 
