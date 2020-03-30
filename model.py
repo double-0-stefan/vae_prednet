@@ -203,7 +203,7 @@ class pc_conv_network(nn.Module):
 
 	def forward(self, iteration, images, learn=1):
 
-		self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
+		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		self.iteration = iteration
 		self.F_last = self.F
 		if self.p['xla']:
