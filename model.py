@@ -68,16 +68,16 @@ class pc_conv_network(nn.Module):
 	def init_conv_trans(self, p):
 		if p['xla']:
 			self.conv_trans = ModuleList(
-				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 2,p['pad'][i])#.to(xm.xla_device())
+				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i])#.to(xm.xla_device())
 				for i in range(self.nlayers)])
 		else:
 			self.conv_trans = ModuleList(
-				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 2,p['pad'][i]).cuda() 
+				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]).cuda() 
 				for i in range(self.nlayers)])
 
 	def init_phi(self,p):
 		conv = ModuleList(
-			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 2,p['pad'][i])
+			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
 			for i in range(self.nlayers)])
 		x = torch.zeros(self.bs,1,32,32)
 		phi = []
