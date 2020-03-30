@@ -171,7 +171,7 @@ class pc_conv_network(nn.Module):
 			# else:
 			self.F.backward()
 
-			xm.optimizer_step(self.optimizer, barrier=False)#.step()
+			xm.optimizer_step(self.optimizer, {'self.phi'})#.step()
 
 			# end inference if starting to diverge
 			# if i > 0:
