@@ -135,8 +135,8 @@ class pc_conv_network(nn.Module):
 		else:
 			self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
 
-		print(self.PE_0)
-		print(self.PE_1)
+		#print(self.PE_0)
+		#print(self.PE_1)
 
 		self.F += - 0.5*(
 			# logdet cov = -logdet precision
@@ -203,6 +203,7 @@ class pc_conv_network(nn.Module):
 
 	def forward(self, iteration, images, learn=1):
 
+		self.F.cpu()
 		self.iteration = iteration
 		self.F_last = self.F
 		if self.p['xla']:
