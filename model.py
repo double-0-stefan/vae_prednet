@@ -203,7 +203,7 @@ class pc_conv_network(nn.Module):
 
 	def forward(self, iteration, images, learn=1):
 
-		self.F.cpu()
+
 		self.iteration = iteration
 		self.F_last = self.F
 		if self.p['xla']:
