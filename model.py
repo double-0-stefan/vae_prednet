@@ -151,13 +151,13 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(False)
 		self.Precision.requires_grad_(False)
 		self.phi.requires_grad_(True)
-		self.optimizer.lr = self.p['lr']
+		#self.optimizer.lr = self.p['lr']
 
 		for i in range(self.iter):
 			self.optimizer.zero_grad()
 			self.F_old = self.F
 			self.F = 0#nn.Parameter(torch.zeros(1))
-			self.phi_old = self.phi
+			#self.phi_old = self.phi
 			
 			# will need to code reset for phi
 			for l in range(0, self.nlayers):
@@ -168,7 +168,7 @@ class pc_conv_network(nn.Module):
 			# else:
 			self.F.backward()
 
-			xm.optimizer_step(self.optimizer)#.step()
+			xm.optimizer_step(self.optimizer, barrier=True)#.step()
 
 			# end inference if starting to diverge
 			# if i > 0:
@@ -186,14 +186,14 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(True)
 		self.Precision.requires_grad_(True)
 		self.phi.requires_grad_(False)
-		self.optimizer.lr = 0.001
+		#self.optimizer.lr = 0.001
 
 		self.optimizer.zero_grad()
 		self.F = 0
 		for l in range(0,self.nlayers):
 			self.loss(l)
 		self.F.backward()
-		xm.optimizer_step(self.optimizer)
+		xm.optimizer_step(self.optimizer, barrier=True)
 		#self.optimizer.step()
 		print(self.Precision[0].weight)
 
