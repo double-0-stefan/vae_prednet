@@ -4,6 +4,8 @@ exp_name:
 pc_cnn:
     - True
 
+xla: True
+
 train_gx: True
 train_fx: False
 
