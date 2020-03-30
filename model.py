@@ -115,7 +115,7 @@ class pc_conv_network(nn.Module):
 			if p['xla']:
 				self.Precision[i].weight = nn.Parameter(weights)#.to(xm.xla_device())
 			else:
-				elf.Precision[i].weight = nn.Parameter(weights).cuda()
+				self.Precision[i].weight = nn.Parameter(weights).cuda()
 
 	def reset(self):
 
@@ -171,7 +171,7 @@ class pc_conv_network(nn.Module):
 			# else:
 			self.F.backward()
 
-			xm.optimizer_step(self.optimizer, barrier=True)#.step()
+			xm.optimizer_step(self.optimizer, barrier=False)#.step()
 
 			# end inference if starting to diverge
 			# if i > 0:
@@ -196,7 +196,7 @@ class pc_conv_network(nn.Module):
 		for l in range(0,self.nlayers):
 			self.loss(l)
 		self.F.backward()
-		xm.optimizer_step(self.optimizer, barrier=True)
+		xm.optimizer_step(self.optimizer, barrier=False)
 		#self.optimizer.step()
 		print(self.Precision[0].weight)
 
