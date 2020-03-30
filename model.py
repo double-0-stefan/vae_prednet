@@ -62,7 +62,7 @@ class pc_conv_network(nn.Module):
 
 
 		# at end
-		self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
+		# self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
 
 
 	def init_conv_trans(self, p):
@@ -171,7 +171,7 @@ class pc_conv_network(nn.Module):
 			# else:
 			self.F.backward()
 
-			xm.optimizer_step(self.optimizer, {'self.phi'})#.step()
+			xm.optimizer_step(self.optimizer)#.step()
 
 			# end inference if starting to diverge
 			# if i > 0:
@@ -203,7 +203,7 @@ class pc_conv_network(nn.Module):
 
 	def forward(self, iteration, images, learn=1):
 
-
+		self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
 		self.iteration = iteration
 		self.F_last = self.F
 		if self.p['xla']:
