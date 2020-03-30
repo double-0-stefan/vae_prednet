@@ -654,11 +654,11 @@ class pc_cnn_Trainer(Trainer):
 
 
 		self.logger.info('\n Training Observation Model \n ')
-		self.logger.info('Model Overview: \n {} \n'.format(self.model.parameters))
-		trainp  = sum(_p.numel() for _p in self.model.parameters() if _p.requires_grad)
-		ntrainp = sum(_p.numel() for _p in self.model.parameters() if not _p.requires_grad)
-		self.logger.info('Trainable Params {} \n'.format(tutils.group(trainp)))
-		self.logger.info('Non-Trainable Params {} \n'.format(tutils.group(ntrainp)))
+		# self.logger.info('Model Overview: \n {} \n'.format(self.model.parameters))
+		# trainp  = sum(_p.numel() for _p in self.model.parameters() if _p.requires_grad)
+		# ntrainp = sum(_p.numel() for _p in self.model.parameters() if not _p.requires_grad)
+		# self.logger.info('Trainable Params {} \n'.format(tutils.group(trainp)))
+		# self.logger.info('Non-Trainable Params {} \n'.format(tutils.group(ntrainp)))
 
 		#while self.iteration < self.model.p['n_iter']:
 		for e in range(self.p['e']):
