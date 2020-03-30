@@ -145,11 +145,11 @@ class pc_conv_network(nn.Module):
 
 		self.F += - 0.5*(
 			# logdet cov = -logdet precision
-			  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
+			#  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
 			- sum(self.Precision[i+1](self.PE_1, self.PE_1))  # this is problematic
 
-			+ torch.logdet(torch.squeeze(self.Precision[i].weight))
+			#+ torch.logdet(torch.squeeze(self.Precision[i].weight))
 
 			- sum(self.Precision[i](self.PE_0, self.PE_0))
 			)
