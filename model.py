@@ -135,6 +135,9 @@ class pc_conv_network(nn.Module):
 		else:
 			self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
 
+		print(self.PE_0)
+		print(self.PE_1)
+
 		self.F += - 0.5*(
 			# logdet cov = -logdet precision
 			  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
