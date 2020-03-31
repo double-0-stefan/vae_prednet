@@ -40,7 +40,10 @@ class pc_conv_network(nn.Module):
 
 		self.init_conv_trans(p)
 		self.init_phi(p)
-		self.init_precision(p)
+		if p['conv_precision']:
+			self.init_conv_precision(p)
+		else:
+			self.init_precision(p)
 
 		# self.imdim =
 		# imdim = [p['imdim_sb'],p['imdim_sb']]
@@ -100,7 +103,7 @@ class pc_conv_network(nn.Module):
 		
 	def init_precision(self,p):
 		# need one of these for each *prediction error*
-		# so one more than the phi's - additional one at level of imahe itself
+		# so one more than the phi's - additional one at level of image itself
 		if p['xla']:
 			self.Precision = ModuleList(
 				[nn.Bilinear(self.chan[i]*self.imdim[i]*self.imdim[i], self.chan[i]*self.imdim[i]*self.imdim[i], 1, bias=False)#.to(xm.xla_device())
@@ -121,6 +124,28 @@ class pc_conv_network(nn.Module):
 		# can assume covariance will be the same everywhere
 		# so weight sharing of some sort should work
 
+		# 3D conv to same size? then x times (conv(x))' --> xAx'
+		# need to look at form of weights for logdet
+
+		# conv output size:
+		#   o = [i + 2*p - k - (k-1)*(d-1)]/s + 1
+		#   p = (k+(k-1)*(d-1) - i + (o-1)s)/2
+		# trans conv output size:
+		#   o = (i -1)*s - 2*p + k + output_padding 
+		#   p = ((i -1)*s - o + k + output_padding)/2
+
+		# o = output
+		# p = padding
+		# k = kernel_size
+		# s = stride
+		# d = dilation
+
+	def init_conv_precision(self,p):
+		# only 1 channel as channels treated as depth
+		self.Precision = ModuleList(
+			[nn.Conv3d(1,1, kernel_size= (p['chan'][i],imdim[i],imdim[i]), stride=1, groups=1, bias=True, 
+				padding= ((p['chan'][i]-1)/2, (imdim[i]-1)/2, (imdim[i]-1)/2)) 
+			for i in range(self.nlayers+1)])
 
 	def reset(self):
 
