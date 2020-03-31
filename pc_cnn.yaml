@@ -1,6 +1,8 @@
 exp_name: 
     - "pc_cnn_mnist"
 
+conv_precision: True
+
 pc_cnn:
     - True
 
