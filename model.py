@@ -143,8 +143,8 @@ class pc_conv_network(nn.Module):
 	def init_conv_precision(self,p):
 		# only 1 channel as channels treated as depth
 		self.Precision = ModuleList(
-			[nn.Conv3d(1,1, kernel_size= (p['chan'][i],imdim[i],imdim[i]), stride=1, groups=1, bias=True, 
-				padding= ((p['chan'][i]-1)/2, (imdim[i]-1)/2, (imdim[i]-1)/2)) 
+			[nn.Conv3d(1,1, kernel_size= (p['chan'][i],self.imdim[i],self.imdim[i]), stride=1, groups=1, bias=True, 
+				padding= ((p['chan'][i]-1)/2, (self.imdim[i]-1)/2, (self.imdim[i]-1)/2)) 
 			for i in range(self.nlayers+1)])
 
 	def reset(self):
