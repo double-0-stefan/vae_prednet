@@ -82,7 +82,10 @@ class pc_conv_network(nn.Module):
 		conv = ModuleList(
 			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
 			for i in range(self.nlayers)])
-		x = torch.zeros(self.bs,1,32,32)
+		if p['imdim']:
+			x = torch.zeros(self.bs,1,p['imdim'],p['imdim'])
+		else:
+			x = torch.zeros(self.bs,1,32,32)
 		phi = []
 		imdim = [x.size(2)]
 		for i in range(self.nlayers):
@@ -147,6 +150,19 @@ class pc_conv_network(nn.Module):
 				padding= ((p['chan'][i]-1)/2, (self.imdim[i]-1)/2, (self.imdim[i]-1)/2)) 
 			for i in range(self.nlayers+1)])
 
+		# need to set weights so positive definite -> need Toeplitz matrix
+
+		# or make 2D -> concat height/width into 1 dimensionS
+
+		# start with 3D but only inter-channel connections -> 2D block matrix with lots of zeros
+
+		#kernel bigger than image with padding?????
+
+		self.Precision = ModuleList(
+			[nn.Conv3d(1,1, kernel_size= (p['chan'][i]*2+1,self.imdim[i]*2+1), stride=1, groups=1, bias=True, 
+				padding= ((p['chan'][i]-1)/2, (self.imdim[i]-1)/2, (self.imdim[i]-1)/2)) 
+			for i in range(self.nlayers+1)])
+
 	def reset(self):
 
 		self.F = None
@@ -167,17 +183,30 @@ class pc_conv_network(nn.Module):
 
 		#print(self.PE_0)
 		#print(self.PE_1)
+		if self.p['conv_precision']:
+			self.F += - 0.5*(
+				# logdet cov = -logdet precision
+				  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
-		self.F += - 0.5*(
-			# logdet cov = -logdet precision
-			#  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
+				- sum(torch.matmul(self.PE_1, 
+					(self.Precision[i+1](self.PE_1.view(self.bs,1,self.chan[i+1],self.imdim[i+1],self.imdim[i+1]))).view(self.bs,-1)))
 
-			- sum(self.Precision[i+1](self.PE_1, self.PE_1))  # this is problematic
+				+ torch.logdet(torch.squeeze(self.Precision[i].weight))
 
-			#+ torch.logdet(torch.squeeze(self.Precision[i].weight))
+				- sum(torch.matmul(self.PE_0, 
+					(self.Precision[i](self.PE_0.view(self.bs,1,self.chan[i],self.imdim[i],self.imdim[i]))).view(self.bs,-1)))
+				)
+		else:
+			self.F += - 0.5*(
+				# logdet cov = -logdet precision
+				  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
-			- sum(self.Precision[i](self.PE_0, self.PE_0))
-			)
+				- sum(self.Precision[i+1](self.PE_1, self.PE_1))
+
+				+ torch.logdet(torch.squeeze(self.Precision[i].weight))
+
+				- sum(self.Precision[i](self.PE_0, self.PE_0))
+				)
 		
 	def inference(self):
 
