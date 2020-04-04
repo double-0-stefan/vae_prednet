@@ -63,7 +63,7 @@ class pc_conv_network(nn.Module):
 		# else:
 		x = torch.zeros(self.bs,1,33,33)
 		#	p['imdim'] = [x.size(2)]
-		imdim = p['imdim']
+		imdim = [p['imdim']]
 		self.conv_trans = []
 		conv = []
 		phi = []
@@ -104,7 +104,7 @@ class pc_conv_network(nn.Module):
 				print(x.size())
 				x = conv_block[i](x)
 
-			# imdim.append(x.size(2))
+			imdim.append(x.size(2))
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 			
 			# create Precision networks - top of block, or only one in block
