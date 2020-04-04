@@ -75,7 +75,7 @@ class pc_conv_network(nn.Module):
 		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['chan'][0][0]*p['imdim'][0]*p['imdim'][0]).unsqueeze(0)		
 		Precision[0].weight = nn.Parameter(weights)
 
-		for j in p['nblocks']:
+		for j in range(p['nblocks']):
 			block = []
 			conv_block = []
 			for i in range(len(p['ks'][j]) - 1):
