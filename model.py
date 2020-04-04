@@ -59,10 +59,10 @@ class pc_conv_network(nn.Module):
 
 	def init_conv_trans(self, p): # does conv, phi and precision
 		if p['imdim']:
-			x = torch.zeros([self.bs,1,p['imdim'],p['imdim']])
+			x = torch.zeros([self.bs,1,p['imdim'][0],p['imdim'][0]])
 		else:
 			x = torch.zeros(self.bs,1,32,32)
-		p['imdim'] = [x.size(2)]
+			p['imdim'] = [x.size(2)]
 
 		self.conv_trans = []
 		conv = []
