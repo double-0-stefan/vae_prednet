@@ -100,6 +100,7 @@ class pc_conv_network(nn.Module):
 			# create phi same size as output as block - x sticks around to be input to next block
 			for i in range(len(p['ks'][j])):
 				print(i)
+				print(x.size())
 				x = conv_block[i](x)
 
 			p['imdim'].append(x.size(2))
