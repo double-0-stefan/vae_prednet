@@ -224,7 +224,7 @@ class pc_conv_network(nn.Module):
 		# do block
 		print(i)
 		x = self.phi[i].view(self.bs, self.chan[i][-1], self.imdim[i][-1], self.imdim[i][-1])
-		for j in range(self.p['ks'][i]):
+		for j in range(len(self.p['ks'][i])):
 			x = self.conv_trans[i][j](F.relu(x))
 
 		if i == 0:
@@ -237,7 +237,7 @@ class pc_conv_network(nn.Module):
 			PE_1 = self.phi[i] - self.phi[i+1]
 		else:
 			x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.imdim[i+1][-1], self.imdim[i+1][-1])
-			for j in range(self.p['ks'][i+1]):
+			for j in range(len(self.p['ks'][i+1])):
 				x = self.conv_trans[i+1][j](F.relu(x))
 			PE_1 = self.phi[i] - x.view(self.bs,-1)
 
