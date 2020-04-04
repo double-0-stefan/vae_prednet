@@ -103,12 +103,12 @@ class pc_conv_network(nn.Module):
 				print(x.size())
 				x = conv_block[i](x)
 
-			imdim.append(x.size(2))
+			# imdim.append(x.size(2))
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 			
 			# create Precision networks - top of block, or only one in block
-			Precision.append(nn.Bilinear(p['chan'][j][-1]*imdim[j+1]*imdim[j+1], p['chan'][j][-1]*imdim[j+1]*imdim[j+1], 1, bias=False))
-			weights = torch.exp(torch.tensor(1.)) * torch.eye(p['chan'][j][-1]*imdim[j+1]*imdim[j+1]).unsqueeze(0)
+			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
+			weights = torch.exp(torch.tensor(1.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
 			Precision[j+1].weight = nn.Parameter(weights)
 
 		# top level phi
