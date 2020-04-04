@@ -221,7 +221,7 @@ class pc_conv_network(nn.Module):
 	def loss(self, i):
 
 		# do block
-		x = self.phi[i].view(self.bs, self.chan[i+1][0], self.imdim[i+1][0], self.imdim[i+1][0])
+		x = self.phi[i].view(self.bs, self.chan[i+1][0], self.imdim[i+1] self.imdim[i+1])
 		for j in range(self.p['ks'][i]):
 			x = self.conv_trans[i][j](F.relu(x))
 
@@ -234,7 +234,7 @@ class pc_conv_network(nn.Module):
 		if i == self.nlayers-1:
 			PE_1 = self.phi[i] - self.phi[i+1]
 		else:
-			x = self.phi[i+1].view(self.bs, self.chan[i+2][0], self.imdim[i+2][0], self.imdim[i+2][0])
+			x = self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])
 			for j in range(self.p['ks'][i+1]):
 				x = self.conv_trans[i+1][j](F.relu(x))
 			PE_1 = self.phi[i] - x.view(self.bs,-1)
