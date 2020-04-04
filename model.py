@@ -63,7 +63,7 @@ class pc_conv_network(nn.Module):
 		# else:
 		x = torch.zeros(self.bs,1,33,33)
 		#	p['imdim'] = [x.size(2)]
-		imdim = []
+		self.imdim = []
 		imdim.append(p['imdim'])
 		self.conv_trans = []
 		conv = []
@@ -100,12 +100,13 @@ class pc_conv_network(nn.Module):
 			conv.append(conv_block)
 
 			# create phi same size as output as block - x sticks around to be input to next block
+			imdim = []
 			for i in range(len(p['ks'][j]) -1):
 				print(i)
 				print(x.size())
 				x = conv_block[i](x)
-
-			imdim.append(x.size(2))
+				imdim.append(x.size(2))
+			self.imdim.append(imdim)
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 			
 			# create Precision networks - top of block, or only one in block
@@ -116,7 +117,7 @@ class pc_conv_network(nn.Module):
 		# top level phi
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-		self.imdim = imdim
+		# self.imdim = imdim
 		self.p = p
 		self.phi = nn.ParameterList(phi)
 		self.Precision = Precision
@@ -222,7 +223,7 @@ class pc_conv_network(nn.Module):
 
 		# do block
 		print(i)
-		x = self.phi[i].view(self.bs, self.chan[i+1][0], self.imdim[i+1], self.imdim[i+1])
+		x = self.phi[i].view(self.bs, self.chan[i][-1], self.imdim[i][-1], self.imdim[i][-1])
 		for j in range(self.p['ks'][i]):
 			x = self.conv_trans[i][j](F.relu(x))
 
@@ -235,7 +236,7 @@ class pc_conv_network(nn.Module):
 		if i == self.nlayers-1:
 			PE_1 = self.phi[i] - self.phi[i+1]
 		else:
-			x = self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])
+			x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.imdim[i+1][-1], self.imdim[i+1][-1])
 			for j in range(self.p['ks'][i+1]):
 				x = self.conv_trans[i+1][j](F.relu(x))
 			PE_1 = self.phi[i] - x.view(self.bs,-1)
