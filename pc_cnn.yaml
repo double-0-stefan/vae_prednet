@@ -39,11 +39,11 @@ layers:
 #     - 3
 
 precisions: # block any length > 1 has 2 precisions
-    - [[1, 1], [0], [0]]
+    - [[1, 1, 1], [0]
     # 0 = single number prior, 1 = diagonal prior
 
 ks:
-    - [[3, 5, 5] ,[5], [5]]
+    - [[3, 5, 5] ,[5]]
 
 nblocks: 
     - 3 # Sections with precisions at top and bottom, but not within
@@ -52,7 +52,7 @@ imchan:
     - 1
 
 chan:
-    - [[1,16,32], [32], [64]]
+    - [[1,16,32], [64]]
 
 pad:
     - 0
