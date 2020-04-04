@@ -79,14 +79,14 @@ class pc_conv_network(nn.Module):
 			block = []
 			conv_block = []
 			for i in range(len(p['ks'][j]) - 1):
-				if isinstance(p['pad'], int):
-					p['padding'][j][i] = 0
-				else:
-					p['padding'] = p['pad']
+				# if isinstance(p['pad'], int):
+				# 	p['padding'][j][i] = 0
+				# else:
+				# 	p['padding'] = p['pad']
 
-				block.append(ConvTranspose2d(p['chan'][j][i+1], p['chan'][j][i], p['ks'][j][i], 1,p['padding'][j][i]))
+				block.append(ConvTranspose2d(p['chan'][j][i+1], p['chan'][j][i], p['ks'][j][i], 1,p['pad']))
 				
-				conv_block.append(Conv2d(p['chan'][j][i], p['chan'][j][i+1], p['ks'][j][i], 1,p['padding'][j][i]))
+				conv_block.append(Conv2d(p['chan'][j][i], p['chan'][j][i+1], p['ks'][j][i], 1,p['pad']))
 			
 			block.append(ConvTranspose2d(p['chan'][j+1][0], p['chan'][j][-1], p['ks'][j][-1], 1,
 				p['pad'][j][len(p['ks'][i])]))
