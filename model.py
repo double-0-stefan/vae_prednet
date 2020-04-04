@@ -220,18 +220,36 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i):
 
+		# do block
+		x = self.phi[i].view(self.bs, self.chan[i+1][0], self.imdim[i+1][0], self.imdim[i+1][0])
+		for j in range(self.p['ks'][i]):
+			x = self.conv_trans[i][j](F.relu(x))
+
 		if i == 0:
-			self.PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+			PE_0 = self.images   - x.view(self.bs,-1)
 		else:
-			self.PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+			PE_0 = self.phi[i-1] - x.view(self.bs,-1)
 
+		# do block above
 		if i == self.nlayers-1:
-			self.PE_1 = self.phi[i] - self.phi[i+1]
+			PE_1 = self.phi[i] - self.phi[i+1]
 		else:
-			self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
+			x = self.phi[i+1].view(self.bs, self.chan[i+2][0], self.imdim[i+2][0], self.imdim[i+2][0])
+			for j in range(self.p['ks'][i+1]):
+				x = self.conv_trans[i+1][j](F.relu(x))
+			PE_1 = self.phi[i] - x.view(self.bs,-1)
 
-		#print(self.PE_0)
-		#print(self.PE_1)
+		# if i == 0:
+		# 	self.PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+		# else:
+		# 	self.PE_0 = self.phi[i-1] - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
+
+		# if i == self.nlayers-1:
+		# 	self.PE_1 = self.phi[i] - self.phi[i+1]
+		# else:
+		# 	self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
+
+
 		if self.p['conv_precision']:
 			self.F += - 0.5*(
 				# logdet cov = -logdet precision
@@ -250,11 +268,11 @@ class pc_conv_network(nn.Module):
 				# logdet cov = -logdet precision
 				  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
-				- sum(self.Precision[i+1](self.PE_1, self.PE_1))
+				- sum(self.Precision[i+1](PE_1, PE_1))
 
 				+ torch.logdet(torch.squeeze(self.Precision[i].weight))
 
-				- sum(self.Precision[i](self.PE_0, self.PE_0))
+				- sum(self.Precision[i](PE_0, PE_0))
 				)
 		
 	def inference(self):
