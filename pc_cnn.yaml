@@ -39,7 +39,7 @@ layers:
 #     - 3
 
 precisions: # block any length > 1 has 2 precisions
-    - [[1, 1, 1], [0]
+    - [[1, 1, 1], [0]]
     # 0 = single number prior, 1 = diagonal prior
 
 ks:
