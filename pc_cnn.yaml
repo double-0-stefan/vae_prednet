@@ -21,7 +21,7 @@ generate_data: False
 rotating: False
 
 e    :  25000
-b    :  5
+b    :  1
 lr   :  0.01
 
 err_noise:
@@ -43,7 +43,7 @@ precisions: # block any length > 1 has 2 precisions
     # 0 = single number prior, 1 = diagonal prior
 
 ks:
-    - [[3, 3, 3] ,[5], [5]]
+    - [[3, 5, 5] ,[5], [5]]
 
 nblocks: 
     - 3 # Sections with precisions at top and bottom, but not within
@@ -61,7 +61,7 @@ iter:
     - 8
 
 bs:
-    - 5
+    - 1
 
 imdim_sb:
     - 32
