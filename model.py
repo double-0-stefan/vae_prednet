@@ -221,6 +221,7 @@ class pc_conv_network(nn.Module):
 	def loss(self, i):
 
 		# do block
+		print(i)
 		x = self.phi[i].view(self.bs, self.chan[i+1][0], self.imdim[i+1], self.imdim[i+1])
 		for j in range(self.p['ks'][i]):
 			x = self.conv_trans[i][j](F.relu(x))
