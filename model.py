@@ -89,7 +89,7 @@ class pc_conv_network(nn.Module):
 				conv_block.append(Conv2d(p['chan'][j][i], p['chan'][j][i+1], p['ks'][j][i], 1,p['pad']))
 			
 			block.append(ConvTranspose2d(p['chan'][j+1][0], p['chan'][j][-1], p['ks'][j][-1], 1,
-				p['pad'][j][len(p['ks'][i])]))
+				p['pad'][j][-1]))
 			
 			conv_block.append(Conv2d(p['chan'][j][-1], p['chan'][j+1][0], p['ks'][j][-1], 1,
 				p['pad'][j][-1]))
