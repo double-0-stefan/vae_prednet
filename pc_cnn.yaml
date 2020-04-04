@@ -1,13 +1,13 @@
 exp_name: 
     - "pc_cnn_mnist"
 
-conv_precision: True
+conv_precision: False
 
 pc_cnn:
     - True
 
 xla:
-    - True
+    - False
 
 imdim: 33 # expand to odd for padding reasons
 
@@ -34,20 +34,27 @@ patience : 5
 layers: 
     - 0
 
-layers_sb:
-    - 3
+# layers_sb:
+#     - 3
+
+precisions: # block any length > 1 has 2 precisions
+    - [[1, 1], [0], [0]]
+    # 0 = single number prior, 1 = diagonal prior
 
 ks:
-    - [5, 7, 9,9]
+    - [[3, 3, 3, 3] ,[5], [5]]
+
+nblocks: 
+    - 3 # Sections with precisions at top and bottom, but not within
 
 imchan:
     - 1
 
 chan:
-    - [1,16,32,32]
+    - [[1,16,32,64], [128], [128]]
 
 pad:
-    - [1, 0, 0, 0]
+    - 0
 
 iter:
     - 8

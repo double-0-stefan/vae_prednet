@@ -1,12 +1,12 @@
 exp_name: 
     - "pc_cnn_mnist"
 
-conv_precision: True
+#conv_precision: True
 
 pc_cnn:
     - True
 
-xla: True
+#xla: True
 
 imdim: 33 # expand to odd for padding reasons
 

@@ -35,23 +35,17 @@ class pc_conv_network(nn.Module):
 		self.p = p
 		self.bs = p['bs']
 		self.iter = p['iter']
-		self.nlayers = p['layers_sb']
+		self.nlayers = p['nblocks']
 		self.chan = p['chan']
 
 		self.init_conv_trans(p)
-		self.init_phi(p)
-		if p['conv_precision']:
-			self.init_conv_precision(p)
-		else:
-			self.init_precision(p)
 
-		# self.imdim =
-		# imdim = [p['imdim_sb'],p['imdim_sb']]
-		# for i in range(self.nlayers):
-		# 	imdim.append(imdim[i] - (p['ks'][i] - 1))
-		# self.imdim = imdim
+		# self.init_phi(p)
+		# if p['conv_precision']:
+		# 	self.init_conv_precision(p)
+		# else:
+		# 	self.init_precision(p)
 
-		#self.imdim =  [p['imdim_sb']] + (p['imdim_sb']*np.ones_like(p['ks']) - p['ks']).astype(int)
 		self.imchan = p['imchan']
 
 		self.F = None
@@ -59,26 +53,80 @@ class pc_conv_network(nn.Module):
 
 		self.baseline = None
 		
-
 		if p['vae'] == 1:
 			self.init_vae(p)
 
 
-		# at end
-		# self.optimizer = Adam(self.parameters(), lr=p['lr'], weight_decay=1e-5)
-
-
-	def init_conv_trans(self, p):
-		if p['xla']:
-			self.conv_trans = ModuleList(
-				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i])#.to(xm.xla_device())
-				for i in range(self.nlayers)])
+	def init_conv_trans(self, p): # does conv, phi and precision
+		if p['imdim']:
+			x = torch.zeros(self.bs,1,p['imdim'],p['imdim'])
 		else:
-			self.conv_trans = ModuleList(
-				[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]).cuda() 
-				for i in range(self.nlayers)])
+			x = torch.zeros(self.bs,1,32,32)
+		p['imdim'] = [x.size(2)]
+
+		self.conv_trans = []
+		conv = []
+		phi = []
+		Precision = []
+		#Precision.append(nn.Bilinear(p['chan'][0][0]*p['imdim']*p['imdim'], p['chan'][0][0]*p['imdim']*p['imdim'], 1, bias=False))
+
+		# bottom level Precision
+		Precision.append(nn.Bilinear(p['chan'][0][0]*p['imdim'][0]*p['imdim'][0], p['chan'][0][0]*p['imdim'][0]*p['imdim'][0], 1, bias=False))
+		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['chan'][0][0]*p['imdim'][0]*p['imdim'][0]).unsqueeze(0)		
+		Precision[0].weight = nn.Parameter(weights)
+
+		for j in p['nblocks']:
+			block = []
+			conv_block = []
+			for i in range(len(p['ks'][j]) - 1):
+				if len(p['pad']) == 1:
+					p['pad'][j][i] = 0
+
+				block.append(ConvTranspose2d(p['chan'][j][i+1], p['chan'][j][i], p['ks'][j][i], 1,p['pad'][j][i]))
+				
+				conv_block.append(Conv2d(p['chan'][j][i], p['chan'][j][i+1], p['ks'][j][i], 1,p['pad'][j][i]))
+			
+			block.append(ConvTranspose2d(p['chan'][j+1][0], p['chan'][j][-1], p['ks'][j][-1], 1,
+				p['pad'][j][len(p['ks'][i])]))
+			
+			conv_block.append(Conv2d(p['chan'][j][-1], p['chan'][j+1][0], p['ks'][j][-1], 1,
+				p['pad'][j][-1]))
+
+			self.conv_trans.append(block)
+			conv.append(conv_block)
+
+			# create phi same size as output as block - x sticks around to be input to next block
+			for i in range(len(p['ks'][j])):
+				x = conv_block[i](x)
+
+			p['imdim'].append(x.size(2))
+			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
+			
+			# create Precision networks - top of block, or only one in block
+			Precision.append(nn.Bilinear(p['chan'][j][-1]*p['imdim'][j+1]*p['imdim'][j+1], p['chan'][j][-1]*p['imdim'][j+1]*p['imdim'][j+1], 1, bias=False))
+			weights = torch.exp(torch.tensor(1.)) * torch.eye(p['chan'][j][-1]*p['imdim'][j+1]*p['imdim'][j+1]).unsqueeze(0)
+			Precision[j+1].weight = nn.Parameter(weights)
+
+		# top level phi
+		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
+
+		self.imdim = imdim
+		self.p = p
+		self.phi = nn.ParameterList(phi)
+		self.Precision = Precision
+
+		# if p['xla']:
+		# self.conv_trans = ModuleList(
+		# 	[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i])#.to(xm.xla_device())
+		# 	for i in range(self.nlayers)])
+
+		# else:
+		# 	self.conv_trans = ModuleList(
+		# 		[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]).cuda() 
+		# 		for i in range(self.nlayers)])
 
 	def init_phi(self,p):
+		# only need phi's where there are precisions
 		conv = ModuleList(
 			[Conv2d(p['chan'][i], p['chan'][i+1], p['ks'][i], 1,p['pad'][i])
 			for i in range(self.nlayers)])
@@ -93,15 +141,10 @@ class pc_conv_network(nn.Module):
 			imdim.append(x.size(2))
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1))) # top level
-
 		if p['xla']:
 			self.phi = nn.ParameterList(phi)#.to(xm.xla_device())
 		else:
 			self.phi = nn.ParameterList(phi).cuda()
-
-		# for i in reversed(range(self.nlayers)): # works
-			# x = self.conv_trans[i](x) # mnist
-		
 		self.imdim = imdim
 		
 	def init_precision(self,p):
@@ -265,6 +308,7 @@ class pc_conv_network(nn.Module):
 		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		self.iteration = iteration
 		self.F_last = self.F
+		# images.half()
 		if self.p['xla']:
 			self.images = images.view(self.bs, -1).to(xm.xla_device())
 		else:	
