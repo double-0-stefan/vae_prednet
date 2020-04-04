@@ -78,7 +78,7 @@ class pc_conv_network(nn.Module):
 		for j in range(p['nblocks']):
 			block = []
 			conv_block = []
-			for i in range(len(p['ks'][j]) ):
+			for i in range(len(p['ks'][j]) -1):
 				# if isinstance(p['pad'], int):
 				# 	p['padding'][j][i] = 0
 				# else:
@@ -99,7 +99,7 @@ class pc_conv_network(nn.Module):
 			conv.append(conv_block)
 
 			# create phi same size as output as block - x sticks around to be input to next block
-			for i in range(len(p['ks'][j])):
+			for i in range(len(p['ks'][j]) -1):
 				print(i)
 				print(x.size())
 				x = conv_block[i](x)
