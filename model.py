@@ -258,9 +258,11 @@ class pc_conv_network(nn.Module):
 		
 	def inference(self):
 
-		self.conv_trans.requires_grad_(False)
-		self.Precision.requires_grad_(False)
-		self.phi.requires_grad_(True)
+		for l in range(0, self.nlayers):
+			for m in range(len(self.conv_trans[l]))
+				self.conv_trans[l][m].requires_grad_(False)
+			self.Precision[l].requires_grad_(False)
+			self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
 
 		for i in range(self.iter):
