@@ -78,7 +78,7 @@ class pc_conv_network(nn.Module):
 		for j in range(p['nblocks']):
 			block = []
 			conv_block = []
-			for i in range(len(p['ks'][j]) - 1):
+			for i in range(len(p['ks'][j]) ):
 				# if isinstance(p['pad'], int):
 				# 	p['padding'][j][i] = 0
 				# else:
