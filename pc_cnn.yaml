@@ -9,7 +9,8 @@ pc_cnn:
 xla:
     - False
 
-imdim: 33 # expand to odd for padding reasons
+imdim: 
+    - 33 # expand to odd for padding reasons
 
 train_gx: True
 train_fx: False
