@@ -64,7 +64,7 @@ class pc_conv_network(nn.Module):
 		x = torch.zeros(self.bs,1,33,33)
 		#	p['imdim'] = [x.size(2)]
 		self.imdim = []
-		imdim.append(p['imdim'])
+		#imdim.append(p['imdim'])
 		self.conv_trans = []
 		conv = []
 		phi = []
