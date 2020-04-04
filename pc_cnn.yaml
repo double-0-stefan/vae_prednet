@@ -46,7 +46,7 @@ ks:
     - [[3, 5, 5] ,[5]]
 
 nblocks: 
-    - 3 # Sections with precisions at top and bottom, but not within
+    - 2 # Sections with precisions at top and bottom, but not within
 
 imchan:
     - 1
