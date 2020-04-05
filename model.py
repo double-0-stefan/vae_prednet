@@ -72,7 +72,7 @@ class pc_conv_network(nn.Module):
 		#Precision.append(nn.Bilinear(p['chan'][0][0]*p['imdim']*p['imdim'], p['chan'][0][0]*p['imdim']*p['imdim'], 1, bias=False))
 
 		# bottom level Precision
-		print(x)
+		#print(x)
 
 		Precision.append(nn.Bilinear(p['chan'][0][0]*p['imdim'][0]*p['imdim'][0], p['chan'][0][0]*p['imdim'][0]*p['imdim'][0], 1, bias=False))
 		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['chan'][0][0]*p['imdim'][0]*p['imdim'][0]).unsqueeze(0)		
@@ -118,7 +118,7 @@ class pc_conv_network(nn.Module):
 
 		# top level phi
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
-
+		print(Precision)
 		# self.imdim = imdim
 		self.p = p
 		self.phi = nn.ParameterList(phi)
