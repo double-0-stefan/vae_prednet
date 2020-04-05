@@ -98,7 +98,7 @@ class pc_conv_network(nn.Module):
 			# 	conv_block.append(Conv2d(p['chan'][j][-1], p['chan'][j+1][0], p['ks'][j][-1], 1,
 			# 		p['pad']))
 
-			self.conv_trans.append(block)
+			self.conv_trans.append(nn.ParameterList(block))
 			conv.append(conv_block)
 
 			#  phi same size as output as block - x sticks around to be input to next block
@@ -123,7 +123,7 @@ class pc_conv_network(nn.Module):
 		self.p = p
 		self.phi = nn.ParameterList(phi)
 		self.Precision = nn.ParameterList(Precision)
-		self.conv_trans = nn.ParameterList(self.conv_trans)
+		#self.conv_trans = nn.ParameterList(self.conv_trans)
 		#print(self.Precision)
 		# if p['xla']:
 		# self.conv_trans = ModuleList(
