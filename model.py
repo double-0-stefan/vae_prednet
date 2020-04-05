@@ -72,6 +72,8 @@ class pc_conv_network(nn.Module):
 		#Precision.append(nn.Bilinear(p['chan'][0][0]*p['imdim']*p['imdim'], p['chan'][0][0]*p['imdim']*p['imdim'], 1, bias=False))
 
 		# bottom level Precision
+		print(x)
+
 		Precision.append(nn.Bilinear(p['chan'][0][0]*p['imdim'][0]*p['imdim'][0], p['chan'][0][0]*p['imdim'][0]*p['imdim'][0], 1, bias=False))
 		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['chan'][0][0]*p['imdim'][0]*p['imdim'][0]).unsqueeze(0)		
 		Precision[0].weight = nn.Parameter(weights)
