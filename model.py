@@ -70,23 +70,27 @@ class pc_conv_network(nn.Module):
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim']^2, p['imchan']*p['imdim']^2, 1, bias=False))
 		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['imchan']*p['imdim']^2).unsqueeze(0)		
 		Precision[0].weight = nn.Parameter(weights)
+		last_count = 0
+		count = 0
 
 		for j in range(p['nblocks']):
 			conv_trans_block = []
 			conv_block = []
 			dim_block = []
+			last_count = count
+			count = 0
 
 			for i in range(len(p['ks'][j]) ): # -1 because interaction between blocks done at start of higher block, not top of lower
 
 			## DEFINE CONVOLUTIONS ##
-
+				count += 1
 				# Conv_trans and conv blocks
 				if i == 0: # interaction with block below
 					if j == 0: # ie lowest level
 						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
 						conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
 					else: 
-						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding= p['pad']))
+						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][last_count-1], p['ks'][j][i], stride=1, padding= p['pad']))
 						conv_block.append(Conv2d(p['chan'][j-1][i], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 				else:
 					conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=p['pad']))
