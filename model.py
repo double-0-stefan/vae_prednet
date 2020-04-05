@@ -76,7 +76,7 @@ class pc_conv_network(nn.Module):
 			conv_block = []
 			dim_block = []
 
-			for i in range(len(p['ks'][j]) - 1): # -1 because interaction between blocks done at start of higher block, not top of lower
+			for i in range(len(p['ks'][j]) ): # -1 because interaction between blocks done at start of higher block, not top of lower
 
 			## DEFINE CONVOLUTIONS ##
 
