@@ -116,6 +116,7 @@ class pc_conv_network(nn.Module):
 		self.Precision = nn.ModuleList(Precision)
 		self.phi = nn.ParameterList(phi)
 		self.dim = self.p['dim']
+		self.conv_trans = nn.ModuleList(self.conv_trans)
 
 		# 	#  phi same size as output as block - x sticks around to be input to next block
 		# 	imdim = []
