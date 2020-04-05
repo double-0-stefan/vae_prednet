@@ -87,7 +87,7 @@ class pc_conv_network(nn.Module):
 				# else:
 				# 	p['padding'] = p['pad']
 
-				block.append(ConvTranspose2d(p['chan'][j][i+1], p['chan'][j][i], p['ks'][j][i], 1,p['pad']))
+				self.conv_trans.append(ConvTranspose2d(p['chan'][j][i+1], p['chan'][j][i], p['ks'][j][i], 1,p['pad']))
 				
 				conv_block.append(Conv2d(p['chan'][j][i], p['chan'][j][i+1], p['ks'][j][i], 1,p['pad']))
 			
@@ -98,7 +98,7 @@ class pc_conv_network(nn.Module):
 			# 	conv_block.append(Conv2d(p['chan'][j][-1], p['chan'][j+1][0], p['ks'][j][-1], 1,
 			# 		p['pad']))
 
-			self.conv_trans.append(nn.ParameterList(block))
+			#self.conv_trans.append(block)
 			conv.append(conv_block)
 
 			#  phi same size as output as block - x sticks around to be input to next block
