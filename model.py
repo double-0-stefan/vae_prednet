@@ -70,7 +70,7 @@ class pc_conv_network(nn.Module):
 		# Image level - needs Precision
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
 		weights = torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)		
-		Precision[0].weight = nn.Parameter(weights)
+		Precision[0].weight += nn.Parameter(weights)
 
 		for j in range(p['nblocks']):
 			conv_trans_block = []
@@ -101,7 +101,7 @@ class pc_conv_network(nn.Module):
 			## CREATE PRECISION ABOVE EACH BLOCK ##
 			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
 			weights = torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
-			Precision[j+1].weight = nn.Parameter(weights)
+			Precision[j+1].weight += nn.Parameter(weights)
 
 
 		## APPEND NEW BITS TO MAIN ##
@@ -344,7 +344,7 @@ class pc_conv_network(nn.Module):
 
 	def forward(self, iteration, images, learn=1):
 
-		print(self)
+		#print(self)
 		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		self.iteration = iteration
 		self.F_last = self.F
