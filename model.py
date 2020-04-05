@@ -69,10 +69,8 @@ class pc_conv_network(nn.Module):
 
 		# Image level - needs Precision
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
-		weights = torch.exp(torch.tensor(2.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)		
+		weights = torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)		
 		Precision[0].weight = nn.Parameter(weights)
-		last_count = 0
-		count = 0
 
 		for j in range(p['nblocks']):
 			conv_trans_block = []
@@ -93,7 +91,7 @@ class pc_conv_network(nn.Module):
 				else:
 					conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=p['pad']))
 					conv_block.append(Conv2d(p['chan'][j][i-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
-				print(i)
+				
 				x = conv_block[i](x)
 				dim_block.append(x.size(2))
 
@@ -102,7 +100,7 @@ class pc_conv_network(nn.Module):
 
 			## CREATE PRECISION ABOVE EACH BLOCK ##
 			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
-			weights = torch.exp(torch.tensor(2.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
+			weights = torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
 			Precision[j+1].weight = nn.Parameter(weights)
 
 
@@ -235,10 +233,9 @@ class pc_conv_network(nn.Module):
 	def loss(self, i):
 
 		# do block
-		print(i)
 		x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
 		for j in reversed(range(len(self.p['ks'][i]))):
-			print(j)
+			
 			x = self.conv_trans[i][j](F.relu(x))
 
 		if i == 0:
