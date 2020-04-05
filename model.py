@@ -99,7 +99,7 @@ class pc_conv_network(nn.Module):
 			self.conv_trans.append(block)
 			conv.append(conv_block)
 
-			# create phi same size as output as block - x sticks around to be input to next block
+			#  phi same size as output as block - x sticks around to be input to next block
 			imdim = []
 			for i in range(len(p['ks'][j]) -1):
 				print(i)
@@ -225,6 +225,7 @@ class pc_conv_network(nn.Module):
 		print(i)
 		x = self.phi[i].view(self.bs, self.chan[i][-1], self.imdim[i][-1], self.imdim[i][-1])
 		for j in reversed(range(len(self.p['ks'][i]))):
+			print(j)
 			x = self.conv_trans[i][j](F.relu(x))
 
 		if i == 0:
