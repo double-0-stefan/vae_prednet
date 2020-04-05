@@ -33,7 +33,7 @@ class pc_conv_network(nn.Module):
 		self.enc_mode = False
 		
 		self.p = p
-		self.p['imdim'] = self.p['imdim'][1]
+		self.p['imdim_'] = self.p['imdim'][1]
 		self.bs = p['bs']
 		self.iter = p['iter']
 		self.nlayers = p['nblocks']
@@ -60,7 +60,7 @@ class pc_conv_network(nn.Module):
 
 	def init_conv_trans(self, p): # does conv, phi and precision
 	
-		x = torch.zeros([p['bs'],p['imchan'],self.p['imdim'],self.p['imdim']])
+		x = torch.zeros([p['bs'],p['imchan'],self.p['imdim_'],self.p['imdim_']])
 
 		self.p['dim'] = []
 		self.conv_trans = []
@@ -68,8 +68,8 @@ class pc_conv_network(nn.Module):
 		Precision = []
 
 		# Image level - needs Precision
-		Precision.append(nn.Bilinear(p['imchan']*p['imdim']^2, p['imchan']*p['imdim']^2, 1, bias=False))
-		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['imchan']*self.p['imdim']^2).unsqueeze(0)		
+		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']^2, p['imchan']*p['imdim_']^2, 1, bias=False))
+		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['imchan']*self.p['imdim_']^2).unsqueeze(0)		
 		Precision[0].weight = nn.Parameter(weights)
 		last_count = 0
 		count = 0
@@ -115,6 +115,7 @@ class pc_conv_network(nn.Module):
 
 		self.Precision = nn.ModuleList(Precision)
 		self.phi = nn.ParameterList(phi)
+		self.dim = self.p['dim']
 
 		# 	#  phi same size as output as block - x sticks around to be input to next block
 		# 	imdim = []
@@ -234,7 +235,7 @@ class pc_conv_network(nn.Module):
 
 		# do block
 		print(i)
-		x = self.phi[i].view(self.bs, self.chan[i][-1], self.imdim[i][-1], self.imdim[i][-1])
+		x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
 		for j in reversed(range(len(self.p['ks'][i]))):
 			print(j)
 			x = self.conv_trans[i][j](F.relu(x))
@@ -248,7 +249,7 @@ class pc_conv_network(nn.Module):
 		if i == self.nlayers-1:
 			PE_1 = self.phi[i] - self.phi[i+1]
 		else:
-			x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.imdim[i+1][-1], self.imdim[i+1][-1])
+			x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
 			for j in reversed(range(len(self.p['ks'][i+1]))):
 				x = self.conv_trans[i+1][j](F.relu(x))
 			PE_1 = self.phi[i] - x.view(self.bs,-1)
