@@ -122,7 +122,8 @@ class pc_conv_network(nn.Module):
 		# self.imdim = imdim
 		self.p = p
 		self.phi = nn.ParameterList(phi)
-		self.Precision = Precision
+		self.Precision = nn.ParameterList(Precision)
+		self.conv_trans = nn.ParameterList(self.conv_trans)
 		#print(self.Precision)
 		# if p['xla']:
 		# self.conv_trans = ModuleList(
@@ -336,7 +337,7 @@ class pc_conv_network(nn.Module):
 
 	def forward(self, iteration, images, learn=1):
 
-		print(self.Precision)
+		print(self)
 		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		self.iteration = iteration
 		self.F_last = self.F
