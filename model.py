@@ -118,12 +118,12 @@ class pc_conv_network(nn.Module):
 
 		# top level phi
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
-		print(Precision)
+
 		# self.imdim = imdim
 		self.p = p
 		self.phi = nn.ParameterList(phi)
 		self.Precision = Precision
-
+		print(self.Precision)
 		# if p['xla']:
 		# self.conv_trans = ModuleList(
 		# 	[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i])#.to(xm.xla_device())
