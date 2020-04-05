@@ -31,8 +31,9 @@ class pc_conv_network(nn.Module):
 		self.err_plot_flag = True
 		self.plot_errs = []
 		self.enc_mode = False
-		p['imdim'] = p['imdim'][1]
+		
 		self.p = p
+		self.p['imdim'] = self.p['imdim'][1]
 		self.bs = p['bs']
 		self.iter = p['iter']
 		self.nlayers = p['nblocks']
@@ -59,7 +60,7 @@ class pc_conv_network(nn.Module):
 
 	def init_conv_trans(self, p): # does conv, phi and precision
 	
-		x = torch.zeros([p['bs'],p['imchan'],p['imdim'],p['imdim']])
+		x = torch.zeros([p['bs'],p['imchan'],self.p['imdim'],self.p['imdim']])
 
 		self.p['dim'] = []
 		self.conv_trans = []
@@ -68,7 +69,7 @@ class pc_conv_network(nn.Module):
 
 		# Image level - needs Precision
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim']^2, p['imchan']*p['imdim']^2, 1, bias=False))
-		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['imchan']*p['imdim']^2).unsqueeze(0)		
+		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['imchan']*self.p['imdim']^2).unsqueeze(0)		
 		Precision[0].weight = nn.Parameter(weights)
 		last_count = 0
 		count = 0
@@ -114,7 +115,6 @@ class pc_conv_network(nn.Module):
 
 		self.Precision = nn.ModuleList(Precision)
 		self.phi = nn.ParameterList(phi)
-
 
 		# 	#  phi same size as output as block - x sticks around to be input to next block
 		# 	imdim = []
