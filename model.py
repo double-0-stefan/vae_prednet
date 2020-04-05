@@ -123,7 +123,7 @@ class pc_conv_network(nn.Module):
 		self.p = p
 		self.phi = nn.ParameterList(phi)
 		self.Precision = nn.ModuleList(Precision)
-		#self.conv_trans = nn.ParameterList(self.conv_trans)
+		self.conv_trans = nn.ModuleList(self.conv_trans)
 		#print(self.Precision)
 		# if p['xla']:
 		# self.conv_trans = ModuleList(
