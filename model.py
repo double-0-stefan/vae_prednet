@@ -69,7 +69,7 @@ class pc_conv_network(nn.Module):
 		# Image level - needs Precision
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim']^2, p['imchan']*p['imdim']^2, 1, bias=False))
 		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['imchan']*p['imdim']^2).unsqueeze(0)		
-		Precision[0][0].weight = nn.Parameter(weights)
+		Precision[0].weight = nn.Parameter(weights)
 
 		for j in range(p['nblocks']):
 			conv_trans_block = []
