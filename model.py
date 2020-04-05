@@ -58,72 +58,79 @@ class pc_conv_network(nn.Module):
 
 
 	def init_conv_trans(self, p): # does conv, phi and precision
-		# if p['imdim']:
-		# 	x = torch.zeros([self.bs,1,p['imdim'],p['imdim']])
-		# else:
-		x = torch.zeros(self.bs,1,33,33)
-		#	p['imdim'] = [x.size(2)]
-		self.imdim = []
-		#imdim.append(p['imdim'])
+	
+	 	x = torch.zeros([p['bs'],p['imchan'],p['imdim'],p['imdim']])
+
+		self.p['dim'] = []
 		self.conv_trans = []
-		conv = []
 		phi = []
 		Precision = []
-		#Precision.append(nn.Bilinear(p['chan'][0][0]*p['imdim']*p['imdim'], p['chan'][0][0]*p['imdim']*p['imdim'], 1, bias=False))
 
-		# bottom level Precision
-		#print(x)
-
-		Precision.append(nn.Bilinear(p['chan'][0][0]*p['imdim'][0]*p['imdim'][0], p['chan'][0][0]*p['imdim'][0]*p['imdim'][0], 1, bias=False))
-		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['chan'][0][0]*p['imdim'][0]*p['imdim'][0]).unsqueeze(0)		
-		Precision[0].weight = nn.Parameter(weights)
+		# Image level - needs Precision
+		Precision.append(nn.ModuleList(nn.Bilinear(p['imchan']*p['imdim']^2, p['imchan']*p['imdim']^2, stride=1, bias=False)))
+		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['imchan']*p['imdim']^2).unsqueeze(0)		
+		Precision[0][0].weight = nn.Parameter(weights)
 
 		for j in range(p['nblocks']):
-			block = []
+			conv_trans_block = []
 			conv_block = []
-			for i in range(len(p['ks'][j]) -1):
-				# if isinstance(p['pad'], int):
-				# 	p['padding'][j][i] = 0
-				# else:
-				# 	p['padding'] = p['pad']
+			dim_block = []
 
-				block.append(ConvTranspose2d(p['chan'][j][i+1], p['chan'][j][i], p['ks'][j][i], 1,p['pad']))
-				
-				conv_block.append(Conv2d(p['chan'][j][i], p['chan'][j][i+1], p['ks'][j][i], 1,p['pad']))
-			
-			# if j < p['nblocks'] - 1:
-			# 	block.append(ConvTranspose2d(p['chan'][j+1][0], p['chan'][j][-1], p['ks'][j][-1], 1,
-			# 		p['pad']))
-			
-			# 	conv_block.append(Conv2d(p['chan'][j][-1], p['chan'][j+1][0], p['ks'][j][-1], 1,
-			# 		p['pad']))
+			for i in range(len(p['ks'][j]) - 1): # -1 because interaction between blocks done at start of higher block, not top of lower
 
-			self.conv_trans.append(nn.ModuleList(block))
-			conv.append(conv_block)
+			## DEFINE CONVOLUTIONS ##
 
-			#  phi same size as output as block - x sticks around to be input to next block
-			imdim = []
-			for i in range(len(p['ks'][j]) -1):
-				print(i)
-				print(x.size())
+				# Conv_trans and conv blocks
+				if i == 0: # interaction with block below
+					if j == 0: # ie lowest level
+						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, p['pad']))
+						conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, p['pad']))
+					else: 
+						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, p['pad']))
+						conv_block.append(Conv2d(p['chan'][j-1][i], p['chan'][j][i], p['ks'][j][i], stride=1, p['pad']))
+				else:
+					conv_trans_block.append(ConvTranspose2d(p['chan'][j][i+1], p['chan'][j][i], p['ks'][j][i], stride=1, p['pad']))
+					conv_block.append(Conv2d(p['chan'][j][i], p['chan'][j][i+1], p['ks'][j][i], stride=1, p['pad']))
+
 				x = conv_block[i](x)
-				imdim.append(x.size(2))
-			self.imdim.append(imdim)
+				dim_block.append(x.size(2))
+
+			## CREATE PHI ABOVE EACH BLOCK ##
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
-			
-			# create Precision networks - top of block, or only one in block
+
+			## CREATE PRECISION ABOVE EACH BLOCK ##
 			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
 			weights = torch.exp(torch.tensor(1.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
 			Precision[j+1].weight = nn.Parameter(weights)
 
+
+		## APPEND NEW BITS TO MAIN ##
+			self.conv_trans.append(nn.ModuleList(conv_trans_block))
+			self.p['dim'].append(dim_block)
+
 		# top level phi
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-		# self.imdim = imdim
-		self.p = p
-		self.phi = nn.ParameterList(phi)
 		self.Precision = nn.ModuleList(Precision)
-		self.conv_trans = nn.ModuleList(self.conv_trans)
+		self.phi = nn.ParameterList(phi)
+
+
+		# 	#  phi same size as output as block - x sticks around to be input to next block
+		# 	imdim = []
+		# 	for i in range(len(p['ks'][j])):
+		# 		print(i)
+		# 		print(x.size())
+		# 		x = conv_block[i](x)
+		# 		imdim.append(x.size(2))
+		# 	self.imdim.append(imdim)
+	
+
+		
+		# # self.imdim = imdim
+		# self.p = p
+		# self.phi = nn.ParameterList(phi)
+		# self.Precision = nn.ModuleList(Precision)
+		# self.conv_trans = nn.ModuleList(self.conv_trans)
 		#print(self.Precision)
 		# if p['xla']:
 		# self.conv_trans = ModuleList(
