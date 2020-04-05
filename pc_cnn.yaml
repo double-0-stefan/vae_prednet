@@ -1,7 +1,7 @@
 exp_name: 
     - "pc_cnn_mnist"
 
-conv_precision: False
+#conv_precision: False
 
 pc_cnn:
     - True
