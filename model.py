@@ -279,17 +279,17 @@ class pc_conv_network(nn.Module):
 		# 		- sum(torch.matmul(self.PE_0, 
 		# 			(self.Precision[i](self.PE_0.view(self.bs,1,self.chan[i],self.imdim[i],self.imdim[i]))).view(self.bs,-1)))
 		# 		)
-		else:
-			self.F += - 0.5*(
-				# logdet cov = -logdet precision
-				  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
+		#else:
+		self.F += - 0.5*(
+			# logdet cov = -logdet precision
+			  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
-				- sum(self.Precision[i+1](PE_1, PE_1))
+			- sum(self.Precision[i+1](PE_1, PE_1))
 
-				+ torch.logdet(torch.squeeze(self.Precision[i].weight))
+			+ torch.logdet(torch.squeeze(self.Precision[i].weight))
 
-				- sum(self.Precision[i](PE_0, PE_0))
-				)
+			- sum(self.Precision[i](PE_0, PE_0))
+			)
 		
 	def inference(self):
 
