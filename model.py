@@ -122,7 +122,7 @@ class pc_conv_network(nn.Module):
 		# self.imdim = imdim
 		self.p = p
 		self.phi = nn.ParameterList(phi)
-		self.Precision = nn.ParameterList(Precision)
+		self.Precision = Precision
 		#self.conv_trans = nn.ParameterList(self.conv_trans)
 		#print(self.Precision)
 		# if p['xla']:
