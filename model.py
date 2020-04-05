@@ -266,19 +266,19 @@ class pc_conv_network(nn.Module):
 		# 	self.PE_1 = self.phi[i] - (self.conv_trans[i+1](F.relu(self.phi[i+1].view(self.bs, self.chan[i+2], self.imdim[i+2], self.imdim[i+2])))).view(self.bs,-1)
 
 
-		if self.p['conv_precision']:
-			self.F += - 0.5*(
-				# logdet cov = -logdet precision
-				  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
+		# if self.p['conv_precision']:
+		# 	self.F += - 0.5*(
+		# 		# logdet cov = -logdet precision
+		# 		  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
-				- sum(torch.matmul(self.PE_1, 
-					(self.Precision[i+1](self.PE_1.view(self.bs,1,self.chan[i+1],self.imdim[i+1],self.imdim[i+1]))).view(self.bs,-1)))
+		# 		- sum(torch.matmul(self.PE_1, 
+		# 			(self.Precision[i+1](self.PE_1.view(self.bs,1,self.chan[i+1],self.imdim[i+1],self.imdim[i+1]))).view(self.bs,-1)))
 
-				+ torch.logdet(torch.squeeze(self.Precision[i].weight))
+		# 		+ torch.logdet(torch.squeeze(self.Precision[i].weight))
 
-				- sum(torch.matmul(self.PE_0, 
-					(self.Precision[i](self.PE_0.view(self.bs,1,self.chan[i],self.imdim[i],self.imdim[i]))).view(self.bs,-1)))
-				)
+		# 		- sum(torch.matmul(self.PE_0, 
+		# 			(self.Precision[i](self.PE_0.view(self.bs,1,self.chan[i],self.imdim[i],self.imdim[i]))).view(self.bs,-1)))
+		# 		)
 		else:
 			self.F += - 0.5*(
 				# logdet cov = -logdet precision
