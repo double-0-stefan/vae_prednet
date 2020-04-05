@@ -315,8 +315,8 @@ class pc_conv_network(nn.Module):
 			# else:
 			self.F.backward()
 
-			xm.optimizer_step(self.optimizer)#.step()
-
+			# xm.optimizer_step(self.optimizer)#.step()
+			self.optimizer.step()
 			# end inference if starting to diverge
 			# if i > 0:
 			# 	if self.F > self.F_old:
