@@ -69,7 +69,7 @@ class pc_conv_network(nn.Module):
 
 		# Image level - needs Precision
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
-		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['imchan']*self.p['imdim_']^2).unsqueeze(0)		
+		weights = torch.exp(torch.tensor(1.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)		
 		Precision[0].weight = nn.Parameter(weights)
 		last_count = 0
 		count = 0
