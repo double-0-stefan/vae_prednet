@@ -352,10 +352,11 @@ class pc_conv_network(nn.Module):
 		if torch.isnan(self.F):
 			self.Precision = last_Precision
 			self.conv_trans = last_conv_trans
-			self.optimizer.lr = self.optimizer.lr/10 
+			self.optimizer = Adam(self.parameters(), lr=self.p['lr']/10, weight_decay=1e-5)
+			#self.optimizer.lr = self.optimizer.lr/10 
 			#self.inference()
 			self.learn()
-			self.optimizer.lr = self.optimizer.lr*10
+			self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 			return
 
 		self.F.backward()
