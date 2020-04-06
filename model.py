@@ -66,10 +66,11 @@ class pc_conv_network(nn.Module):
 		self.conv_trans = []
 		phi = []
 		Precision = []
+		weights = []
 
 		# Image level - needs Precision
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
-		weights = torch.rand_like(Precision[0].weight) +  torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)		
+		weights = torch.rand_like(Precision[0].weight) +  torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)
 		Precision[0].weight = nn.Parameter(weights)
 
 		for j in range(p['nblocks']):
@@ -100,7 +101,7 @@ class pc_conv_network(nn.Module):
 
 			## CREATE PRECISION ABOVE EACH BLOCK ##
 			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
-			weights = torch.rand_like(Precision[j+1].weight) + torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
+			weights = torch.rand_like(Precision[j+1].weight) + torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0))
 			Precision[j+1].weight = nn.Parameter(weights)
 
 
@@ -112,6 +113,7 @@ class pc_conv_network(nn.Module):
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
 		self.Precision = nn.ModuleList(Precision)
+		#self.weights = nn.ParameterList(weights)
 		self.phi = nn.ParameterList(phi)
 		self.dim = self.p['dim']
 		self.conv_trans = nn.ModuleList(self.conv_trans)
@@ -252,6 +254,8 @@ class pc_conv_network(nn.Module):
 				x = self.conv_trans[i+1][j](F.relu(x))
 			PE_1 = self.phi[i] - x.view(self.bs,-1)
 
+		
+
 		# if i == 0:
 		# 	self.PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 		# else:
@@ -327,6 +331,11 @@ class pc_conv_network(nn.Module):
 
 	def learn(self):
 
+		# update Precision weights
+		# for l in range(0,self.nlayers):
+		# 	self.Precision[l].weight = torch.matrix_power(self.weights[l],2)
+
+		#self.weights.requires_grad_(True)
 		self.conv_trans.requires_grad_(True)
 		self.Precision.requires_grad_(True)
 		self.phi.requires_grad_(False)
@@ -334,11 +343,23 @@ class pc_conv_network(nn.Module):
 
 		self.optimizer.zero_grad()
 		self.F = 0
+		last_Precision = self.Precision
+		last_conv_trans = self.conv_trans
+
 		for l in range(0,self.nlayers):
 			self.loss(l)
+
+		if torch.isnan(self.F):
+			self.Precision = last_Precision
+			self.conv_trans = last_conv_trans
+			self.inference()
+			self.learn()
+			return
+
 		self.F.backward()
 		# xm.optimizer_step(self.optimizer, barrier=False)
 		self.optimizer.step()
+
 		print(self.F)
 		print(self.Precision[0].weight)
 
