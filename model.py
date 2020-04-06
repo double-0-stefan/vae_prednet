@@ -20,8 +20,8 @@ import glob
 import scipy.io as sio
 from torchvision.utils import save_image
 from torch.optim import Adam
-import torch_xla
-import torch_xla.core.xla_model as xm
+# import torch_xla
+# import torch_xla.core.xla_model as xm
 
 
 class pc_conv_network(nn.Module):

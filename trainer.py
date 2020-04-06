@@ -19,12 +19,12 @@ from torch import zeros, FloatTensor, tensor, argmax, zeros_like
 from torch.autograd import Variable
 import torch
 
-import torch_xla
-import torch_xla.core.xla_model as xm
-import torch_xla.debug.metrics as met
-import torch_xla.distributed.parallel_loader as pl
-import torch_xla.distributed.xla_multiprocessing as xmp
-import torch_xla.utils.utils as xu
+# import torch_xla
+# import torch_xla.core.xla_model as xm
+# import torch_xla.debug.metrics as met
+# import torch_xla.distributed.parallel_loader as pl
+# import torch_xla.distributed.xla_multiprocessing as xmp
+# import torch_xla.utils.utils as xu
 
 class InteractiveTrainer(object):	
 
