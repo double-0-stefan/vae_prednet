@@ -7,7 +7,7 @@ pc_cnn:
     - True
 
 xla:
-    - False
+    - True
 
 imdim : 33 # expand to odd for padding reasons
 
