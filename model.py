@@ -101,7 +101,7 @@ class pc_conv_network(nn.Module):
 
 			## CREATE PRECISION ABOVE EACH BLOCK ##
 			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
-			weights = torch.rand_like(Precision[j+1].weight) + torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0))
+			weights = torch.rand_like(Precision[j+1].weight) + torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
 			Precision[j+1].weight = nn.Parameter(weights)
 
 
