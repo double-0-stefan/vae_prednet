@@ -42,7 +42,7 @@ precisions: # block any length > 1 has 2 precisions
     # 0 = single number prior, 1 = diagonal prior
 
 ks:
-    - [[3, 5, 5] ,[5]]
+    - [[5, 5, 5] ,[5]]
 
 nblocks: 
     - 2 # Sections with precisions at top and bottom, but not within
