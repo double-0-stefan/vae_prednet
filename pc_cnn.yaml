@@ -20,7 +20,7 @@ generate_data: False
 rotating: False
 
 e    :  25000
-b    :  5
+b    :  1
 lr   :  0.001
 
 err_noise:
@@ -60,7 +60,7 @@ iter:
     - 8
 
 bs:
-    - 5
+    - 1
 
 imdim_sb:
     - 32
