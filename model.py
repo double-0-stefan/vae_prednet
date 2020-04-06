@@ -70,7 +70,7 @@ class pc_conv_network(nn.Module):
 
 		# Image level - needs Precision
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
-		weights = torch.rand_like(Precision[0].weight)/torch.exp(torch.tensor(8.)) +  torch.exp(torch.tensor(-1.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)
+		weights = torch.rand_like(Precision[0].weight) +  torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)
 		Precision[0].weight = nn.Parameter(weights)
 
 		for j in range(p['nblocks']):
@@ -101,7 +101,7 @@ class pc_conv_network(nn.Module):
 
 			## CREATE PRECISION ABOVE EACH BLOCK ##
 			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
-			weights = torch.rand_like(Precision[j+1].weight)/torch.exp(torch.tensor(8.)) + torch.exp(torch.tensor(-1.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
+			weights = torch.rand_like(Precision[j+1].weight) + torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
 			Precision[j+1].weight = nn.Parameter(weights)
 
 
@@ -352,11 +352,10 @@ class pc_conv_network(nn.Module):
 		if torch.isnan(self.F):
 			self.Precision = last_Precision
 			self.conv_trans = last_conv_trans
-			self.optimizer = Adam(self.parameters(), lr=self.p['lr']/10, weight_decay=1e-5)
-			#self.optimizer.lr = self.optimizer.lr/10 
+			self.optimizer.lr = self.optimizer.lr/10 
 			#self.inference()
 			self.learn()
-			self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
+			self.optimizer.lr = self.optimizer.lr*10
 			return
 
 		self.F.backward()
