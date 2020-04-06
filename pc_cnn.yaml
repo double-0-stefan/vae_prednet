@@ -20,7 +20,7 @@ generate_data: False
 rotating: False
 
 e    :  25000
-b    :  1
+b    :  10
 lr   :  0.001
 
 err_noise:
@@ -51,7 +51,7 @@ imchan:
     - 1
 
 chan:
-    - [[2,4,8], [16]]
+    - [[4,8,16], [32]]
 
 pad:
     - 0
@@ -60,7 +60,7 @@ iter:
     - 8
 
 bs:
-    - 1
+    - 10
 
 imdim_sb:
     - 32
