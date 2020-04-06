@@ -56,7 +56,7 @@ class pc_conv_network(nn.Module):
 		
 		if p['vae'] == 1:
 			self.init_vae(p)
-		self.cuda()
+		#self.cuda()
 
 	def init_conv_trans(self, p): # does conv, phi and precision
 	
