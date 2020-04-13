@@ -399,7 +399,7 @@ class pc_conv_network(nn.Module):
 		self.optimizer.step()
 
 		print(self.F)
-		print(self.Precision[0].weight)
+		print(self.P_chol[0])
 
 
 	def forward(self, iteration, images, learn=1):
