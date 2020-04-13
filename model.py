@@ -70,15 +70,17 @@ class pc_conv_network(nn.Module):
 		P_chol = []
 
 		# # Image level - needs Precision
-		# Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
-		# weights = torch.rand_like(Precision[0].weight) +  torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)
-		# Precision[0].weight = nn.Parameter(weights)
+		
 
 		## Precision as cholesky factor -> ensure symetric positive semi-definite
 		a = torch.rand(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'])/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['imchan']*p['imdim_']*p['imdim_'])
 		a = torch.cholesky(a)
 		# do this as vectorised lower tri?
 		P_chol.append(nn.Parameter(a))
+
+		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
+		Precision[0].weight = nn.Parameter(a)
+
 		#print(P_chol)
 
 		for j in range(p['nblocks']):
@@ -107,16 +109,17 @@ class pc_conv_network(nn.Module):
 			## CREATE PHI ABOVE EACH BLOCK ##
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-			# ## CREATE PRECISION ABOVE EACH BLOCK ##
-			# Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
-			# weights = torch.rand_like(Precision[j+1].weight) + torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
-			# Precision[j+1].weight = nn.Parameter(weights)
 
 			## Precision as cholesky factor -> ensure symetric positive semi-definite
 			a = torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))
 			#a = torch.mm(a,a.t())
 			a = torch.cholesky(a)
 			P_chol.append(nn.Parameter(a))
+
+			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
+			Precision[j+1].weight = nn.Parameter(a)
+
+			
 			
 
 		## APPEND NEW BITS TO MAIN ##
@@ -249,7 +252,7 @@ class pc_conv_network(nn.Module):
 		self.F_last = None
 		self.baseline = None
 
-	def loss(self, i):
+	def loss(self, i, learn):
 
 		# do block
 		x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
@@ -301,20 +304,33 @@ class pc_conv_network(nn.Module):
 
 		## for Cholesky-based precision
 		# tril: ensure upper tri doesn't get involved at all!
+		if learn == 1:
+			P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+			P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
 
-		P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
-		P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
+			self.F += - 0.5*(
+				# logdet cov = -logdet precision
+				  torch.logdet(P1)
 
-		self.F += - 0.5*(
-			# logdet cov = -logdet precision
-			  torch.logdet(P1)
+				- torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
 
-			- torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
+				+ torch.logdet(P0)
 
-			+ torch.logdet(P0)
+				- torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
+				)
+		else:
+			self.F += - 0.5*(
+				# logdet cov = -logdet precision
+				  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
-			- torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
-			)
+				- sum(self.Precision[i+1](PE_1, PE_1))
+
+				+ torch.logdet(torch.squeeze(self.Precision[i].weight))
+
+				- sum(self.Precision[i](PE_0, PE_0))
+				)
+
+
 
 		# self.F += - 0.5*(
 		# 	# logdet cov = -logdet precision
@@ -345,7 +361,7 @@ class pc_conv_network(nn.Module):
 			
 			# will need to code reset for phi
 			for l in range(0, self.nlayers):
-				self.loss(l)
+				self.loss(l,learn=0)
 
 			# if i < self.iter-1:
 			# 	self.F.backward(retain_graph=True)
@@ -385,7 +401,7 @@ class pc_conv_network(nn.Module):
 		# last_conv_trans = self.conv_trans
 
 		for l in range(0,self.nlayers):
-			self.loss(l)
+			self.loss(l,learn=1)
 
 		# if torch.isnan(self.F):
 		# 	self.Precision = last_Precision
@@ -417,6 +433,9 @@ class pc_conv_network(nn.Module):
 			self.images = images.view(self.bs, -1).cuda()
 
 		# put weights into bilinear for inference and see if faster (no update done)
+		for i in range(len(self.P_chol)):
+			self.Precision[i].weight = torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0)
+
 		self.inference()
 		# if learn == 1:
 		self.learn()
