@@ -115,10 +115,7 @@ class pc_conv_network(nn.Module):
 			#a = torch.mm(a,a.t())
 			P_chol.append(torch.cholesky(a))
 
-			# in loss or wherever
-			# ensure upper tri doesn't get involved at all!
-			P = torch.mm(torch.tril(P_chol),torch.tril(P_chol).t())
-
+			
 
 		## APPEND NEW BITS TO MAIN ##
 			self.conv_trans.append(nn.ModuleList(conv_trans_block))
@@ -299,10 +296,10 @@ class pc_conv_network(nn.Module):
 		#else:
 
 		## for Cholesky-based precision
+		# tril: ensure upper tri doesn't get involved at all!
 
-		# recover full matrix
-		P1 = torch.mm(P_chol[i+1], P_chol[i+1].t())
-		P0 = torch.mm(P_chol[i], P_chol[i].t())
+		P1 = torch.mm(torch.tril(P_chol[i+1]), torch.tril(P_chol[i+1]).t())
+		P0 = torch.mm(torch.tril(P_chol[i]), torch.tril(P_chol[i]).t())
 
 		self.F += - 0.5*(
 			# logdet cov = -logdet precision
