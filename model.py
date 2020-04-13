@@ -78,7 +78,7 @@ class pc_conv_network(nn.Module):
 		a = torch.rand(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'])/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['imchan']*p['imdim_']*p['imdim_'])
 		#a = torch.mm(a,a.t())
 		P_chol.append(torch.cholesky(a))
-		print(a)
+		print(P_chol)
 
 		for j in range(p['nblocks']):
 			conv_trans_block = []
@@ -115,7 +115,7 @@ class pc_conv_network(nn.Module):
 			a = torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))
 			#a = torch.mm(a,a.t())
 			P_chol.append(torch.cholesky(a))
-
+			print(P_chol)
 			
 
 		## APPEND NEW BITS TO MAIN ##
