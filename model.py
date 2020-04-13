@@ -125,7 +125,7 @@ class pc_conv_network(nn.Module):
 		# top level phi
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-		self.Precision = nn.ModuleList(Precision)
+		#self.Precision = nn.ModuleList(Precision)
 		self.P_chol = nn.ParameterList(P_chol)
 		#self.weights = nn.ParameterList(weights)
 		self.phi = nn.ParameterList(phi)
@@ -330,7 +330,7 @@ class pc_conv_network(nn.Module):
 			for m in range(len(self.conv_trans[l])):
 				self.conv_trans[l][m].requires_grad_(False)
 			#self.Precision[l].requires_grad_(False)
-			self.P_chol[l].requires_grad(False)
+			self.P_chol[l].requires_grad_(False)
 			self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
 
@@ -372,7 +372,7 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(True)
 		# self.Precision.requires_grad_(True)
 		for i in range(len(P_chol)):
-			self.P_chol[i].requires_grad(True)
+			self.P_chol[i].requires_grad_(True)
 		self.phi.requires_grad_(False)
 		#self.optimizer.lr = 0.001
 
