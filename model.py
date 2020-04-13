@@ -73,7 +73,7 @@ class pc_conv_network(nn.Module):
 		
 
 		## Precision as cholesky factor -> ensure symetric positive semi-definite
-		a = torch.rand(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'])/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['imchan']*p['imdim_']*p['imdim_'])
+		a = torch.eye(p['imchan']*p['imdim_']*p['imdim_'])
 		a = torch.cholesky(a)
 		# do this as vectorised lower tri?
 		P_chol.append(nn.Parameter(a))
@@ -111,7 +111,7 @@ class pc_conv_network(nn.Module):
 
 
 			## Precision as cholesky factor -> ensure symetric positive semi-definite
-			a = torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))
+			a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))
 			#a = torch.mm(a,a.t())
 			a = torch.cholesky(a)
 			P_chol.append(nn.Parameter(a))
