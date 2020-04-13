@@ -160,6 +160,8 @@ class pc_conv_network(nn.Module):
 		# 		[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]).cuda() 
 		# 		for i in range(self.nlayers)])
 
+		print(self)
+
 	def init_phi(self,p):
 		# only need phi's where there are precisions
 		conv = ModuleList(
@@ -404,7 +406,6 @@ class pc_conv_network(nn.Module):
 
 	def forward(self, iteration, images, learn=1):
 
-		print(self)
 		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		self.iteration = iteration
 		self.F_last = self.F
@@ -415,6 +416,7 @@ class pc_conv_network(nn.Module):
 		else:	
 			self.images = images.view(self.bs, -1).cuda()
 
+		# put weights into bilinear for inference and see if faster (no update done)
 		self.inference()
 		# if learn == 1:
 		self.learn()
