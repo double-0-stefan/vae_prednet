@@ -330,7 +330,7 @@ class pc_conv_network(nn.Module):
 			for m in range(len(self.conv_trans[l])):
 				self.conv_trans[l][m].requires_grad_(False)
 			#self.Precision[l].requires_grad_(False)
-			self.P_chol.requires_grad(False)
+			self.P_chol[l].requires_grad(False)
 			self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
 
@@ -371,7 +371,8 @@ class pc_conv_network(nn.Module):
 		#self.weights.requires_grad_(True)
 		self.conv_trans.requires_grad_(True)
 		# self.Precision.requires_grad_(True)
-		self.P_chol.requires_grad(True)
+		for i in range(len(P_chol))
+			self.P_chol[i].requires_grad(True)
 		self.phi.requires_grad_(False)
 		#self.optimizer.lr = 0.001
 
