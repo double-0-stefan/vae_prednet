@@ -1,4 +1,4 @@
-# vae_prednet
+# pc_cnn in vae_prednet
 Maell's vae_prednet code, with my additions, including pn_cnn
 
 * need to find way to ensure weights of bilinear layers form invertible matrices
