@@ -367,7 +367,7 @@ class pc_conv_network(nn.Module):
 			# 	self.F.backward(retain_graph=True)
 			# else:
 			self.F.backward()
-			print(i)
+			#print(i)
 
 			# xm.optimizer_step(self.optimizer)#.step()
 			self.optimizer.step()
@@ -419,7 +419,8 @@ class pc_conv_network(nn.Module):
 
 		print(self.F)
 		print(self.P_chol[0])
-
+		print(self.P_chol[1])
+		print(self.P_chol[2])
 
 	def forward(self, iteration, images, learn=1):
 
