@@ -308,7 +308,7 @@ class pc_conv_network(nn.Module):
 			P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
 			P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
 
-			self.F += - 0.5*(
+			self.F +=  0.5*(
 				# logdet cov = -logdet precision
 				  torch.logdet(P1)
 
@@ -319,7 +319,7 @@ class pc_conv_network(nn.Module):
 				- torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 				)
 		else:
-			self.F += - 0.5*(
+			self.F +=  0.5*(
 				# logdet cov = -logdet precision
 				  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
