@@ -67,11 +67,19 @@ class pc_conv_network(nn.Module):
 		phi = []
 		Precision = []
 		weights = []
+		P_chol = []
+
+		P_chol
 
 		# Image level - needs Precision
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
 		weights = torch.rand_like(Precision[0].weight) +  torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)
 		Precision[0].weight = nn.Parameter(weights)
+
+		## Precision as cholesky factor -> ensure symetric positive semi-definite
+		a = torch.rand(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'])/10000 + torch.exp(torch.tensor(0.9.)) * torch.eye(p['imchan']*p['imdim_']*p['imdim_'])
+		#a = torch.mm(a,a.t())
+		P_chol.append(nn.parameter(torch.cholesky(a)))
 
 		for j in range(p['nblocks']):
 			conv_trans_block = []
@@ -104,6 +112,15 @@ class pc_conv_network(nn.Module):
 			weights = torch.rand_like(Precision[j+1].weight) + torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
 			Precision[j+1].weight = nn.Parameter(weights)
 
+			## Precision as cholesky factor -> ensure symetric positive semi-definite
+			a = torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))/10000 + torch.exp(torch.tensor(0.9.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))
+			#a = torch.mm(a,a.t())
+			P_chol.append(nn.parameter(torch.cholesky(a)))
+
+			# in loss or wherever
+			# ensure upper tri doesn't get involved at all!
+			P = torch.mm(torch.tril(P_chol),torch.tril(P_chol).t())
+
 
 		## APPEND NEW BITS TO MAIN ##
 			self.conv_trans.append(nn.ModuleList(conv_trans_block))
@@ -113,6 +130,7 @@ class pc_conv_network(nn.Module):
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
 		self.Precision = nn.ModuleList(Precision)
+		self.P_chol = nn.ParameterList(P_chol)
 		#self.weights = nn.ParameterList(weights)
 		self.phi = nn.ParameterList(phi)
 		self.dim = self.p['dim']
@@ -281,23 +299,42 @@ class pc_conv_network(nn.Module):
 		# 			(self.Precision[i](self.PE_0.view(self.bs,1,self.chan[i],self.imdim[i],self.imdim[i]))).view(self.bs,-1)))
 		# 		)
 		#else:
+
+		## for Cholesky-based precision
+
+		# recover full matrix
+		P1 = torch.mm(P_chol[i+1], P_chol[i+1].t())
+		P0 = torch.mm(P_chol[i], P_chol[i].t())
+
 		self.F += - 0.5*(
 			# logdet cov = -logdet precision
-			  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
+			  torch.logdet(P1)
 
-			- sum(self.Precision[i+1](PE_1, PE_1))
+			- torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
 
-			+ torch.logdet(torch.squeeze(self.Precision[i].weight))
+			+ torch.logdet(P0)
 
-			- sum(self.Precision[i](PE_0, PE_0))
+			- torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 			)
+
+		# self.F += - 0.5*(
+		# 	# logdet cov = -logdet precision
+		# 	  torch.logdet(torch.squeeze(self.Precision[i+1].weight))
+
+		# 	- sum(self.Precision[i+1](PE_1, PE_1))
+
+		# 	+ torch.logdet(torch.squeeze(self.Precision[i].weight))
+
+		# 	- sum(self.Precision[i](PE_0, PE_0))
+		# 	)
 		
 	def inference(self):
 
 		for l in range(0, self.nlayers):
 			for m in range(len(self.conv_trans[l])):
 				self.conv_trans[l][m].requires_grad_(False)
-			self.Precision[l].requires_grad_(False)
+			#self.Precision[l].requires_grad_(False)
+			self.P_chol.requires_grad(False)
 			self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
 
@@ -337,26 +374,27 @@ class pc_conv_network(nn.Module):
 
 		#self.weights.requires_grad_(True)
 		self.conv_trans.requires_grad_(True)
-		self.Precision.requires_grad_(True)
+		# self.Precision.requires_grad_(True)
+		self.P_chol.requires_grad(True)
 		self.phi.requires_grad_(False)
 		#self.optimizer.lr = 0.001
 
 		self.optimizer.zero_grad()
 		self.F = 0
-		last_Precision = self.Precision
-		last_conv_trans = self.conv_trans
+		# last_Precision = self.Precision
+		# last_conv_trans = self.conv_trans
 
 		for l in range(0,self.nlayers):
 			self.loss(l)
 
-		if torch.isnan(self.F):
-			self.Precision = last_Precision
-			self.conv_trans = last_conv_trans
-			self.optimizer = Adam(self.parameters(), lr=self.p['lr']/100, weight_decay=1e-5)
-			#self.inference()
-			self.learn()
-			self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
-			return
+		# if torch.isnan(self.F):
+		# 	self.Precision = last_Precision
+		# 	self.conv_trans = last_conv_trans
+		# 	self.optimizer = Adam(self.parameters(), lr=self.p['lr']/100, weight_decay=1e-5)
+		# 	#self.inference()
+		# 	self.learn()
+		# 	self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
+		# 	return
 
 		self.F.backward()
 		# xm.optimizer_step(self.optimizer, barrier=False)
