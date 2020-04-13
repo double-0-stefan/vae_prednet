@@ -129,7 +129,7 @@ class pc_conv_network(nn.Module):
 		# top level phi
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-		#self.Precision = nn.ModuleList(Precision)
+		self.Precision = nn.ModuleList(Precision)
 		self.P_chol = nn.ParameterList(P_chol)
 		#self.weights = nn.ParameterList(weights)
 		self.phi = nn.ParameterList(phi)
