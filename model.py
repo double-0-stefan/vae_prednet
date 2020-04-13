@@ -77,7 +77,7 @@ class pc_conv_network(nn.Module):
 		## Precision as cholesky factor -> ensure symetric positive semi-definite
 		a = torch.rand(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'])/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['imchan']*p['imdim_']*p['imdim_'])
 		#a = torch.mm(a,a.t())
-		P_chol.append(nn.parameter(torch.cholesky(a)))
+		P_chol.append(torch.cholesky(a))
 
 		for j in range(p['nblocks']):
 			conv_trans_block = []
@@ -113,7 +113,7 @@ class pc_conv_network(nn.Module):
 			## Precision as cholesky factor -> ensure symetric positive semi-definite
 			a = torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))
 			#a = torch.mm(a,a.t())
-			P_chol.append(nn.parameter(torch.cholesky(a)))
+			P_chol.append(torch.cholesky(a))
 
 			# in loss or wherever
 			# ensure upper tri doesn't get involved at all!
