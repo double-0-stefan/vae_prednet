@@ -69,10 +69,10 @@ class pc_conv_network(nn.Module):
 		weights = []
 		P_chol = []
 
-		# Image level - needs Precision
-		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
-		weights = torch.rand_like(Precision[0].weight) +  torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)
-		Precision[0].weight = nn.Parameter(weights)
+		# # Image level - needs Precision
+		# Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
+		# weights = torch.rand_like(Precision[0].weight) +  torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)
+		# Precision[0].weight = nn.Parameter(weights)
 
 		## Precision as cholesky factor -> ensure symetric positive semi-definite
 		a = torch.rand(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'])/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['imchan']*p['imdim_']*p['imdim_'])
@@ -106,10 +106,10 @@ class pc_conv_network(nn.Module):
 			## CREATE PHI ABOVE EACH BLOCK ##
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-			## CREATE PRECISION ABOVE EACH BLOCK ##
-			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
-			weights = torch.rand_like(Precision[j+1].weight) + torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
-			Precision[j+1].weight = nn.Parameter(weights)
+			# ## CREATE PRECISION ABOVE EACH BLOCK ##
+			# Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
+			# weights = torch.rand_like(Precision[j+1].weight) + torch.exp(torch.tensor(8.)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)).unsqueeze(0)
+			# Precision[j+1].weight = nn.Parameter(weights)
 
 			## Precision as cholesky factor -> ensure symetric positive semi-definite
 			a = torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))/10000 + torch.exp(torch.tensor(0.9)) * torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))
