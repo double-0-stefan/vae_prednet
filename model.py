@@ -69,8 +69,6 @@ class pc_conv_network(nn.Module):
 		weights = []
 		P_chol = []
 
-		P_chol
-
 		# Image level - needs Precision
 		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
 		weights = torch.rand_like(Precision[0].weight) +  torch.exp(torch.tensor(8.)) * torch.eye(p['imchan']*self.p['imdim_']*p['imdim_']).unsqueeze(0)
