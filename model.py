@@ -361,7 +361,7 @@ class pc_conv_network(nn.Module):
 			
 			for l in range(0, self.nlayers):
 				self.loss(l,learn=0)
-
+			self.F=torch.sum(self.F)
 			# if i < self.iter-1:
 			# 	self.F.backward(retain_graph=True)
 			# else:
@@ -413,7 +413,7 @@ class pc_conv_network(nn.Module):
 		# 	self.learn()
 		# 	self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		# 	return
-
+		self.F=torch.sum(self.F)
 		self.F.backward()
 		# xm.optimizer_step(self.optimizer, barrier=False)
 		self.optimizer.step()
