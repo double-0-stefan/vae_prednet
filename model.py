@@ -372,15 +372,16 @@ class pc_conv_network(nn.Module):
 			self.optimizer.step()
 			print(self.F)
 			# end inference if starting to diverge
-			# if i > 0:
-			# 	if self.F > self.F_old:
-			# 		self.F = self.F_old
-			# 		self.phi = self.phi_old
-			# 		break
+			if i > 0:
+				if self.F > self.F_old:
+					self.F = self.F_old
+					self.phi = self.phi_old
+					break
 
 			# print(self.F)
 			# print(torch.sum(self.images-self.F_old))
 
+		self.learn()
 
 	def learn(self):
 
@@ -447,7 +448,7 @@ class pc_conv_network(nn.Module):
 
 		self.inference()
 		# if learn == 1:
-		self.learn()
+		
 
 
 
