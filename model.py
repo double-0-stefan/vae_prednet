@@ -431,7 +431,7 @@ class pc_conv_network(nn.Module):
 		if iteration == 0:
 			self.iter = 1
 		else:
-			self.iter = p['iter']
+			self.iter = self.p['iter']
 
 		# images.half()
 		if self.p['xla']:
