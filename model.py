@@ -437,7 +437,7 @@ class pc_conv_network(nn.Module):
 
 		# put weights into bilinear for inference and see if faster (no update done)
 		for i in range(len(self.P_chol)):
-			self.phi[i] = torch.rand_like(self.phi[i])
+			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
 			self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		self.inference()
