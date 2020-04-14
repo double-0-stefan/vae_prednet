@@ -349,8 +349,8 @@ class pc_conv_network(nn.Module):
 			for m in range(len(self.conv_trans[l])):
 				self.conv_trans[l][m].requires_grad_(False)
 				#self.Precision[l].requires_grad_(False)
-				self.P_chol[l].requires_grad_(False)
-				self.phi[l].requires_grad_(True)
+			self.P_chol[l].requires_grad_(False)
+			self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
 
 		for i in range(self.iter):
@@ -359,7 +359,6 @@ class pc_conv_network(nn.Module):
 			self.F = 0#nn.Parameter(torch.zeros(1))
 			#self.phi_old = self.phi
 			
-			# will need to code reset for phi
 			for l in range(0, self.nlayers):
 				self.loss(l,learn=0)
 
@@ -428,6 +427,11 @@ class pc_conv_network(nn.Module):
 		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		self.iteration = iteration
 		self.F_last = self.F
+
+		if iteration == 0:
+			self.iter = 1
+		else
+			self.iter = p['iter']
 
 		# images.half()
 		if self.p['xla']:
