@@ -430,7 +430,7 @@ class pc_conv_network(nn.Module):
 
 		if iteration == 0:
 			self.iter = 1
-		else
+		else:
 			self.iter = p['iter']
 
 		# images.half()
