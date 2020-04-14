@@ -413,15 +413,15 @@ class pc_conv_network(nn.Module):
 		# 	self.learn()
 		# 	self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		# 	return
-		self.F=torch.sum(self.F)
+		self.F=torch.sum(self.F)	
 		self.F.backward()
 		# xm.optimizer_step(self.optimizer, barrier=False)
 		self.optimizer.step()
 
 		print(self.F)
-		print(self.P_chol[0])
-		print(self.P_chol[1])
-		print(self.P_chol[2])
+		# print(self.P_chol[0])
+		# print(self.P_chol[1])
+		# print(self.P_chol[2])
 
 	def forward(self, iteration, images, learn=1):
 
