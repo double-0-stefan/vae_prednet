@@ -21,7 +21,7 @@ rotating: False
 
 e    :  25000
 b    :  1
-lr   :  0.001
+lr   :  0.0001
 
 err_noise:
     - True
@@ -57,7 +57,7 @@ pad:
     - 0
 
 iter:
-    - 8
+    - 25
 
 bs:
     - 1
