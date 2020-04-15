@@ -426,7 +426,7 @@ class pc_conv_network(nn.Module):
 	def forward(self, iteration, images, learn=1):
 
 		# self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
-		self.optimizer = torch.optim.RMSprop(params=self.parameters,lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=True)
+		self.optimizer = torch.optim.RMSprop(params=self.parameters(),lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=True)
 		self.iteration = iteration
 		self.F_last = self.F
 
