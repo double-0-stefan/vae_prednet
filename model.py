@@ -305,31 +305,31 @@ class pc_conv_network(nn.Module):
 
 		## for Cholesky-based precision
 		# tril: ensure upper tri doesn't get involved at all!
-		if learn == 1:
-			P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
-			P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
+		#if learn == 1:
+		P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+		P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
 
-			self.F +=  0.5*(
-				# logdet cov = -logdet precision
-				- torch.logdet(P1)
+		self.F +=  0.5*(
+			# logdet cov = -logdet precision
+			- torch.logdet(P1)
 
-				+ torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
+			+ torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
 
-				- torch.logdet(P0)
+			- torch.logdet(P0)
 
-				+ torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
-				)
-		else:
-			self.F +=  0.5*(
-				# logdet cov = -logdet precision
-				- torch.logdet(torch.squeeze(self.Precision[i+1].weight))
+			+ torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
+			)
+		#else:
+			# self.F +=  0.5*(
+			# 	# logdet cov = -logdet precision
+			# 	- torch.logdet(torch.squeeze(self.Precision[i+1].weight))
 
-				+ sum(self.Precision[i+1](PE_1, PE_1))
+			# 	+ sum(self.Precision[i+1](PE_1, PE_1))
 
-				- torch.logdet(torch.squeeze(self.Precision[i].weight))
+			# 	- torch.logdet(torch.squeeze(self.Precision[i].weight))
 
-				+ sum(self.Precision[i](PE_0, PE_0))
-				)
+			# 	+ sum(self.Precision[i](PE_0, PE_0))
+			# 	)
 
 
 
@@ -415,9 +415,18 @@ class pc_conv_network(nn.Module):
 		# 	self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		# 	return
 		self.F=torch.sum(self.F)	
+
+		self.P_chol_old = self.P_chol
+
 		self.F.backward()
 		# xm.optimizer_step(self.optimizer, barrier=False)
 		self.optimizer.step()
+
+		if i > 0:
+			if self.F >= self.F_old:
+				self.F = self.F_old
+				self.P_chol = self.P_chol_old
+				break
 
 		print(self.F)
 		# print(self.P_chol[0])
