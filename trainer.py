@@ -306,8 +306,9 @@ class Trainer(object):
 			epoch_loss += self.model.F
 			self.iteration += 1
 
-		epoch_loss = epoch_loss / len(self.train_loader.dataset)
+		#epoch_loss = epoch_loss / len(self.train_loader.dataset)
 		self.logger.info('Mean Epoch Loss - {}'.format(epoch_loss))
+		self.epoch_loss = epoch_loss
 				
 	def eval_batch(self, e, force_write=None):
 		
@@ -668,6 +669,9 @@ class pc_cnn_Trainer(Trainer):
 			self.model.train()
 			
 			self.train_epoch_pc_cnn()
+
+			self.model.scheduler.step(self.epoch_loss)
+
 			if e % self.model.p['plot_iter'] == 0:
 				tutils.save_checkpoint({'model': self.model, 
 								'state_dict': self.model.state_dict(),
