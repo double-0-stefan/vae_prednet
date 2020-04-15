@@ -399,6 +399,7 @@ class pc_conv_network(nn.Module):
 		#self.optimizer.lr = 0.001
 
 		self.optimizer.zero_grad()
+		self.F_old = self.F
 		self.F = 0
 		# last_Precision = self.Precision
 		# last_conv_trans = self.conv_trans
