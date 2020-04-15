@@ -20,7 +20,7 @@ generate_data: False
 rotating: False
 
 e    :  25000
-b    :  50
+b    :  200
 lr   :  0.0001
 
 err_noise:
@@ -57,7 +57,7 @@ pad:
     - 0
 
 iter:
-    - 50
+    - 200
 
 bs:
     - 50

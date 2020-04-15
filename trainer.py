@@ -669,7 +669,7 @@ class pc_cnn_Trainer(Trainer):
 			self.model.train()
 			
 			self.train_epoch_pc_cnn()
-			print(self.model.F)
+			#print(self.model.F)
 
 			self.model.scheduler.step(self.epoch_loss)
 
