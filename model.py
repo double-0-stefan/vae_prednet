@@ -407,7 +407,7 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(True)
 		# self.Precision.requires_grad_(True)
 		for i in range(len(self.P_chol)):
-			self.P_chol[i].requires_grad_(True)
+			#self.P_chol[i].requires_grad_(True)
 			self.phi[i].requires_grad_(False)
 		#self.optimizer.lr = 0.001
 
