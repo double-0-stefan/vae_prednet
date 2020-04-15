@@ -371,7 +371,7 @@ class pc_conv_network(nn.Module):
 			self.optimizer.zero_grad()
 			self.F_old = self.F
 			self.F = 0#nn.Parameter(torch.zeros(1))
-			self.phi_old = self.phi
+			#self.phi_old = self.phi
 			
 			for l in range(0, self.nlayers):
 				self.loss(l,learn=0)
