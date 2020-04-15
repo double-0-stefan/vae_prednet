@@ -359,12 +359,12 @@ class pc_conv_network(nn.Module):
 		
 	def inference(self):
 
-		for l in range(0, self.nlayers):
-			for m in range(len(self.conv_trans[l])):
-				self.conv_trans[l][m].requires_grad_(False)
-				#self.Precision[l].requires_grad_(False)
-			self.P_chol[l].requires_grad_(True)
-			self.phi[l].requires_grad_(True)
+		# for l in range(0, self.nlayers):
+		# 	for m in range(len(self.conv_trans[l])):
+		# 		self.conv_trans[l][m].requires_grad_(False)
+		# 		#self.Precision[l].requires_grad_(False)
+		# 	self.P_chol[l].requires_grad_(True)
+		# 	self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
 
 		for i in range(self.iter):
@@ -388,14 +388,14 @@ class pc_conv_network(nn.Module):
 			# end inference if starting to diverge
 			if i > 0:
 				if self.F >= self.F_old:
-					self.F = self.F_old
-					self.phi = self.phi_old
+					# self.F = self.F_old
+					# self.phi = self.phi_old
 					break
 
 			# print(self.F)
 			# print(torch.sum(self.images-self.F_old))
 
-		self.learn()
+		# self.learn()
 
 	def learn(self):
 
