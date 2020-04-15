@@ -430,9 +430,9 @@ class pc_conv_network(nn.Module):
 				
 
 		print(self.F)
-		# print(self.P_chol[0])
-		# print(self.P_chol[1])
-		# print(self.P_chol[2])
+		print(self.P_chol[0])
+		print(self.P_chol[1])
+		print(self.P_chol[2])
 
 	def forward(self, iteration, images, learn=1):
 
