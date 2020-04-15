@@ -476,7 +476,7 @@ class pc_conv_network(nn.Module):
 
 		self.inference()
 
-		print(self.F)
+		#print(self.F)
 		# if learn == 1:
 		
 
