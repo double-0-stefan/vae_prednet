@@ -306,8 +306,8 @@ class pc_conv_network(nn.Module):
 		## for Cholesky-based precision
 		# tril: ensure upper tri doesn't get involved at all!
 		#if learn == 1:
-		P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
-		P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
+		# P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+		# P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
 
 		# self.F +=  0.5*(
 		# 	# logdet cov = -logdet precision
