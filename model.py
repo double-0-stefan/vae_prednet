@@ -73,7 +73,7 @@ class pc_conv_network(nn.Module):
 		
 
 		## Precision as cholesky factor -> ensure symetric positive semi-definite
-		a = torch.eye(p['imchan']*p['imdim_']*p['imdim_'])
+		a = torch.eye(p['imchan']*p['imdim_']*p['imdim_']) + 0.1 * torch.rand(p['imchan']*p['imdim_']*p['imdim_'],p['imchan']*p['imdim_']*p['imdim_'])
 		a = torch.cholesky(a)
 		# do this as vectorised lower tri?
 		P_chol.append(nn.Parameter(a))
@@ -111,7 +111,7 @@ class pc_conv_network(nn.Module):
 
 
 			## Precision as cholesky factor -> ensure symetric positive semi-definite
-			a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))
+			a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2)) + 0.1 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
 			#a = torch.mm(a,a.t())
 			a = torch.cholesky(a)
 			P_chol.append(nn.Parameter(a))
@@ -425,7 +425,7 @@ class pc_conv_network(nn.Module):
 
 	def forward(self, iteration, images, learn=1):
 
-		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=0)
+		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 		# self.optimizer = torch.optim.RMSprop(params=self.parameters(),lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=True)
 		# self.optimizer = torch.optim.ASGD(params=self.parameters(), lr=0.0001, lambd=0.0001, alpha=0.75, t0=1000000.0, weight_decay=0)
 		self.iteration = iteration
