@@ -442,7 +442,7 @@ class pc_conv_network(nn.Module):
 				self.P_chol = self.P_chol_old
 				
 
-		print(self.F)
+		
 		# print(self.P_chol[0])
 		# print(self.P_chol[1])
 		# print(self.P_chol[2])
@@ -475,6 +475,8 @@ class pc_conv_network(nn.Module):
 			#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		self.inference()
+
+		print(self.F)
 		# if learn == 1:
 		
 
