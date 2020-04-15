@@ -130,8 +130,8 @@ class pc_conv_network(nn.Module):
 		# top level phi
 		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-		self.Precision = nn.ModuleList(Precision)
-		self.P_chol = nn.ParameterList(P_chol)
+		#self.Precision = nn.ModuleList(Precision)
+		#self.P_chol = nn.ParameterList(P_chol)
 		#self.weights = nn.ParameterList(weights)
 		self.phi = nn.ParameterList(phi)
 		self.dim = self.p['dim']
@@ -469,10 +469,10 @@ class pc_conv_network(nn.Module):
 			self.images = images.view(self.bs, -1).cuda()
 
 		# put weights into bilinear for inference and see if faster (no update done)
-		for i in range(len(self.P_chol)):
+		for i in range(len(self.phi)):
 			# reset wactivations
 			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
-			self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
+			#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		self.inference()
 		# if learn == 1:
