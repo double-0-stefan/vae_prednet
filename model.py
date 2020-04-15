@@ -373,7 +373,7 @@ class pc_conv_network(nn.Module):
 			print(self.F)
 			# end inference if starting to diverge
 			if i > 0:
-				if self.F > self.F_old:
+				if self.F >= self.F_old:
 					self.F = self.F_old
 					self.phi = self.phi_old
 					break
