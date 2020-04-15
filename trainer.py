@@ -668,7 +668,7 @@ class pc_cnn_Trainer(Trainer):
 			self.model.train()
 			
 			self.train_epoch_pc_cnn()
-			if e % p['plot_iter'] == 0:
+			if e % self.model.p['plot_iter'] == 0:
 				tutils.save_checkpoint({'model': self.model, 
 								'state_dict': self.model.state_dict(),
 								'args': self.model.p}, 
