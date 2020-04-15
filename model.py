@@ -426,7 +426,7 @@ class pc_conv_network(nn.Module):
 			if self.F >= self.F_old:
 				self.F = self.F_old
 				self.P_chol = self.P_chol_old
-				break
+				
 
 		print(self.F)
 		# print(self.P_chol[0])
