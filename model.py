@@ -100,17 +100,17 @@ class pc_conv_network(nn.Module):
 		P_chol = []
 
 		# # Image level - needs Precision
-		
+		if self.p['include_precision']:
 
-		## Precision as cholesky factor -> ensure symetric positive semi-definite
-		a = torch.eye(p['imchan']*p['imdim_']*p['imdim_'])/10 + 0.001 * torch.rand(p['imchan']*p['imdim_']*p['imdim_'],p['imchan']*p['imdim_']*p['imdim_'])
-		#a = torch.mm(a,a.t())
-		a = torch.cholesky(a)
-		# do this as vectorised lower tri?
-		P_chol.append(nn.Parameter(a))
+			## Precision as cholesky factor -> ensure symetric positive semi-definite
+			a = torch.eye(p['imchan']*p['imdim_']*p['imdim_'])/10 + 0.001 * torch.rand(p['imchan']*p['imdim_']*p['imdim_'],p['imchan']*p['imdim_']*p['imdim_'])
+			#a = torch.mm(a,a.t())
+			a = torch.cholesky(a)
+			# do this as vectorised lower tri?
+			P_chol.append(nn.Parameter(a))
 
-		Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
-		Precision[0].weight = nn.Parameter(a)
+			Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
+			Precision[0].weight = nn.Parameter(a)
 
 		#print(P_chol)
 
@@ -140,15 +140,15 @@ class pc_conv_network(nn.Module):
 			## CREATE PHI ABOVE EACH BLOCK ##
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
+			if self.p['include_precision']:
+				## Precision as cholesky factor -> ensure symetric positive semi-definite
+				a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
+				#a = torch.mm(a,a.t())
+				a = torch.cholesky(a)
+				P_chol.append(nn.Parameter(a))
 
-			## Precision as cholesky factor -> ensure symetric positive semi-definite
-			a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
-			#a = torch.mm(a,a.t())
-			a = torch.cholesky(a)
-			P_chol.append(nn.Parameter(a))
-
-			Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
-			Precision[j+1].weight = nn.Parameter(a)
+				Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
+				Precision[j+1].weight = nn.Parameter(a)
 
 			
 			

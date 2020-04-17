@@ -12,6 +12,9 @@ pc_cnn:
 xla:
     - False
 
+include_precision:
+    - False
+
 imdim : 33 # expand to odd for padding reasons
 
 train_gx: True
