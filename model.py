@@ -63,6 +63,7 @@ class pc_conv_network(nn.Module):
 		p['z_params']	= self.q_dist.nparams
 
 		# layer configuration 
+		l=0 # sb add for conveience/testing
 		self.latents = sum(p['z_dim'][l:l+2]) 
 		self.hidden	  = p['enc_h'][l] 
 
