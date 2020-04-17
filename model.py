@@ -51,12 +51,42 @@ class pc_conv_network(nn.Module):
 
 		self.F = None
 		self.F_last = None
-
 		self.baseline = None
+
+		self.init_latents(p)
 		
-		if p['vae'] == 1:
-			self.init_vae(p)
-		#self.cuda()
+	def init_latents(self, p):
+
+		# Initialise Distributions
+		self.prior_dist, self.q_dist, self.x_dist, self.cat_dist = mutils.discheck(p)
+		
+		p['z_params']	= self.q_dist.nparams
+
+		# layer configuration 
+		self.latents = sum(p['z_dim'][l:l+2]) 
+		self.hidden	  = p['enc_h'][l] 
+
+		self.fc1 = Linear(self.latents, self.hidden)
+		self.fc2 = Linear(self.hidden, len(self.phi[-2]))
+
+		# self.has_con = p['nz_con'][l] is not None 
+		# self.z_con_dim = 0;
+		# if self.has_con: 
+		# 	self.z_con_dim = p['nz_con'][l] 
+
+		# self.z_dim = self.z_con_dim
+		# enc_h = p['enc_h'][l] 
+
+		# out_dim = sum(p['nz_con'][l:l+2]) * p['z_params'] 
+		# #self.imdim = np.prod(p['ldim'][l]) 
+		# self.constrained = l < p['layers']-1 
+
+		# # first fc - output of final conv layer
+		# self.fc1 = Linear(len(self.phi[-1]), enc_h) 
+		# if self.has_con: 
+		# 	# features to continuous latent	 
+		# 	self.fc_zp = Linear(enc_h, out_dim) 
+
 
 	def init_conv_trans(self, p): # does conv, phi and precision
 	
@@ -128,8 +158,10 @@ class pc_conv_network(nn.Module):
 			self.p['dim'].append(dim_block)
 
 		# top level phi
-		phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
-
+		if self.p['vae']:
+			phi.append(nn.Parameter(torch.rand(self.bs,self.hidden)))   # how does mean/sd work with this??
+		else:
+			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 		#self.Precision = nn.ModuleList(Precision)
 		#self.P_chol = nn.ParameterList(P_chol)
 		#self.weights = nn.ParameterList(weights)
@@ -207,6 +239,27 @@ class pc_conv_network(nn.Module):
 			else:
 				self.Precision[i].weight = nn.Parameter(weights).cuda()
 
+	def plot(self, i, input_image, plot_vars):
+	
+		z, pred = plot_vars
+		pdir = os.path.join(self.p['plot_dir'], self.p['model_name'])
+		matsdir = os.path.join(self.p['plot_dir'], self.p['model_name'], 'mats')
+		
+		os.makedirs(pdir) if not os.path.exists(pdir) else None
+		os.makedirs(matsdir) if not os.path.exists(matsdir) else None
+	
+		save_image(pred[0].data.cpu(), pdir+'/p{}.png'.format(i))
+		save_image(input_image[0].data.cpu(), pdir+'/b{}.png'.format(i))
+		
+		#if p['vae']:
+		#	mu	= m['z_pc'][l].select(-1, 0).data.cpu().numpy()
+		#	var = m['z_pc'][l].select(-1, 1).data.cpu().numpy()
+		#	sio.savemat(os.path.join(matsdir,'mu_{}.mat'.format(i)), {'r':mu})
+		#	sio.savemat(os.path.join(matsdir,'var_{}.mat'.format(i)), {'r':var})
+
+		z	= z.data.cpu().numpy()
+		sio.savemat(os.path.join(matsdir,'z_{}.mat'.format(i)), {'r':z})
+
 		# alternative precision
 		# can assume covariance will be the same everywhere
 		# so weight sharing of some sort should work
@@ -255,26 +308,64 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i, learn):
 
-		# do block
-		x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
-		for j in reversed(range(len(self.p['ks'][i]))):
+		if self.p['vae']:
+			# do block - top phi is the latent??
+			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
 			
-			x = self.conv_trans[i][j](F.relu(x))
+			for j in reversed(range(len(self.p['ks'][i]))):
+				# top - done below
+				# if i == len(self.p['ks']) -1 and j = len(self.p['ks'][i]) -1:
+				# 	x = F.relu(self.fc1(x))
+				# 	x = F.relu(self.fc2(x))
+				# 	x = F.relu(self.conv_trans[i][j](x))
 
-		if i == 0:
-			PE_0 = self.images   - x.view(self.bs,-1)
+				# bottom
+				if i == 0 and j == 0:
+					x = sigmoid(self.conv_trans[i][j](x))
+
+				# everything else
+				else:
+					x = F.relu(self.conv_trans[i][j](x))
+
+			if i == 0:
+				PE_0 = self.images   - x.view(self.bs,-1)
+			else:
+				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
+
+			# do block above
+			if i == self.nlayers-1:
+				# top block - where self.phi['i+1'] is latents
+				x = F.relu(self.fc1(self.phi[i+1]))
+				x = F.relu(self.fc2(x))#.view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1]) #rearrange
+				# x = F.relu(self.conv_trans[i][j](x))
+				PE_1 = self.phi[i] - x.view(self.bs,-1) #self.phi[i+1]
+			else:
+				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
+				for j in reversed(range(len(self.p['ks'][i+1]))):
+					x = self.conv_trans[i+1][j](F.relu(x))
+				PE_1 = self.phi[i] - x.view(self.bs,-1)
+
+		# Standard version
 		else:
-			PE_0 = self.phi[i-1] - x.view(self.bs,-1)
+			# do block
+			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
+			for j in reversed(range(len(self.p['ks'][i]))):
+				
+				x = self.conv_trans[i][j](F.relu(x))
 
-		# do block above
-		if i == self.nlayers-1:
-			PE_1 = self.phi[i] - self.phi[i+1]
-		else:
-			x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
-			for j in reversed(range(len(self.p['ks'][i+1]))):
-				x = self.conv_trans[i+1][j](F.relu(x))
-			PE_1 = self.phi[i] - x.view(self.bs,-1)
+			if i == 0:
+				PE_0 = self.images   - x.view(self.bs,-1)
+			else:
+				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
 
+			# do block above
+			if i == self.nlayers-1:
+				PE_1 = self.phi[i] - self.phi[i+1]
+			else:
+				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
+				for j in reversed(range(len(self.p['ks'][i+1]))):
+					x = self.conv_trans[i+1][j](F.relu(x))
+				PE_1 = self.phi[i] - x.view(self.bs,-1)
 		
 
 		# if i == 0:
@@ -356,6 +447,46 @@ class pc_conv_network(nn.Module):
 
 		# 	- sum(self.Precision[i](PE_0, PE_0))
 		# 	)
+
+
+	def vae_loss(self, curiter, z_pc):
+
+		loss 			   = 0.		
+		train_loss 		   = [] 
+		train_norm_kl_loss = []
+		train_cat_kl_loss  = [] 
+		layer_loss 		   = 0.
+
+		
+		#err_loss = self.mse(image, pred)			
+	
+		kloss_args	= (z_pc,   # mu, sig
+					   self.p['z_con_capacity'][0], # anealing params
+					   curiter)	# data size
+					   
+		norm_kl_loss = self.q_dist.calc_kloss(*kloss_args) #/ self.p['b']
+		
+		# kloss_args	 = (z_pd,  # alpha
+		# 				self.p['z_dis_capacity'][0],  # anneling params 
+		# 				self.p['nz_dis'][0], # nclasses per categorical dimension
+		# 				curiter)	# data size
+					  
+		# cat_kl_loss = self.cat_dist.calc_kloss(*kloss_args) #/ self.p['b']
+
+		# if self.p['elbo_loss']:	
+		# 	layer_loss = norm_kl_loss + cat_kl_loss + err_loss
+		# else:
+		# 	layer_loss = err_loss 
+
+		# loss += layer_loss
+
+		# if self.p['dataset'] == 'mnist':
+		# 	loss /= np.prod(self.p['imdim'][1:])
+		
+		
+		# metrics = (err_loss.item(), norm_kl_loss.item(), cat_kl_loss.item())
+
+		return norm_kl_loss#, metrics
 		
 	def inference(self):
 
@@ -372,10 +503,21 @@ class pc_conv_network(nn.Module):
 			self.F_old = self.F
 			self.F = 0#nn.Parameter(torch.zeros(1))
 			#self.phi_old = self.phi
+			self.kl_loss = 0
+			if self.p['vae']:
+				# KL loss   -> z_pc is encoded latents - phi uppermost in this implementation?? HOW IS MEAN/SD MANAGED?
+				latent_sample = []
+				# Continuous sampling 
+				norm_sample = self.q_dist.sample_normal(params=self.phi[-1], train=self.training)   # may need to implement self.training
+				latent_sample.append(norm_sample)
+				z = torch.cat(latent_sample, dim=-1)
+				self.kl_loss  = self.vae_loss(self.iteration, z_pc) 
 			
+			# predictive coding and reconstruction loss
 			for l in range(0, self.nlayers):
 				self.loss(l,learn=0)
-			self.F=torch.sum(self.F)
+
+			self.F=torch.sum(self.F) + torch.sum(self.kl_loss)
 			# if i < self.iter-1:
 			# 	self.F.backward(retain_graph=True)
 			# else:
@@ -479,6 +621,22 @@ class pc_conv_network(nn.Module):
 		print(self.F)
 		# if learn == 1:
 		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1507,218 +1665,6 @@ class ObservationVAE(Module):
 		elif self.enc_mode:
 			return z
 
-
-
-
-class ObservationVAE_segment(Module):
-	def __init__(self, p):
-		super(ObservationVAE_segment,self).__init__()
-		
-		self.p = p
-		
-		self.err_plot_flag = True
-		self.plot_errs = []
-		self.enc_mode = False
-		
-		self.mse  = MSELoss(reduction='sum').cuda() if p['gpu'] else MSELoss()
-		self.iter_loss = 0.0
-		
-		p = mutils.calc_rf(p)[1]
-				
-		# Initialise Distributions
-		self.prior_dist, self.q_dist, self.x_dist, self.cat_dist = mutils.discheck(p)
-		
-		p['z_params']	= self.q_dist.nparams
-
-		# Initialise Modules - learnable
-		if p['conv']:
-
-			if p['dataset'] == 'mnist' or p['dataset'] == 'moving_mnist':
-				self.f_enc = MNISTConvEncoder(p,0)
-				self.g_dec = MNISTConvDecoder(p,0)
-
-			elif p['dataset'] == 'stl10' and p['exp_name'] == 'stl10_freq_2' and p['num_freqs'] == 2:
-				self.f_enc_low = STL10ConvEncoder_low_freq(p,0)
-				self.g_dec_low = STL10ConvDecoder_low_freq(p,0)	
-
-				self.f_enc_hi = STL10ConvEncoder_hi_freq(p,0)
-				self.g_dec_hi = STL10ConvDecoder_hi_freq(p,0)	
-
-			elif p['dataset'] == 'stl10' and p['exp_name'] == 'stl10_freq':
-				self.f_enc = STL10ConvEncoder_freq(p,0)
-				self.g_dec = STL10ConvDecoder_freq(p,0)			
-			
-			elif p['dataset'] == 'stl10' and p['exp_name'] == 'stl10_patch':
-				self.f_enc = STL10_patch_ConvEncoder(p,0)
-				self.g_dec = STL10_patch_ConvDecoder(p,0)
-
-			elif p['dataset'] == 'stl10':
-				self.f_enc = STL10ConvEncoder(p,0)
-				self.g_dec = STL10ConvDecoder(p,0)
-
-			elif p['dataset'] == 'cifar10':
-				self.f_enc = CIFAR10ConvEncoder(p,0)
-				self.g_dec = CIFAR10ConvDecoder(p,0)
-				
-			elif p['dataset'] == 'celeba':
-				self.f_enc = CelebConvEncoder(p,0)
-				self.g_dec = CelebConvDecoder(p,0)			
-			
-			else:
-				self.f_enc = ConvEncoder(p,0)
-				self.g_dec = ConvDecoder(p,0)
-		else:
-			self.f_enc = Encoder(p,0)
-			self.g_dec = Decoder(p,0)
-
-		if p['foveate']:
-			self.retina = Retina(p['patch_size'], p['num_patches'], p['patch_noise'])
-														
-		# Initialise Tensors
-		self.reset()
-
-		if p['gpu']:
-			self.cuda()
-		
-	def plot(self, i, input_image, plot_vars):
-	
-		z, pred = plot_vars
-		pdir = os.path.join(self.p['plot_dir'], self.p['model_name'])
-		matsdir = os.path.join(self.p['plot_dir'], self.p['model_name'], 'mats')
-		
-		os.makedirs(pdir) if not os.path.exists(pdir) else None
-		os.makedirs(matsdir) if not os.path.exists(matsdir) else None
-	
-		save_image(pred[0].data.cpu(), pdir+'/p{}.png'.format(i))
-		save_image(input_image[0].data.cpu(), pdir+'/b{}.png'.format(i))
-		
-		#if p['vae']:
-		#	mu	= m['z_pc'][l].select(-1, 0).data.cpu().numpy()
-		#	var = m['z_pc'][l].select(-1, 1).data.cpu().numpy()
-		#	sio.savemat(os.path.join(matsdir,'mu_{}.mat'.format(i)), {'r':mu})
-		#	sio.savemat(os.path.join(matsdir,'var_{}.mat'.format(i)), {'r':var})
-
-		z	= z.data.cpu().numpy()
-		sio.savemat(os.path.join(matsdir,'z_{}.mat'.format(i)), {'r':z})
-	
-	def reset(self):
-		# reset / init all model variables 
-		# call before each batch
-		
-		# clears computation graph for next batch
-		self.iter_loss = 0
-		self.plot_errs = []
-		
-		if self.p['use_lstm']:
-			for l in range(self.p['layers']):
-				self.lstm[l].reset()
-			
-			if self.p['foveate']:
-				self.action	  =	 zeros(self.p['b'], self.p['action_dim'], self.p['n_actions']).cuda()
-				if self.p['gpu']:
-					self.action = self.action.cuda()
-			
-	def loss(self, curiter, image, pred, z_pc, z_pd, eval=False):
-
-		loss 			   = 0.		
-		train_loss 		   = [] 
-		train_norm_kl_loss = []
-		train_cat_kl_loss  = [] 
-		layer_loss 		   = 0.
-
-		
-		err_loss = self.mse(image, pred)			
-	
-		kloss_args	= (z_pc,   # mu, sig
-					   self.p['z_con_capacity'][0], # anealing params
-					   curiter)	# data size
-					   
-		norm_kl_loss = self.q_dist.calc_kloss(*kloss_args) #/ self.p['b']
-		
-		kloss_args	 = (z_pd,  # alpha
-						self.p['z_dis_capacity'][0],  # anneling params 
-						self.p['nz_dis'][0], # nclasses per categorical dimension
-						curiter)	# data size
-					  
-		cat_kl_loss = self.cat_dist.calc_kloss(*kloss_args) #/ self.p['b']
-
-		if self.p['elbo_loss']:	
-			layer_loss = norm_kl_loss + cat_kl_loss + err_loss
-		else:
-			layer_loss = err_loss 
-
-		loss += layer_loss
-
-		if self.p['dataset'] == 'mnist':
-			loss /= np.prod(self.p['imdim'][1:])
-		
-		
-		metrics = (err_loss.item(), norm_kl_loss.item(), cat_kl_loss.item())
-
-		return loss, metrics
-	
-	def decode(self, z, l):
-		return self.g_dec(z).data
-	
-	def foveate(self, im, a):
-		image, foveated = self.retina.foveate(im, a)
-		return foveated.numpy()		
-	
-	def forward(self, iter, image, actions=None, eval=False, to_matlab=False):
-			
-		if to_matlab:
-			
-			self.p['gpu'] = False
-			self.reset()
-			if not isinstance(image, Tensor) or isinstance(image, FloatTensor):
-				image = FloatTensor(np.asarray(image)).unsqueeze(0).unsqueeze(0)
-				#from torchvision.utils import save_image
-				#save_image(image, 'lol.png')
-
-			if not actions is None:
-				actions = FloatTensor(actions).unsqueeze(0).unsqueeze(0)
-		
-		if self.p['foveate'] and not actions is None:
-			image, foveated = self.retina.foveate(image, actions)	
-
-		# Encoding - p(z2|x) or p(z1 |x,z2)
-		z_pc, z_pd = self.f_enc(image, None)
-		
-		# Latent Sampling
-		latent_sample = []
-
-		# Continuous sampling 
-		norm_sample = self.q_dist.sample_normal(params=z_pc, train=self.training)
-		latent_sample.append(norm_sample)
-
-		# Discrete sampling
-		for ind, alpha in enumerate(z_pd):
-			cat_sample = self.cat_dist.sample_gumbel_softmax(alpha, train=self.training)
-			latent_sample.append(cat_sample)
-			
-
-		z = torch.cat(latent_sample, dim=-1)
-
-		# Decoding - p(x|z)
-		pred = self.g_dec(z)
-		
-		if self.training:
-
-			iter_loss, _ = self.loss(iter, image, pred, z_pc, z_pd) 
-			#self.iter_loss += iter_loss / image.shape[1]
-			self.iter_loss += iter_loss
-
-		if self.err_plot_flag:
-			self.err_plot_flag = False
-		
-		if to_matlab:
-			return z.detach().numpy(), foveated.detach().numpy()
-			
-		elif eval:
-			return z, pred
-
-		elif self.enc_mode:
-			return z
 
 class PrednetWorldModel(Module):
 	def __init__(self, p):
