@@ -512,13 +512,13 @@ class pc_conv_network(nn.Module):
 				norm_sample = self.q_dist.sample_normal(params=self.phi[-1], train=self.training)   # may need to implement self.training
 				latent_sample.append(norm_sample)
 				z = torch.cat(latent_sample, dim=-1)
-				self.kl_loss  = self.vae_loss(self.iteration, z_pc) 
+				self.kl_loss  = self.vae_loss(self.iteration, self.phi[-1]) 
 			
 			# predictive coding and reconstruction loss
 			for l in range(0, self.nlayers):
 				self.loss(l,learn=0)
 
-			self.F=torch.sum(self.F) + torch.sum(self.kl_loss)
+			self.F += torch.sum(self.kl_loss)
 			# if i < self.iter-1:
 			# 	self.F.backward(retain_graph=True)
 			# else:
