@@ -186,8 +186,8 @@ def discheck(p,hi=0,mu_low=0,sigma_low=1):
 	if p['prednet']:
 		return prior_dist, q_dist, p['x_dist'], cat_dist
 	else:
-		return prior_dist[0], q_dist[0], p['x_dist'], cat_dist
-		# return prior_dist[0], q_dist[0], p['x_dist'], cat_dist[0]
+		# return prior_dist[0], q_dist[0], p['x_dist'], cat_dist
+		return prior_dist[0], q_dist[0], p['x_dist'], cat_dist[0]
 
 def plot(m, p, iter, bottom_up):
 
