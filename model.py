@@ -166,7 +166,7 @@ class pc_conv_network(nn.Module):
 
 		# top level phi
 		if self.p['vae']:
-			phi.append(nn.Parameter(torch.rand(self.bs,self.hidden)))   # how does mean/sd work with this??
+			phi.append(nn.Parameter(torch.rand(self.bs,self.latents)))   # how does mean/sd work with this??
 		else:
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 		#self.Precision = nn.ModuleList(Precision)
