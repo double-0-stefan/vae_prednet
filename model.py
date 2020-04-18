@@ -28,6 +28,10 @@ class pc_conv_network(nn.Module):
 	def __init__(self,p):
 		super(pc_conv_network, self).__init__()
 
+		l=0 # sb add for conveience/testing
+		self.latents = sum(p['z_dim'][l:l+2]) 
+		self.hidden	  = p['enc_h'][l] 
+
 		self.err_plot_flag = True
 		self.plot_errs = []
 		self.enc_mode = False
@@ -63,9 +67,7 @@ class pc_conv_network(nn.Module):
 		p['z_params']	= self.q_dist.nparams
 
 		# layer configuration 
-		l=0 # sb add for conveience/testing
-		self.latents = sum(p['z_dim'][l:l+2]) 
-		self.hidden	  = p['enc_h'][l] 
+		
 
 		fc1 = Linear(self.latents, self.hidden)
 		fc2 = Linear(self.hidden, len(self.phi[-2]))
