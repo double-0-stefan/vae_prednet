@@ -135,7 +135,7 @@ class pc_conv_network(nn.Module):
 						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
 						conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
 					else: 
-						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=2, padding= p['pad']))
+						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding= p['pad']))
 						conv_block.append(Conv2d(p['chan'][j-1][-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 				else:
 					conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=p['pad']))
