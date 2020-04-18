@@ -518,7 +518,7 @@ class pc_conv_network(nn.Module):
 			for l in range(0, self.nlayers):
 				self.loss(l,learn=0)
 
-			print (self.kl_loss)
+
 
 			self.F += torch.sum(torch.tensor(self.kl_loss))
 			# if i < self.iter-1:
@@ -620,7 +620,7 @@ class pc_conv_network(nn.Module):
 			#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		self.inference()
-
+		print(self.kl_loss)
 		print(self.F)
 		# if learn == 1:
 		
