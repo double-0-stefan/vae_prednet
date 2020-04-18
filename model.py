@@ -341,7 +341,7 @@ class pc_conv_network(nn.Module):
 
 			# do block above
 			if i == self.nlayers-1:
-				print(self.phi[i].size())
+				print(self.phi[i].size()) #torch.Size([50, 33856])
 				# top block - where self.phi['i+1'] is latents
 				x = F.relu(self.lin[0](self.phi[i+1]))
 				x = F.relu(self.lin[1](x))#.view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1]) #rearrange
