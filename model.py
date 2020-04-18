@@ -346,7 +346,9 @@ class pc_conv_network(nn.Module):
 				x = F.relu(self.lin[0](self.phi[i+1]))
 				x = F.relu(self.lin[1](x))#.view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1]) #rearrange
 				# x = F.relu(self.conv_trans[i][j](x))
+				print(x.view(self.bs,-1) .size())
 				PE_1 = self.phi[i] - x.view(self.bs,-1) #self.phi[i+1]
+
 			else:
 				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
 				for j in reversed(range(len(self.p['ks'][i+1]))):
