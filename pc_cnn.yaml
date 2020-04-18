@@ -71,8 +71,6 @@ bs:
 imdim_sb:
     - 32
 
-vae:
-    - 0
 
 n_actions: 2
 
