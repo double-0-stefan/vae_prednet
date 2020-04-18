@@ -378,6 +378,7 @@ class pc_conv_network(nn.Module):
 				PE_1 = self.phi[i] - x.view(self.bs,-1)
 		
 
+
 		# if i == 0:
 		# 	self.PE_0 = self.images   - (self.conv_trans[i](F.relu(self.phi[i].view(self.bs, self.chan[i+1], self.imdim[i+1], self.imdim[i+1])))).view(self.bs,-1)
 		# else:
@@ -421,7 +422,7 @@ class pc_conv_network(nn.Module):
 		# 	+ torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 		# 	)
 
-		self.F +=  0.5*(
+		self.F +=  0.5*sum(sum((
 			# logdet cov = -logdet precision
 			#- torch.logdet(P1)
 
@@ -430,7 +431,7 @@ class pc_conv_network(nn.Module):
 			#- torch.logdet(P0)
 
 			+ torch.matmul(PE_0,PE_0.t())
-			)
+			)))
 
 
 		#else:
