@@ -546,9 +546,9 @@ class pc_conv_network(nn.Module):
 				if self.F >= self.F_old:
 					# self.F = self.F_old
 					# self.phi = self.phi_old
-					self.i = i
-					break
-			self.i = i
+					#self.i = i
+					#break
+			#self.i = i
 			# print(self.F)
 			# print(torch.sum(self.images-self.F_old))
 
@@ -633,7 +633,7 @@ class pc_conv_network(nn.Module):
 			#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		self.inference()
-		print(self.i)
+		print(iteration)
 		print(self.kl_loss)
 		print(self.F)
 		# print(self.phi[-1])
