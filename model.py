@@ -341,12 +341,12 @@ class pc_conv_network(nn.Module):
 
 			# do block above
 			if i == self.nlayers-1:
-				print(self.phi[i].size()) #torch.Size([50, 33856])
+				# print(self.phi[i].size()) #torch.Size([50, 33856])
 				# top block - where self.phi['i+1'] is latents
 				x = F.relu(self.lin[0](self.phi[i+1]))
 				x = F.relu(self.lin[1](x))# this is size 50 * 50!!
 				# x = F.relu(self.conv_trans[i][j](x))
-				print(x.view(self.bs,-1) .size())
+				# print(x.view(self.bs,-1) .size())
 				PE_1 = self.phi[i] - x.view(self.bs,-1) #self.phi[i+1]
 
 			else:
@@ -529,8 +529,8 @@ class pc_conv_network(nn.Module):
 				self.loss(l,learn=0)
 
 
-			print(self.kl_loss)
-			print(self.F.size())
+			# print(self.kl_loss)
+			# print(self.F.size())
 			self.F += torch.sum(torch.tensor(self.kl_loss))
 			# if i < self.iter-1:
 			# 	self.F.backward(retain_graph=True)
