@@ -548,7 +548,7 @@ class pc_conv_network(nn.Module):
 					# self.phi = self.phi_old
 					self.i = i
 					break
-
+			self.i = i
 			# print(self.F)
 			# print(torch.sum(self.images-self.F_old))
 
