@@ -70,7 +70,7 @@ class pc_conv_network(nn.Module):
 		
 
 		fc1 = Linear(self.latents, self.hidden)
-		fc2 = Linear(self.hidden, len(self.phi[-2]))
+		fc2 = Linear(self.hidden, self.phi[-2].size(1))
 		self.lin = []
 		self.lin.append(fc1)
 		self.lin.append(fc2)
@@ -344,7 +344,7 @@ class pc_conv_network(nn.Module):
 				print(self.phi[i].size()) #torch.Size([50, 33856])
 				# top block - where self.phi['i+1'] is latents
 				x = F.relu(self.lin[0](self.phi[i+1]))
-				x = F.relu(self.lin[1](x))#.view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1]) #rearrange
+				x = F.relu(self.lin[1](x))# this is size 50 * 50!!
 				# x = F.relu(self.conv_trans[i][j](x))
 				print(x.view(self.bs,-1) .size())
 				PE_1 = self.phi[i] - x.view(self.bs,-1) #self.phi[i+1]
