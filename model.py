@@ -71,10 +71,10 @@ class pc_conv_network(nn.Module):
 
 		fc1 = Linear(self.latents, self.hidden)
 		fc2 = Linear(self.hidden, self.phi[-2].size(1))
-		self.lin = []
-		self.lin.append(fc1)
-		self.lin.append(fc2)
-		self.lin = nn.ModuleList(self.lin)
+		lin = []
+		lin.append(fc1)
+		lin.append(fc2)
+		self.lin = nn.ModuleList(lin)
 
 		# self.has_con = p['nz_con'][l] is not None 
 		# self.z_con_dim = 0;
