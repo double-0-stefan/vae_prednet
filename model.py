@@ -67,8 +67,10 @@ class pc_conv_network(nn.Module):
 		self.latents = sum(p['z_dim'][l:l+2]) 
 		self.hidden	  = p['enc_h'][l] 
 
-		self.fc1 = Linear(self.latents, self.hidden)
-		self.fc2 = Linear(self.hidden, len(self.phi[-2]))
+		fc1 = Linear(self.latents, self.hidden)
+		fc2 = Linear(self.hidden, len(self.phi[-2]))
+
+		self.lin = nn.Modulelist(fc1,fc2)
 
 		# self.has_con = p['nz_con'][l] is not None 
 		# self.z_con_dim = 0;
@@ -336,8 +338,8 @@ class pc_conv_network(nn.Module):
 			# do block above
 			if i == self.nlayers-1:
 				# top block - where self.phi['i+1'] is latents
-				x = F.relu(self.fc1(self.phi[i+1]))
-				x = F.relu(self.fc2(x))#.view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1]) #rearrange
+				x = F.relu(self.lin[0](self.phi[i+1]))
+				x = F.relu(self.lin[1](x))#.view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1]) #rearrange
 				# x = F.relu(self.conv_trans[i][j](x))
 				PE_1 = self.phi[i] - x.view(self.bs,-1) #self.phi[i+1]
 			else:
