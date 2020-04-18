@@ -629,6 +629,7 @@ class pc_conv_network(nn.Module):
 		self.inference()
 		print(self.kl_loss)
 		print(self.F)
+		print(self.phi[-1])
 		# if learn == 1:
 		
 
