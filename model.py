@@ -601,7 +601,8 @@ class pc_conv_network(nn.Module):
 		# self.optimizer = torch.optim.ASGD(params=self.parameters(), lr=0.0001, lambd=0.0001, alpha=0.75, t0=1000000.0, weight_decay=0)
 		self.iteration = iteration
 		self.F_last = self.F
-
+		self.fc1.requires_grad_(True)
+		self.fc2.requires_grad_(True)
 		if iteration == 0:
 			self.iter = 1
 		else:
