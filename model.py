@@ -529,7 +529,7 @@ class pc_conv_network(nn.Module):
 
 
 			print(self.kl_loss)
-			print(self.F)
+			print(self.F.size())
 			self.F += torch.sum(torch.tensor(self.kl_loss))
 			# if i < self.iter-1:
 			# 	self.F.backward(retain_graph=True)
