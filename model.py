@@ -560,7 +560,7 @@ class pc_conv_network(nn.Module):
 				if self.F >= self.F_old:
 					self.F = self.F_old
 					self.phi = self.phi_old
-					
+
 					self.i += i
 					#break
 			#self.i = i
@@ -626,6 +626,7 @@ class pc_conv_network(nn.Module):
 	def forward(self, iteration, images, learn=1):
 
 		self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
+		#self.optimizer2 = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
 
 		self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1, patience=2, verbose=False, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
 		# self.optimizer = torch.optim.RMSprop(params=self.parameters(),lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=True)
@@ -649,7 +650,7 @@ class pc_conv_network(nn.Module):
 		# put weights into bilinear for inference and see if faster (no update done)
 		for i in range(len(self.phi)):
 			# reset wactivations
-			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
+			self.phi[i] = nn.Parameter(torch.zeros_like(self.phi[i]))
 			#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		self.inference()
