@@ -58,6 +58,8 @@ class pc_conv_network(nn.Module):
 		self.baseline = None
 
 		self.init_latents(p)
+
+		print(self)
 		
 	def init_latents(self, p):
 
@@ -203,7 +205,7 @@ class pc_conv_network(nn.Module):
 		# 		[ConvTranspose2d(p['chan'][i+1], p['chan'][i], p['ks'][i], 1,p['pad'][i]).cuda() 
 		# 		for i in range(self.nlayers)])
 
-		print(self)
+		
 
 	def init_phi(self,p):
 		# only need phi's where there are precisions
