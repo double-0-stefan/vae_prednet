@@ -341,9 +341,8 @@ class pc_conv_network(nn.Module):
 
 			# do block above
 			if i == self.nlayers-1:
-				# print(self.phi[i].size()) #torch.Size([50, 33856])
 				# top block - where self.phi['i+1'] is latents
-				x = F.relu(self.lin[0](self.phi[i+1]))
+				x = F.relu(self.lin[0](self.z))#phi[i+1])) -> should this be twice size (mean, sd)
 				x = F.relu(self.lin[1](x))# this is size 50 * 50!!
 				# x = F.relu(self.conv_trans[i][j](x))
 				# print(x.view(self.bs,-1) .size())
@@ -532,7 +531,7 @@ class pc_conv_network(nn.Module):
 				# Continuous sampling 
 				norm_sample = self.q_dist.sample_normal(params=self.phi[-1], train=self.training)   # may need to implement self.training
 				latent_sample.append(norm_sample)
-				z = torch.cat(latent_sample, dim=-1)
+				self.z = torch.cat(latent_sample, dim=-1)
 				self.kl_loss  = self.vae_loss(self.iteration, self.phi[-1]	) 
 			
 			# predictive coding and reconstruction loss
