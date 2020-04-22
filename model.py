@@ -509,7 +509,18 @@ class pc_conv_network(nn.Module):
 		# 	self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
 		self.i = 0
+
+
+		self.phi.requires_grad_(True)
+		self.lin.requires_grad_(False)
+		self.conv_trans.requires_grad_(False)
+
 		for i in range(self.iter):
+			if i == self.iter -1:
+				self.phi.requires_grad_(False)
+				self.lin.requires_grad_(True)
+				self.conv_trans.requires_grad_(True)
+
 			self.optimizer.zero_grad()
 			self.F_old = self.F
 			self.F = 0#nn.Parameter(torch.zeros(1))
@@ -535,6 +546,7 @@ class pc_conv_network(nn.Module):
 			# if i < self.iter-1:
 			# 	self.F.backward(retain_graph=True)
 			# else:
+
 			self.F.backward()
 			#print(i)
 
@@ -552,7 +564,11 @@ class pc_conv_network(nn.Module):
 			# print(self.F)
 			# print(torch.sum(self.images-self.F_old))
 
+
+
 		# self.learn()
+
+		
 
 	def learn(self):
 
@@ -608,13 +624,13 @@ class pc_conv_network(nn.Module):
 
 		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 
-		self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1, patience=10, verbose=False, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
+		#self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1, patience=10, verbose=False, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
 		# self.optimizer = torch.optim.RMSprop(params=self.parameters(),lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=True)
 		# self.optimizer = torch.optim.ASGD(params=self.parameters(), lr=0.0001, lambd=0.0001, alpha=0.75, t0=1000000.0, weight_decay=0)
 		self.iteration = iteration
 		self.F_last = self.F
 		self.F = 0
-		self.lin.requires_grad_(True)
+		#self.lin.requires_grad_(True)
 		# self.fc2.requires_grad_(True)
 		if iteration == 0:
 			self.iter = 1
