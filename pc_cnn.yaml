@@ -27,7 +27,7 @@ rotating: False
 
 e    :  25000
 b    :  200
-lr   :  0.000001
+lr   :  0.001
 
 err_noise:
     - True
