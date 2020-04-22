@@ -69,7 +69,7 @@ class pc_conv_network(nn.Module):
 		# layer configuration 
 		
 
-		fc1 = Linear(self.latents/2, self.hidden)
+		fc1 = Linear(int(self.latents/2), self.hidden)
 		fc2 = Linear(self.hidden, self.phi[-2].size(1))
 		lin = []
 		lin.append(fc1)
