@@ -510,7 +510,7 @@ class pc_conv_network(nn.Module):
 		# 	self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
 		self.i = 0
-
+		learn = 0
 
 		self.phi.requires_grad_(True)
 		self.lin.requires_grad_(False)
@@ -518,6 +518,7 @@ class pc_conv_network(nn.Module):
 
 		for i in range(self.iter):
 			if i == self.iter -1:
+				learn = 1
 				self.phi.requires_grad_(False)
 				self.lin.requires_grad_(True)
 				self.conv_trans.requires_grad_(True)
@@ -557,8 +558,9 @@ class pc_conv_network(nn.Module):
 			# end inference if starting to diverge
 			if i > 0:
 				if self.F >= self.F_old:
-					# self.F = self.F_old
-					# self.phi = self.phi_old
+					self.F = self.F_old
+					self.phi = self.phi_old
+					
 					self.i += i
 					#break
 			#self.i = i
