@@ -671,7 +671,7 @@ class pc_cnn_Trainer(Trainer):
 			self.train_epoch_pc_cnn()
 			#print(self.model.F)
 
-			#self.model.scheduler.step(self.epoch_loss)
+			self.model.scheduler.step(self.epoch_loss)
 
 			if e % self.model.p['plot_iter'] == 0:
 				tutils.save_checkpoint({'model': self.model, 
