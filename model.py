@@ -526,7 +526,7 @@ class pc_conv_network(nn.Module):
 			self.optimizer.zero_grad()
 			self.F_old = self.F
 			self.F = 0#nn.Parameter(torch.zeros(1))
-			#self.phi_old = self.phi
+			self.phi_old = self.phi
 			self.kl_loss = 0
 			if self.p['vae']:
 				# KL loss   -> z_pc is encoded latents - phi uppermost in this implementation?? HOW IS MEAN/SD MANAGED?
