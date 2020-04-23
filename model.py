@@ -541,6 +541,13 @@ class pc_conv_network(nn.Module):
 			for l in range(0, self.nlayers):
 				self.loss(l,learn=0)
 
+			if i > 0:
+				if self.F >= self.F_old:
+					# self.F = self.F_old
+					# self.phi = self.phi_old
+
+					self.i += i
+			print(self.phi)
 
 			# print(self.kl_loss)
 			# print(self.F.size())
@@ -556,12 +563,7 @@ class pc_conv_network(nn.Module):
 			self.optimizer.step()
 			#print(self.F)
 			# end inference if starting to diverge
-			if i > 0:
-				if self.F >= self.F_old:
-					self.F = self.F_old
-					self.phi = self.phi_old
-
-					self.i += i
+			
 					#break
 			#self.i = i
 			# print(self.F)
