@@ -656,7 +656,7 @@ class pc_conv_network(nn.Module):
 			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i])/1000)
 			#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
-		self.phi[-1] = nn.Parameter(torch.zeros_like(self.phi[i]))
+		self.phi[-1] = nn.Parameter(torch.zeros_like(self.phi[-1]))
 
 		self.inference()
 		print(iteration)
