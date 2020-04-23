@@ -659,7 +659,7 @@ class pc_conv_network(nn.Module):
 		# should be split into means and SD - rand, 1 ???
 		mu, logsigma = torch.chunk(self.phi[-1], 2, dim=-1)
 		mu = torch.zeros_like(mu)
-		logsigma = torch.zeros_like(mu)
+		logsigma = torch.ones_like(mu)
 		self.phi[-1] = nn.Parameter(torch.cat([mu,logsigma]).view(self.bs,-1))
 
 		self.inference()
