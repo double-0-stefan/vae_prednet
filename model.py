@@ -547,7 +547,7 @@ class pc_conv_network(nn.Module):
 					# self.phi = self.phi_old
 
 					self.i += 1
-			print(self.phi[0])
+			#print(self.phi[0])
 			print(self.phi[1])
 			# print(self.kl_loss)
 			# print(self.F.size())
