@@ -546,9 +546,9 @@ class pc_conv_network(nn.Module):
 					# self.F = self.F_old
 					# self.phi = self.phi_old
 
-					self.i += i
-			print(self.phi)
-
+					self.i += 1
+			print(self.phi[0])
+			print(self.phi[1])
 			# print(self.kl_loss)
 			# print(self.F.size())
 			self.F += torch.sum(torch.tensor(self.kl_loss))
