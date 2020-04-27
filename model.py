@@ -87,7 +87,7 @@ class pc_conv_network(nn.Module):
 		lin.append(fc2)
 		self.lin_up = nn.ModuleList(lin)
 
-		self.z_pc = nn.Parameter(torch.rand(self.bs,self.latents),requires_grad=True)
+		self.z_pc = nn.Parameter(torch.rand(self.bs,self.latents))
 
 
 		# self.has_con = p['nz_con'][l] is not None 
@@ -360,27 +360,26 @@ class pc_conv_network(nn.Module):
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
-				with torch.enable_grad():
-					self.z_pc = F.relu(self.lin_up[0](self.phi[-1])) # get rid of 'top phi', call z or somewthign
-					self.z_pc = F.relu(self.lin_up[1](self.z_pc))
+				self.z_pc = F.relu(self.lin_up[0](self.phi[-1])) # get rid of 'top phi', call z or somewthign
+				self.z_pc = F.relu(self.lin_up[1](self.z_pc))
 
-					# z_pc is the means and sds of the coordinates in latent sapce
-					# could ake this like phi - with covariance matrix
+				# z_pc is the means and sds of the coordinates in latent sapce
+				# could ake this like phi - with covariance matrix
 
-					# extra PE here for updating z_pc over course of inference?
+				# extra PE here for updating z_pc over course of inference?
 
-					# Latent Sampling
-					latent_sample = []
+				# Latent Sampling
+				latent_sample = []
 
-					# Continuous sampling 
-					norm_sample = self.q_dist.sample_normal(params=self.z_pc, train=self.training)
-					latent_sample.append(norm_sample)
+				# Continuous sampling 
+				norm_sample = self.q_dist.sample_normal(params=self.z_pc, train=self.training)
+				latent_sample.append(norm_sample)
 
-					z = torch.cat(latent_sample, dim=-1)
+				z = torch.cat(latent_sample, dim=-1)
 
-					# Decoding - p(x|z)
-					x = F.relu(self.lin_down[0](z))
-					x = F.relu(self.lin_down[1](x))
+				# Decoding - p(x|z)
+				x = F.relu(self.lin_down[0](z))
+				x = F.relu(self.lin_down[1](x))
 
 			else:
 				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
@@ -554,9 +553,9 @@ class pc_conv_network(nn.Module):
 		for i in range(self.iter):
 			if i == self.iter -1:
 				learn = 1
-				self.phi.requires_grad_(False)
+				self.phi.requires_grad_(True)
 				self.conv_trans.requires_grad_(True)
-				self.z_pc.requires_grad_(False)
+				self.z_pc.requires_grad_(True)
 				self.lin_up.requires_grad_(True)
 				self.lin_down.requires_grad_(True)
 
