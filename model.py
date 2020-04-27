@@ -466,6 +466,9 @@ class pc_conv_network(nn.Module):
 			# logdet cov = -logdet precision
 			#- torch.logdet(P1)
 
+			print(PE_0)
+			print(PE_1)
+
 			torch.matmul(PE_1,PE_1.t())
 
 			#- torch.logdet(P0)
@@ -601,8 +604,12 @@ class pc_conv_network(nn.Module):
 			#print(self.phi[0])
 			#print(self.phi[1])
 			# print(torch.max(sum(self.phi[0])))
-			print(self.phi[0])
-			print(self.z_pc)
+
+			#print(self.phi[0])
+			#print(self.z_pc)
+
+
+
 			#print(self.kl_loss)
 			# print(self.F.size())
 			self.F = self.F + self.kl_loss #torch.sum(torch.tensor(self.kl_loss))
