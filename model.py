@@ -461,13 +461,11 @@ class pc_conv_network(nn.Module):
 
 		# 	+ torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 		# 	)
-
+		print(PE_0)
+		print(PE_1)
 		self.F +=  0.5*sum(sum((
 			# logdet cov = -logdet precision
 			#- torch.logdet(P1)
-
-			print(PE_0)
-			print(PE_1)
 
 			torch.matmul(PE_1,PE_1.t())
 
