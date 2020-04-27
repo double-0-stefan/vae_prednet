@@ -466,8 +466,8 @@ class pc_conv_network(nn.Module):
 
 		# 	+ torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 		# 	)
-		# print(torch.matmul(PE_1,PE_1.t()))
-		# print(torch.matmul(PE_0,PE_0.t()))
+		print(torch.matmul(PE_1,PE_1.t()))
+		print(torch.matmul(PE_0,PE_0.t()))
 
 		#print(self.phi[0])
 		self.F +=  0.5*sum(sum((
