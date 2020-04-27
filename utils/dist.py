@@ -170,14 +170,14 @@ class Normal(nn.Module):
 
 	def sample_normal(self, params, train=True, heir=False):
 		
-		mu, logsigma = torch.chunk(params, 2, dim=-1).cuda()
+		mu, logsigma = torch.chunk(params, 2, dim=-1)
 
 		if train:
 	
 			sigma = torch.exp(0.5 * logsigma).cuda()
 			eps = torch.zeros(sigma.size()).normal_().cuda()
 			#logsigma = torch.clamp(logsigma, min=-103., max=87.)		
-			sample = mu + sigma * eps 
+			sample = mu.cuda() + sigma * eps 
 			
 			if heir == True:
 				return sample, mu, sigma
