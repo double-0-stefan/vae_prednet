@@ -470,8 +470,8 @@ class pc_conv_network(nn.Module):
 
 
 		# normalise (so equal precision at all levels)
-		PE_1 = PE_1/sum(sum(torch.matmul(PE_0,PE_0.t())))
-		PE_0 = PE_1/sum(sum(torch.matmul(PE_0,PE_0.t())))
+		PE_1 = PE_1/sum(sum(torch.matmul(PE_1,PE_1.t())))
+		PE_0 = PE_0/sum(sum(torch.matmul(PE_0,PE_0.t())))
 
 		print(sum(sum(torch.matmul(PE_1,PE_1.t()))))
 		print(sum(sum(torch.matmul(PE_0,PE_0.t()))))
