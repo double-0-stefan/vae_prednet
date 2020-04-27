@@ -384,6 +384,7 @@ class pc_conv_network(nn.Module):
 
 				# bottom
 				if i == 0 and j == 0:
+					print('hello')
 					x = sigmoid(self.conv_trans[i][j](x))
 
 				# everything else
@@ -407,7 +408,7 @@ class pc_conv_network(nn.Module):
 				print(x)
 
 			if i == 0:
-				print('hello')
+
 				PE_0 = self.images   - x.view(self.bs,-1)
 			else:
 				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
