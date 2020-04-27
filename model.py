@@ -567,7 +567,7 @@ class pc_conv_network(nn.Module):
 			self.F = 0#nn.Parameter(torch.zeros(1))
 			self.phi_old = self.phi
 
-			for l in range(0, self.nlayers - 1):
+			for l in range(0, self.nlayers):
 				self.loss(l,learn=0)
 			
 			# predictive coding and reconstruction loss
