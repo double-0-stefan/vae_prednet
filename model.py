@@ -70,13 +70,23 @@ class pc_conv_network(nn.Module):
 
 		# layer configuration 
 		
-
+		# ascending
 		fc1 = Linear(int(self.latents/2), self.hidden)
 		fc2 = Linear(self.hidden, self.phi[-2].size(1))
 		lin = []
 		lin.append(fc1)
 		lin.append(fc2)
-		self.lin = nn.ModuleList(lin)
+		self.lin_up = nn.ModuleList(lin)
+
+		# descending
+		fc1= Linear(elf.phi[-2].size(1), self.hidden)
+		fc2 = Linear(self.hidden, int(self.latents/2))
+
+		lin = []
+		lin.append(fc1)
+		lin.append(fc2)
+		self.lin_down = nn.ModuleList(lin)
+
 
 		# self.has_con = p['nz_con'][l] is not None 
 		# self.z_con_dim = 0;
@@ -341,9 +351,36 @@ class pc_conv_network(nn.Module):
 			else:
 				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
 
-			# do block above
+			# do block above - movr to loss vae?
 			if i == self.nlayers-1:
 				# top block - where self.phi['i+1'] is latents
+
+				# Encoding - p(z2|x) or p(z1 |x,z2)
+				x = F.relu(self.lin_up[0](self.phi[-1])) # get rid of 'top phi', call z or somewthign
+				z_pc = F.relu(self.lin_up[1](x))
+
+				# z_pc is the means and sds of the coordinates in latent sapce
+				# could ake this like phi - with covariance matrix
+				
+				# Latent Sampling
+				latent_sample = []
+
+				# Continuous sampling 
+				norm_sample = self.q_dist.sample_normal(params=z_pc, train=self.training)
+				latent_sample.append(norm_sample)
+
+				z = torch.cat(latent_sample, dim=-1)
+
+				# Decoding - p(x|z)
+				x = F.relu(self.lin_down[0](self.phi[-1]))
+				z_pc = F.relu(self.lin_up[1](x))
+
+				pred = self.g_dec(z)
+
+
+
+
+
 				x = F.relu(self.lin[0](self.z))#phi[i+1])) -> should this be twice size (mean, sd)
 				x = F.relu(self.lin[1](x))# this is size 50 * 50!!
 				# x = F.relu(self.conv_trans[i][j](x))
@@ -527,6 +564,38 @@ class pc_conv_network(nn.Module):
 			self.F_old = self.F
 			self.F = 0#nn.Parameter(torch.zeros(1))
 			self.phi_old = self.phi
+
+			for l in range(0, self.nlayers - 1):
+				self.loss(l,learn=0)
+			
+			# predictive coding and reconstruction loss
+
+
+
+			# Encoding - p(z2|x) or p(z1 |x,z2)
+			z_pc, z_pd = self.f_enc(image, None)
+			
+			# Latent Sampling
+			latent_sample = []
+
+			# Continuous sampling 
+			norm_sample = self.q_dist.sample_normal(params=z_pc, train=self.training)
+			latent_sample.append(norm_sample)
+
+			# Discrete sampling
+			for ind, alpha in enumerate(z_pd):
+				cat_sample = self.cat_dist.sample_gumbel_softmax(alpha, train=self.training)
+				latent_sample.append(cat_sample)
+				
+
+			z = torch.cat(latent_sample, dim=-1)
+
+			# Decoding - p(x|z)
+			pred = self.g_dec(z)
+
+
+
+
 			self.kl_loss = 0
 			if self.p['vae']:
 				# KL loss   -> z_pc is encoded latents - phi uppermost in this implementation?? HOW IS MEAN/SD MANAGED?
@@ -537,9 +606,11 @@ class pc_conv_network(nn.Module):
 				self.z = torch.cat(latent_sample, dim=-1)
 				self.kl_loss  = self.vae_loss(self.iteration, self.phi[-1]	) 
 			
-			# predictive coding and reconstruction loss
-			for l in range(0, self.nlayers):
-				self.loss(l,learn=0)
+
+
+
+
+			
 
 			if i > 0:
 				if self.F >= self.F_old:
