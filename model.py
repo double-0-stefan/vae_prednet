@@ -485,7 +485,7 @@ class pc_conv_network(nn.Module):
 
 			#- torch.logdet(P0)
 
-			torch.matmul(PE_0,PE_0.t())
+			+ torch.matmul(PE_0,PE_0.t())
 			)))
 
 
