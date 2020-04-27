@@ -327,6 +327,8 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i, learn):
 
+		PE_1 = 0
+
 		if self.p['vae']:
 			# do block - top phi is the latent??
 			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
@@ -356,12 +358,14 @@ class pc_conv_network(nn.Module):
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
-				x = F.relu(self.lin_up[0](self.phi[-1])) # get rid of 'top phi', call z or somewthign
-				z_pc = F.relu(self.lin_up[1](x))
+				z_pc = F.relu(self.lin_up[0](self.phi[-1])) # get rid of 'top phi', call z or somewthign
+				z_pc = F.relu(self.lin_up[1](z_pc))
 
 				# z_pc is the means and sds of the coordinates in latent sapce
 				# could ake this like phi - with covariance matrix
-				
+
+				# extra PE here for updating z_pc over course of inference?
+
 				# Latent Sampling
 				latent_sample = []
 
@@ -372,26 +376,15 @@ class pc_conv_network(nn.Module):
 				z = torch.cat(latent_sample, dim=-1)
 
 				# Decoding - p(x|z)
-				x = F.relu(self.lin_down[0](self.phi[-1]))
-				z_pc = F.relu(self.lin_up[1](x))
-
-				pred = self.g_dec(z)
-
-
-
-
-
-				x = F.relu(self.lin[0](self.z))#phi[i+1])) -> should this be twice size (mean, sd)
-				x = F.relu(self.lin[1](x))# this is size 50 * 50!!
-				# x = F.relu(self.conv_trans[i][j](x))
-				# print(x.view(self.bs,-1) .size())
-				PE_1 = self.phi[i] - x.view(self.bs,-1) #self.phi[i+1]
+				x = F.relu(self.lin_down[0](z))
+				x = F.relu(self.lin_down[1](x))
 
 			else:
 				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
 				for j in reversed(range(len(self.p['ks'][i+1]))):
 					x = self.conv_trans[i+1][j](F.relu(x))
-				PE_1 = self.phi[i] - x.view(self.bs,-1)
+			
+			PE_1 = self.phi[i] - x.view(self.bs,-1)
 
 		# Standard version
 		else:
@@ -464,11 +457,11 @@ class pc_conv_network(nn.Module):
 			# logdet cov = -logdet precision
 			#- torch.logdet(P1)
 
-			# torch.matmul(PE_1,PE_1.t())
+			torch.matmul(PE_1,PE_1.t())
 
 			#- torch.logdet(P0)
 
-			 torch.matmul(PE_0,PE_0.t())
+			+ torch.matmul(PE_0,PE_0.t())
 			)))
 
 
