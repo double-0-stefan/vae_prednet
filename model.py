@@ -334,30 +334,8 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i):
 
-
+		print(i)
 		if self.p['vae']:
-			# do block - top phi is the latent??
-			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
-			
-			for j in reversed(range(len(self.p['ks'][i]))):
-				# top - done below
-				# if i == len(self.p['ks']) -1 and j = len(self.p['ks'][i]) -1:
-				# 	x = F.relu(self.fc1(x))
-				# 	x = F.relu(self.fc2(x))
-				# 	x = F.relu(self.conv_trans[i][j](x))
-
-				# bottom
-				if i == 0 and j == 0:
-					x = sigmoid(self.conv_trans[i][j](x))
-
-				# everything else
-				else:
-					x = F.relu(self.conv_trans[i][j](x))
-
-			if i == 0:
-				PE_0 = self.images   - x.view(self.bs,-1)
-			else:
-				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
 
 			# do block above - movr to loss vae?
 			if i == self.nlayers-1:
@@ -394,6 +372,31 @@ class pc_conv_network(nn.Module):
 					x = self.conv_trans[i+1][j](F.relu(x))
 			
 			PE_1 = self.phi[i] - x.view(self.bs,-1)
+
+			# do block
+			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
+			
+			for j in reversed(range(len(self.p['ks'][i]))):
+				# top - done below
+				# if i == len(self.p['ks']) -1 and j = len(self.p['ks'][i]) -1:
+				# 	x = F.relu(self.fc1(x))
+				# 	x = F.relu(self.fc2(x))
+				# 	x = F.relu(self.conv_trans[i][j](x))
+
+				# bottom
+				if i == 0 and j == 0:
+					x = sigmoid(self.conv_trans[i][j](x))
+
+				# everything else
+				else:
+					x = F.relu(self.conv_trans[i][j](x))
+
+			if i == 0:
+				PE_0 = self.images   - x.view(self.bs,-1)
+			else:
+				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
+
+			
 
 		# Standard version
 		else:
@@ -574,6 +577,7 @@ class pc_conv_network(nn.Module):
 
 			for l in range(0, self.nlayers):
 				self.F = 0
+				self.kl_loss = 0
 				self.optimizer.zero_grad()
 				self.loss(l)
 			
