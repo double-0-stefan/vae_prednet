@@ -30,6 +30,7 @@ class pc_conv_network(nn.Module):
 
 		l=0 # sb add for conveience/testing
 		self.latents = sum(p['z_dim'][l:l+2]) 
+		print(self.latents)
 		self.hidden	  = p['enc_h'][l] 
 
 		self.err_plot_flag = True
