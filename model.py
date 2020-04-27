@@ -553,7 +553,7 @@ class pc_conv_network(nn.Module):
 		#self.optimizer.lr = self.p['lr']
 		self.i = 0
 		learn = 0
-		for i in range(len(self.phi))
+		for i in range(len(self.phi)):
 			self.phi[i].requires_grad_(True)
 		#self.z_pc.requires_grad_(True)
 		self.lin_up.requires_grad_(False)
