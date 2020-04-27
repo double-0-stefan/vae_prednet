@@ -601,10 +601,11 @@ class pc_conv_network(nn.Module):
 					self.i += 1
 			#print(self.phi[0])
 			#print(self.phi[1])
-			print(torch.max(sum(self.phi[0])))
-			print(self.kl_loss)
+			# print(torch.max(sum(self.phi[0])))
+			print(self.phi[0])
+			#print(self.kl_loss)
 			# print(self.F.size())
-			self.F += torch.sum(torch.tensor(self.kl_loss))
+			self.F = self.F + self.kl_loss #torch.sum(torch.tensor(self.kl_loss))
 			# if i < self.iter-1:
 			# 	self.F.backward(retain_graph=True)
 			# else:
