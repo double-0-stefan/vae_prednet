@@ -30,7 +30,7 @@ class pc_conv_network(nn.Module):
 
 		l=0 # sb add for conveience/testing
 		self.latents = sum(p['z_dim'][l:l+2]) 
-		print(self.latents)
+
 		self.hidden	  = p['enc_h'][l] 
 
 		self.err_plot_flag = True
@@ -378,6 +378,7 @@ class pc_conv_network(nn.Module):
 				latent_sample.append(norm_sample)
 
 				z = torch.cat(latent_sample, dim=-1)
+				print(z.size())
 
 				self.kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 
