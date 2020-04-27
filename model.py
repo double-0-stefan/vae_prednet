@@ -334,7 +334,6 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i, learn):
 
-		PE_1 = 0
 
 		if self.p['vae']:
 			# do block - top phi is the latent??
