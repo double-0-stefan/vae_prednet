@@ -463,8 +463,10 @@ class pc_conv_network(nn.Module):
 
 		# 	+ torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 		# 	)
-		print(torch.matmul(PE_1,PE_1.t()))
-		print(torch.matmul(PE_0,PE_0.t()))
+		# print(torch.matmul(PE_1,PE_1.t()))
+		# print(torch.matmul(PE_0,PE_0.t()))
+
+		print(self.phi[0])
 		self.F +=  0.5*sum(sum((
 			# logdet cov = -logdet precision
 			#- torch.logdet(P1)
@@ -553,8 +555,8 @@ class pc_conv_network(nn.Module):
 		#self.optimizer.lr = self.p['lr']
 		self.i = 0
 		learn = 0
-		for i in range(len(self.phi)):
-			self.phi[i].requires_grad_(True)
+
+		self.phi.requires_grad_(True)
 		#self.z_pc.requires_grad_(True)
 		self.lin_up.requires_grad_(False)
 		self.lin_down.requires_grad_(False)
@@ -563,7 +565,7 @@ class pc_conv_network(nn.Module):
 		for i in range(self.iter):
 			if i == self.iter -1:
 				learn = 1
-				#self.phi.requires_grad_(False)
+				self.phi.requires_grad_(False)
 				self.conv_trans.requires_grad_(True)
 				#self.z_pc.requires_grad_(True)
 				self.lin_up.requires_grad_(True)
