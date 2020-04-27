@@ -87,7 +87,7 @@ class pc_conv_network(nn.Module):
 		lin.append(fc2)
 		self.lin_up = nn.ModuleList(lin)
 
-		self.z_pc = nn.Parameter(torch.rand(self.bs,self.latents))
+		#self.z_pc = nn.Parameter(torch.rand(self.bs,self.latents))
 
 
 		# self.has_con = p['nz_con'][l] is not None 
@@ -601,7 +601,7 @@ class pc_conv_network(nn.Module):
 			# 	self.F.backward(retain_graph=True)
 			# else:
 
-			self.F.backward()
+				self.F.backward()
 			#print(i)
 
 			# xm.optimizer_step(self.optimizer)#.step()
