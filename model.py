@@ -179,9 +179,9 @@ class pc_conv_network(nn.Module):
 			self.p['dim'].append(dim_block)
 
 		# top level phi
-		if self.p['vae']:
+		if not self.p['vae']:
 			#phi.append(nn.Parameter(torch.rand(self.bs,self.latents)))   # how does mean/sd work with this??
-		else:
+		#else:
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 		#self.Precision = nn.ModuleList(Precision)
 		#self.P_chol = nn.ParameterList(P_chol)
