@@ -126,10 +126,10 @@ class Normal(nn.Module):
 
 	def __init__(self, mu=0, sigma=1):
 		super(Normal, self).__init__()
-		self.normalization = Variable(torch.Tensor([np.log(2 * np.pi)])).cuda()
+		self.normalization = Variable(torch.Tensor([np.log(2 * np.pi)]))
 
-		self.mu = Variable(torch.Tensor([mu])).cuda()
-		self.logsigma = Variable(torch.Tensor([math.log(sigma)])).cuda()
+		self.mu = Variable(torch.Tensor([mu]))
+		self.logsigma = Variable(torch.Tensor([math.log(sigma)]))
 
 	def _check_inputs(self, size, mu_logsigma):
 		if size is None and mu_logsigma is None:
@@ -170,11 +170,11 @@ class Normal(nn.Module):
 
 	def sample_normal(self, params, train=True, heir=False):
 		
-		mu, logsigma = torch.chunk(params, 2, dim=-1)
+		mu, logsigma = torch.chunk(params, 2, dim=-1).cuda()
 
 		if train:
 	
-			sigma = torch.exp(0.5 * logsigma)
+			sigma = torch.exp(0.5 * logsigma).cuda()
 			eps = torch.zeros(sigma.size()).normal_().cuda()
 			#logsigma = torch.clamp(logsigma, min=-103., max=87.)		
 			sample = mu + sigma * eps 
