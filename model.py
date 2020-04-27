@@ -480,7 +480,7 @@ class pc_conv_network(nn.Module):
 			# logdet cov = -logdet precision
 			#- torch.logdet(P1)
 
-			ratio .* torch.matmul(PE_1,PE_1.t())
+			ratio * torch.matmul(PE_1,PE_1.t())
 
 			#- torch.logdet(P0)
 
