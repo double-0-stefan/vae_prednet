@@ -126,6 +126,11 @@ class Normal(nn.Module):
 
 	def __init__(self, mu=0, sigma=1):
 		super(Normal, self).__init__()
+		# self.normalization = Variable(torch.Tensor([np.log(2 * np.pi)]))
+
+		# self.mu = Variable(torch.Tensor([mu]))
+		# self.logsigma = Variable(torch.Tensor([math.log(sigma)]))
+
 		self.normalization = Variable(torch.Tensor([np.log(2 * np.pi)]))
 
 		self.mu = Variable(torch.Tensor([mu]))
