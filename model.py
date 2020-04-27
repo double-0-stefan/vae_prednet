@@ -575,7 +575,7 @@ class pc_conv_network(nn.Module):
 			for l in range(0, self.nlayers):
 				self.F = 0
 				self.optimizer.zero_grad()
-				self.loss(l,learn=0)
+				self.loss(l)
 			
 			# predictive coding and reconstruction loss
 
