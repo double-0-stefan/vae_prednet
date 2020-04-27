@@ -706,12 +706,7 @@ class pc_conv_network(nn.Module):
 			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i])/1000)
 			#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
-		# should be split into means and SD - rand, 1 ???
-		mu, logsigma = torch.chunk(self.phi[-1], 2, dim=-1)
-		mu = torch.zeros_like(mu)
-		logsigma = torch.ones_like(mu)
-		self.phi[-1] = nn.Parameter(torch.cat([mu,logsigma]).view(self.bs,-1))
-
+		
 		self.inference()
 		print(iteration)
 		print(self.i)
