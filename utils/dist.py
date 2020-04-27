@@ -131,10 +131,10 @@ class Normal(nn.Module):
 		# self.mu = Variable(torch.Tensor([mu]))
 		# self.logsigma = Variable(torch.Tensor([math.log(sigma)]))
 
-		self.normalization = torch.Tensor([np.log(2 * np.pi)])
+		self.normalization = nn.Parameter(torch.Tensor([np.log(2 * np.pi)]))
 
-		self.mu = torch.Tensor([mu])
-		self.logsigma = torch.Tensor([math.log(sigma)])
+		self.mu = nn.Parameter(torch.Tensor([mu]))
+		self.logsigma = nn.Parameter(torch.Tensor([math.log(sigma)]))
 
 	def _check_inputs(self, size, mu_logsigma):
 		if size is None and mu_logsigma is None:
