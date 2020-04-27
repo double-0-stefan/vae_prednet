@@ -87,7 +87,7 @@ class pc_conv_network(nn.Module):
 		lin.append(fc2)
 		self.lin_up = nn.ModuleList(lin)
 
-		self.z_pc = nn.Parameter([torch.rand(self.bs,self.latents)])
+		self.z_pc = nn.Parameter(torch.rand(self.bs,self.latents))
 
 
 		# self.has_con = p['nz_con'][l] is not None 
@@ -702,7 +702,7 @@ class pc_conv_network(nn.Module):
 		# self.optimizer = torch.optim.ASGD(params=self.parameters(), lr=0.0001, lambd=0.0001, alpha=0.75, t0=1000000.0, weight_decay=0)
 		
 		# random latents
-		self.z_pc = nn.Parameter([torch.rand(self.bs,self.latents)])
+		self.z_pc = nn.Parameter(torch.rand(self.bs,self.latents))
 
 		self.iteration = iteration
 		self.F_last = self.F
