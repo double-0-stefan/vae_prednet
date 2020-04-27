@@ -377,6 +377,8 @@ class pc_conv_network(nn.Module):
 
 				z = torch.cat(latent_sample, dim=-1)
 
+				self.kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
+
 				# Decoding - p(x|z)
 				x = F.relu(self.lin_down[0](z))
 				x = F.relu(self.lin_down[1](x))
@@ -569,15 +571,15 @@ class pc_conv_network(nn.Module):
 			
 			# predictive coding and reconstruction loss
 
-			self.kl_loss = 0
-			if self.p['vae']:
-				# KL loss   -> z_pc is encoded latents - phi uppermost in this implementation?? HOW IS MEAN/SD MANAGED?
-				latent_sample = []
-				# Continuous sampling 
-				norm_sample = self.q_dist.sample_normal(params=self.z_pc, train=self.training)   # may need to implement self.training
-				latent_sample.append(norm_sample)
-				self.z = torch.cat(latent_sample, dim=-1)
-				self.kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
+			# self.kl_loss = 0
+			# if self.p['vae']:
+			# 	# KL loss   -> z_pc is encoded latents - phi uppermost in this implementation?? HOW IS MEAN/SD MANAGED?
+			# 	latent_sample = []
+			# 	# Continuous sampling 
+			# 	norm_sample = self.q_dist.sample_normal(params=self.z_pc, train=self.training)   # may need to implement self.training
+			# 	latent_sample.append(norm_sample)
+			# 	self.z = torch.cat(latent_sample, dim=-1)
+			# 	self.kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 			
 
 
