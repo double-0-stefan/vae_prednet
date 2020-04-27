@@ -569,41 +569,15 @@ class pc_conv_network(nn.Module):
 			
 			# predictive coding and reconstruction loss
 
-
-
-			# Encoding - p(z2|x) or p(z1 |x,z2)
-			z_pc, z_pd = self.f_enc(image, None)
-			
-			# Latent Sampling
-			latent_sample = []
-
-			# Continuous sampling 
-			norm_sample = self.q_dist.sample_normal(params=z_pc, train=self.training)
-			latent_sample.append(norm_sample)
-
-			# Discrete sampling
-			for ind, alpha in enumerate(z_pd):
-				cat_sample = self.cat_dist.sample_gumbel_softmax(alpha, train=self.training)
-				latent_sample.append(cat_sample)
-				
-
-			z = torch.cat(latent_sample, dim=-1)
-
-			# Decoding - p(x|z)
-			pred = self.g_dec(z)
-
-
-
-
 			self.kl_loss = 0
 			if self.p['vae']:
 				# KL loss   -> z_pc is encoded latents - phi uppermost in this implementation?? HOW IS MEAN/SD MANAGED?
 				latent_sample = []
 				# Continuous sampling 
-				norm_sample = self.q_dist.sample_normal(params=self.phi[-1], train=self.training)   # may need to implement self.training
+				norm_sample = self.q_dist.sample_normal(params=self.z_pc, train=self.training)   # may need to implement self.training
 				latent_sample.append(norm_sample)
 				self.z = torch.cat(latent_sample, dim=-1)
-				self.kl_loss  = self.vae_loss(self.iteration, self.phi[-1]	) 
+				self.kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 			
 
 
