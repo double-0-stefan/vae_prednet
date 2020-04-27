@@ -70,22 +70,24 @@ class pc_conv_network(nn.Module):
 
 		# layer configuration 
 		
-		# ascending
+		# descending
 		fc1 = Linear(int(self.latents/2), self.hidden)
-		fc2 = Linear(self.hidden, self.phi[-2].size(1))
+		fc2 = Linear(self.hidden, self.phi[-1].size(1))
 		lin = []
 		lin.append(fc1)
 		lin.append(fc2)
-		self.lin_up = nn.ModuleList(lin)
+		self.lin_down = nn.ModuleList(lin)
 
-		# descending
-		fc1= Linear(elf.phi[-2].size(1), self.hidden)
+		# ascending
+		fc1= Linear(self.phi[-1].size(1), self.hidden)
 		fc2 = Linear(self.hidden, int(self.latents/2))
 
 		lin = []
 		lin.append(fc1)
 		lin.append(fc2)
-		self.lin_down = nn.ModuleList(lin)
+		self.lin_up = nn.ModuleList(lin)
+
+		self.z_pc = nn.Parameter(torch.zeros([torch.rand(self.bs,self.latents)]))
 
 
 		# self.has_con = p['nz_con'][l] is not None 
@@ -178,7 +180,7 @@ class pc_conv_network(nn.Module):
 
 		# top level phi
 		if self.p['vae']:
-			phi.append(nn.Parameter(torch.rand(self.bs,self.latents)))   # how does mean/sd work with this??
+			#phi.append(nn.Parameter(torch.rand(self.bs,self.latents)))   # how does mean/sd work with this??
 		else:
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 		#self.Precision = nn.ModuleList(Precision)
@@ -358,8 +360,8 @@ class pc_conv_network(nn.Module):
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
-				z_pc = F.relu(self.lin_up[0](self.phi[-1])) # get rid of 'top phi', call z or somewthign
-				z_pc = F.relu(self.lin_up[1](z_pc))
+				self.z_pc = F.relu(self.lin_up[0](self.phi[-1])) # get rid of 'top phi', call z or somewthign
+				self.z_pc = F.relu(self.lin_up[1](self.z_pc))
 
 				# z_pc is the means and sds of the coordinates in latent sapce
 				# could ake this like phi - with covariance matrix
@@ -370,7 +372,7 @@ class pc_conv_network(nn.Module):
 				latent_sample = []
 
 				# Continuous sampling 
-				norm_sample = self.q_dist.sample_normal(params=z_pc, train=self.training)
+				norm_sample = self.q_dist.sample_normal(params=self.z_pc, train=self.training)
 				latent_sample.append(norm_sample)
 
 				z = torch.cat(latent_sample, dim=-1)
