@@ -480,11 +480,11 @@ class pc_conv_network(nn.Module):
 			# logdet cov = -logdet precision
 			#- torch.logdet(P1)
 
-			ratio * torch.matmul(PE_1,PE_1.t())
+			torch.matmul(PE_1,PE_1.t())
 
 			#- torch.logdet(P0)
 
-			+ torch.matmul(PE_0,PE_0.t())
+			+ ratio * torch.matmul(PE_0,PE_0.t())
 			)))
 
 
@@ -735,8 +735,8 @@ class pc_conv_network(nn.Module):
 		self.inference()
 		print(iteration)
 		print(self.i)
-		print(self.kl_loss)
-		print(self.F)
+		# print(self.kl_loss)
+		# print(self.F)
 		# print(self.phi[-1])
 		# if learn == 1:
 		
