@@ -72,6 +72,16 @@ class pc_conv_network(nn.Module):
 
 		# layer configuration 
 		
+		# ascending
+		fc1= Linear(self.phi[-1].size(1), self.hidden)
+		fc2 = Linear(self.hidden, int(self.latents)) # not divided by 2 here!
+
+		lin = []
+		lin.append(fc1)
+		lin.append(fc2)
+		self.lin_up = nn.ModuleList(lin)
+
+
 		# descending
 		fc1 = Linear(int(self.latents/2), self.hidden)
 		fc2 = Linear(self.hidden, self.phi[-1].size(1))
@@ -80,14 +90,7 @@ class pc_conv_network(nn.Module):
 		lin.append(fc2)
 		self.lin_down = nn.ModuleList(lin)
 
-		# ascending
-		fc1= Linear(self.phi[-1].size(1), self.hidden)
-		fc2 = Linear(self.hidden, int(self.latents/2))
-
-		lin = []
-		lin.append(fc1)
-		lin.append(fc2)
-		self.lin_up = nn.ModuleList(lin)
+		
 
 		self.z_pc = (torch.rand(self.bs,self.latents))
 
@@ -378,7 +381,7 @@ class pc_conv_network(nn.Module):
 				latent_sample.append(norm_sample)
 
 				z = torch.cat(latent_sample, dim=-1)
-				print(z.size())
+
 
 				self.kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 
