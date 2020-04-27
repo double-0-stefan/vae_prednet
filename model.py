@@ -486,7 +486,7 @@ class pc_conv_network(nn.Module):
 
 			+ ratio * torch.matmul(PE_0,PE_0.t())
 			)))
-
+		
 
 		#else:
 			# self.F +=  0.5*(
@@ -628,7 +628,7 @@ class pc_conv_network(nn.Module):
 				self.F.backward()
 
 				#print(i)
-
+				print(self.F)
 				# xm.optimizer_step(self.optimizer)#.step()
 				self.optimizer.step()
 			#print(self.F)
