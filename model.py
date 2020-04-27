@@ -332,7 +332,7 @@ class pc_conv_network(nn.Module):
 		self.F_last = None
 		self.baseline = None
 
-	def loss(self, i, learn):
+	def loss(self, i):
 
 
 		if self.p['vae']:
@@ -567,12 +567,14 @@ class pc_conv_network(nn.Module):
 				self.lin_up.requires_grad_(True)
 				self.lin_down.requires_grad_(True)
 
-			self.optimizer.zero_grad()
+			# self.optimizer.zero_grad()
 			self.F_old = self.F
-			self.F = 0#nn.Parameter(torch.zeros(1))
-			self.phi_old = self.phi
+			# self.F = 0#nn.Parameter(torch.zeros(1))
+			# self.phi_old = self.phi
 
 			for l in range(0, self.nlayers):
+				self.F = 0
+				self.optimizer.zero_grad()
 				self.loss(l,learn=0)
 			
 			# predictive coding and reconstruction loss
@@ -587,34 +589,34 @@ class pc_conv_network(nn.Module):
 			# 	self.z = torch.cat(latent_sample, dim=-1)
 			# 	self.kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 			
-			if i > 0:
-				if self.F >= self.F_old:
-					# self.F = self.F_old
-					# self.phi = self.phi_old
+				if i > 0:
+					if self.F >= self.F_old:
+						# self.F = self.F_old
+						# self.phi = self.phi_old
 
-					self.i += 1
-			#print(self.phi[0])
-			#print(self.phi[1])
-			# print(torch.max(sum(self.phi[0])))
+						self.i += 1
+				#print(self.phi[0])
+				#print(self.phi[1])
+				# print(torch.max(sum(self.phi[0])))
 
-			#print(self.phi[0])
-			#print(self.z_pc)
+				#print(self.phi[0])
+				#print(self.z_pc)
 
 
 
-			#print(self.kl_loss)
-			# print(self.F.size())
-			self.F = self.F + self.kl_loss #torch.sum(torch.tensor(self.kl_loss))
-			# if i < self.iter-1:
-			# 	self.F.backward(retain_graph=True)
-			# else:
+				#print(self.kl_loss)
+				# print(self.F.size())
+				self.F = self.F + self.kl_loss #torch.sum(torch.tensor(self.kl_loss))
+				# if i < self.iter-1:
+				# 	self.F.backward(retain_graph=True)
+				# else:
 
-			self.F.backward()
+				self.F.backward()
 
-			#print(i)
+				#print(i)
 
-			# xm.optimizer_step(self.optimizer)#.step()
-			self.optimizer.step()
+				# xm.optimizer_step(self.optimizer)#.step()
+				self.optimizer.step()
 			#print(self.F)
 			# end inference if starting to diverge
 			
