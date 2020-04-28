@@ -479,7 +479,7 @@ class pc_conv_network(nn.Module):
 		# print(sum(sum(torch.matmul(PE_0,PE_0.t()))))
 
 		#print(self.phi[0])  - issue is precision-weighting!!
-		F =  0.5*sum(sum((
+		f =  0.5*sum(sum((
 			# logdet cov = -logdet precision
 			#- torch.logdet(P1)
 
@@ -490,7 +490,7 @@ class pc_conv_network(nn.Module):
 			+ ratio * torch.matmul(PE_0,PE_0.t())
 			)))
 
-		loss = float(F.item() + kl_loss.item())
+		loss = float(f.item() + kl_loss.item())
 		loss.backward()
 		print(loss)
 
