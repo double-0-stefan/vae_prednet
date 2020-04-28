@@ -735,7 +735,7 @@ class pc_conv_network(nn.Module):
 		moo = []
 		for i in range(len(self.phi)):
 			# reset wactivations
-			moo[i].append(nn.Parameter(torch.rand_like(self.phi[i])))
+			moo.append(nn.Parameter(torch.rand_like(self.phi[i])))
 			
 		del self.phi
 		self.phi = nn.ParameterList(moo)
