@@ -711,8 +711,12 @@ class pc_conv_network(nn.Module):
 		#self.z_pc = nn.Parameter(torch.rand(self.bs,self.latents))
 
 		self.iteration = iteration
-		self.F_last = self.F
+		del self.F
+
+		torch.cuda.empty_cache()
+		
 		self.F = 0
+		self.F_last = self.F
 		#self.lin.requires_grad_(True)
 		# self.fc2.requires_grad_(True)
 		if iteration == 0:
@@ -741,10 +745,7 @@ class pc_conv_network(nn.Module):
 		# print(self.phi[-1])
 		# if learn == 1:
 		print(GPUInfo.gpu_usage())
-		del self.F
-
-		torch.cuda.empty_cache()
-
+		
 		
 
 
