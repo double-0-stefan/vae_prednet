@@ -492,7 +492,7 @@ class pc_conv_network(nn.Module):
 			+ ratio * torch.matmul(PE_0,PE_0.t())
 			)))
 
-		loss = f.item() + kl_loss.item()
+		loss = f + kl_loss
 		loss.backward()
 		print(loss)
 
