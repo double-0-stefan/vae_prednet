@@ -48,7 +48,7 @@ precisions: # block any length > 1 has 2 precisions
     # 0 = single number prior, 1 = diagonal prior
 
 ks:
-    - [[4,4,4],[4]]
+    - [[4,4,4],[4,4]]
 
 nblocks: 
     - 2 # Sections with precisions at top and bottom, but not within
@@ -57,7 +57,7 @@ imchan:
     - 1
 
 chan:
-    - [[16,32,32],[32]]
+    - [[16,32,32],[64,64]]
 
 pad:
     - 1
