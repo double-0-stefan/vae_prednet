@@ -734,7 +734,9 @@ class pc_conv_network(nn.Module):
 		# put weights into bilinear for inference and see if faster (no update done)
 		for i in range(len(self.phi)):
 			# reset wactivations
-			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
+			self.moo = nn.Parameter(torch.rand_like(self.phi[i]))
+			del self.phi[i]
+			self.phi[i] = self.moo
 		# 	#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		
