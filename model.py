@@ -602,7 +602,7 @@ class pc_conv_network(nn.Module):
 				self.optimizer.zero_grad()
 				self.loss(l)
 
-		print(self.F)
+
 			
 			# predictive coding and reconstruction loss
 
@@ -656,6 +656,7 @@ class pc_conv_network(nn.Module):
 
 
 		# self.learn()
+		print(self.F)
 
 		
 
