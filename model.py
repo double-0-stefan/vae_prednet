@@ -20,6 +20,7 @@ import glob
 import scipy.io as sio
 from torchvision.utils import save_image
 from torch.optim import Adam
+from gpuinfo import GPUInfo
 # import torch_xla
 # import torch_xla.core.xla_model as xm
 
@@ -628,7 +629,7 @@ class pc_conv_network(nn.Module):
 				self.F.backward()
 
 				#print(i)
-				print(self.F)
+				#print(self.F)
 				# xm.optimizer_step(self.optimizer)#.step()
 				self.optimizer.step()
 			#print(self.F)
@@ -739,6 +740,8 @@ class pc_conv_network(nn.Module):
 		# print(self.F)
 		# print(self.phi[-1])
 		# if learn == 1:
+		GPUInfo.gpu_usage()
+
 		
 
 
