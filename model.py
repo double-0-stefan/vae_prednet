@@ -643,7 +643,7 @@ class pc_conv_network(nn.Module):
 				self.optimizer.step()
 			#print(self.F)
 			# end inference if starting to diverge
-			print(loss)
+		print(loss)
 					#break
 			#self.i = i
 			# print(self.F)
