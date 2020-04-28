@@ -62,6 +62,8 @@ class pc_conv_network(nn.Module):
 
 		self.init_latents(p)
 
+		self.optimizer = None
+
 		print(self)
 		
 	def init_latents(self, p):
@@ -487,7 +489,7 @@ class pc_conv_network(nn.Module):
 
 			+ ratio * torch.matmul(PE_0,PE_0.t())
 			)))
-
+		self.F = float(self.F)
 
 		#else:
 			# self.F +=  0.5*(
@@ -699,7 +701,7 @@ class pc_conv_network(nn.Module):
 	def forward(self, iteration, images, learn=1):
 
 		#self.cuda()
-		self.optimizer = None
+
 		if not self.optimizer:
 			self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
 		#self.optimizer = optimizer = optim.SGD(self.parameters(), lr=self.p['lr'])
@@ -732,13 +734,9 @@ class pc_conv_network(nn.Module):
 			self.images = images.view(self.bs, -1).cuda()
 
 		# put weights into bilinear for inference and see if faster (no update done)
-		moo = []
 		for i in range(len(self.phi)):
 			# reset wactivations
-			moo.append(nn.Parameter(torch.rand_like(self.phi[i])))
-			
-		del self.phi
-		self.phi = nn.ParameterList(moo)
+			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
 		# 	#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		
