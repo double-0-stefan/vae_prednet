@@ -489,7 +489,7 @@ class pc_conv_network(nn.Module):
 
 			+ ratio * torch.matmul(PE_0,PE_0.t())
 			)))
-		self.F = float(self.F)
+
 
 		#else:
 			# self.F +=  0.5*(
@@ -629,6 +629,7 @@ class pc_conv_network(nn.Module):
 				# else:
 
 				self.F.backward()
+				self.F.detach()
 
 				#print(i)
 				#print(self.F)
