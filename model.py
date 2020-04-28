@@ -362,7 +362,7 @@ class pc_conv_network(nn.Module):
 				z = torch.cat(latent_sample, dim=-1)
 
 
-				self.kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
+				kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 
 				# Decoding - p(x|z)
 				x = F.relu(self.lin_down[0](z))
@@ -479,7 +479,7 @@ class pc_conv_network(nn.Module):
 		# print(sum(sum(torch.matmul(PE_0,PE_0.t()))))
 
 		#print(self.phi[0])  - issue is precision-weighting!!
-		self.F +=  0.5*sum(sum((
+		F =  0.5*sum(sum((
 			# logdet cov = -logdet precision
 			#- torch.logdet(P1)
 
@@ -489,6 +489,10 @@ class pc_conv_network(nn.Module):
 
 			+ ratio * torch.matmul(PE_0,PE_0.t())
 			)))
+
+		loss = float(F.item() + kl_loss.item())
+		loss.backward()
+		print(loss)
 
 
 		#else:
@@ -623,13 +627,13 @@ class pc_conv_network(nn.Module):
 
 				#print(self.kl_loss)
 				# print(self.F.size())
-				self.F = self.F + self.kl_loss #torch.sum(torch.tensor(self.kl_loss))
+				#self.F = self.F + self.kl_loss #torch.sum(torch.tensor(self.kl_loss))
 				# if i < self.iter-1:
 				# 	self.F.backward(retain_graph=True)
 				# else:
 
-				self.F.backward()
-				self.F.detach()
+				# self.F.backward()
+				# self.F.detach()
 
 				#print(i)
 				#print(self.F)
@@ -745,7 +749,7 @@ class pc_conv_network(nn.Module):
 		print(iteration)
 		print(self.i)
 		# print(self.kl_loss)
-		print(self.F)
+		#print(self.F)
 		# print(self.phi[-1])
 		# if learn == 1:
 		print(GPUInfo.gpu_usage())
