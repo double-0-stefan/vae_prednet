@@ -55,10 +55,10 @@ class pc_conv_network(nn.Module):
 
 		self.imchan = p['imchan']
 
-		self.kl_loss = None
-		self.F = None
-		self.F_last = None
-		self.baseline = None
+		# self.kl_loss = None
+		# self.F = None
+		# self.F_last = None
+		# self.baseline = None
 
 		self.init_latents(p)
 
