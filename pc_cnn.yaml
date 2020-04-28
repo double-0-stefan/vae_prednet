@@ -38,7 +38,7 @@ early_stopping : True
 patience : 5
 
 layers: 
-    - 1
+    - 2
 
 # layers_sb:
 #     - 3
@@ -48,7 +48,7 @@ precisions: # block any length > 1 has 2 precisions
     # 0 = single number prior, 1 = diagonal prior
 
 ks:
-    - [[4,4,4,4]]
+    - [[4,4,4],[4]]
 
 nblocks: 
     - 1 # Sections with precisions at top and bottom, but not within
@@ -57,7 +57,7 @@ imchan:
     - 1
 
 chan:
-    - [[16,32,32,32]]
+    - [[16,32,32],[32]]
 
 pad:
     - 1
