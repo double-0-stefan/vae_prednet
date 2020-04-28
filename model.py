@@ -699,6 +699,7 @@ class pc_conv_network(nn.Module):
 	def forward(self, iteration, images, learn=1):
 
 		#self.cuda()
+		self.optimizer = None
 		if not self.optimizer:
 			self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
 		#self.optimizer = optimizer = optim.SGD(self.parameters(), lr=self.p['lr'])
