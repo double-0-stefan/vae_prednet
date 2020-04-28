@@ -700,8 +700,8 @@ class pc_conv_network(nn.Module):
 
 		self.cuda()
 
-		#self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
-		self.optimizer = optimizer = optim.SGD(self.parameters(), lr=self.p['lr'])
+		self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
+		#self.optimizer = optimizer = optim.SGD(self.parameters(), lr=self.p['lr'])
 
 		self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1, patience=2, verbose=False, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
 		# self.optimizer = torch.optim.RMSprop(params=self.parameters(),lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=True)
@@ -741,6 +741,8 @@ class pc_conv_network(nn.Module):
 		# print(self.phi[-1])
 		# if learn == 1:
 		print(GPUInfo.gpu_usage())
+
+		torch.cuda.empty_cache()
 
 		
 
