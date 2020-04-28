@@ -494,9 +494,7 @@ class pc_conv_network(nn.Module):
 
 		loss = f + kl_loss
 		loss.backward()
-		if i == self.nlayers -1 :
-			self.F = loss
-		#print(loss)
+		return loss
 
 
 		#else:
@@ -600,9 +598,7 @@ class pc_conv_network(nn.Module):
 				self.F = 0
 				self.kl_loss = 0
 				self.optimizer.zero_grad()
-				self.loss(l)
-
-
+				loss = self.loss(l)
 			
 			# predictive coding and reconstruction loss
 
@@ -647,7 +643,7 @@ class pc_conv_network(nn.Module):
 				self.optimizer.step()
 			#print(self.F)
 			# end inference if starting to diverge
-			
+			print(loss)
 					#break
 			#self.i = i
 			# print(self.F)
@@ -656,7 +652,6 @@ class pc_conv_network(nn.Module):
 
 
 		# self.learn()
-		print(self.F)
 
 		
 
