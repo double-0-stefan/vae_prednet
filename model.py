@@ -692,16 +692,11 @@ class pc_conv_network(nn.Module):
 		# xm.optimizer_step(self.optimizer, barrier=False)
 		self.optimizer.step()
 
-		if i > 0:
-			if self.F >= self.F_old:
-				self.F = self.F_old
-				self.P_chol = self.P_chol_old
+		# if i > 0:
+		# 	if self.F >= self.F_old:
+		# 		self.F = self.F_old
+		# 		self.P_chol = self.P_chol_old
 				
-
-		
-		# print(self.P_chol[0])
-		# print(self.P_chol[1])
-		# print(self.P_chol[2])
 
 	def forward(self, iteration, images, learn=1):
 
@@ -723,8 +718,8 @@ class pc_conv_network(nn.Module):
 
 		torch.cuda.empty_cache()
 		
-		self.F = 0
-		self.F_last = self.F
+		# self.F = 0
+		# self.F_last = self.F
 		#self.lin.requires_grad_(True)
 		# self.fc2.requires_grad_(True)
 		if iteration == 0:
