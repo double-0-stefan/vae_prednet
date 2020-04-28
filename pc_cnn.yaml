@@ -38,7 +38,7 @@ early_stopping : True
 patience : 5
 
 layers: 
-    - 2
+    - 1
 
 # layers_sb:
 #     - 3
@@ -51,7 +51,7 @@ ks:
     - [[4,4,4],[4]]
 
 nblocks: 
-    - 1 # Sections with precisions at top and bottom, but not within
+    - 2 # Sections with precisions at top and bottom, but not within
 
 imchan:
     - 1
