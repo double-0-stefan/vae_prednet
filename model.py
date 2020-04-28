@@ -741,6 +741,7 @@ class pc_conv_network(nn.Module):
 		# print(self.phi[-1])
 		# if learn == 1:
 		print(GPUInfo.gpu_usage())
+		del self.F
 
 		torch.cuda.empty_cache()
 
