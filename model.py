@@ -711,7 +711,7 @@ class pc_conv_network(nn.Module):
 			self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
 		#self.optimizer = optimizer = optim.SGD(self.parameters(), lr=self.p['lr'])
 
-		# self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1, patience=2, verbose=False, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
+		self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode='min', factor=0.1, patience=2, verbose=False, threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
 		# self.optimizer = torch.optim.RMSprop(params=self.parameters(),lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=True)
 		# self.optimizer = torch.optim.ASGD(params=self.parameters(), lr=0.0001, lambd=0.0001, alpha=0.75, t0=1000000.0, weight_decay=0)
 		
