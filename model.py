@@ -571,8 +571,7 @@ class pc_conv_network(nn.Module):
 		# 	self.P_chol[l].requires_grad_(True)
 		# 	self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
-		self.i = 0
-		learn = 0
+		
 
 		self.phi.requires_grad_(True)
 		#self.z_pc.requires_grad_(True)
@@ -595,8 +594,7 @@ class pc_conv_network(nn.Module):
 			# self.phi_old = self.phi
 
 			for l in range(0, self.nlayers):
-				self.F = 0
-				self.kl_loss = 0
+				
 				self.optimizer.zero_grad()
 				loss = self.loss(l)
 			
@@ -612,13 +610,13 @@ class pc_conv_network(nn.Module):
 			# 	self.z = torch.cat(latent_sample, dim=-1)
 			# 	self.kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 			
-				if i > 0:
-					if self.F >= self.F_old:
-						# self.F = self.F_old
-						# self.phi = self.phi_old
+				# if i > 0:
+				# 	if self.F >= self.F_old:
+				# 		# self.F = self.F_old
+				# 		# self.phi = self.phi_old
 
-						self.i += 1
-				#print(self.phi[0])
+				# 		self.i += 1
+				# #print(self.phi[0])
 				#print(self.phi[1])
 				# print(torch.max(sum(self.phi[0])))
 
@@ -721,7 +719,7 @@ class pc_conv_network(nn.Module):
 		#self.z_pc = nn.Parameter(torch.rand(self.bs,self.latents))
 
 		self.iteration = iteration
-		del self.F
+		# del self.F
 
 		torch.cuda.empty_cache()
 		
@@ -749,7 +747,7 @@ class pc_conv_network(nn.Module):
 		
 		self.inference()
 		print(iteration)
-		print(self.i)
+		# print(self.i)
 		# print(self.kl_loss)
 		#print(self.F)
 		# print(self.phi[-1])
