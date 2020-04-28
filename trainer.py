@@ -680,7 +680,7 @@ class pc_cnn_Trainer(Trainer):
 								 self.model.p['model_dir'],  
 								 self.model.p['model_name'], 0)	
 
-			del self.model.optimizer
+			
 		# 	with no_grad():
 		# 		self.model.eval()
 		# 		self.eval_batch(e)
