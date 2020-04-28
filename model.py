@@ -494,6 +494,7 @@ class pc_conv_network(nn.Module):
 
 		loss = f + kl_loss
 		loss.backward()
+		print(loss)
 		return loss
 
 
