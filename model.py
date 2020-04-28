@@ -336,6 +336,8 @@ class pc_conv_network(nn.Module):
 		self.baseline = None
 
 	def loss(self, i):
+		loss = 0.0
+		kl_loss = 0.0
 
 		if self.p['vae']:
 
@@ -490,7 +492,7 @@ class pc_conv_network(nn.Module):
 			+ ratio * torch.matmul(PE_0,PE_0.t())
 			)))
 
-		loss = float(f.item() + kl_loss.item())
+		loss = f.item() + kl_loss.item()
 		loss.backward()
 		print(loss)
 
