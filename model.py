@@ -718,7 +718,7 @@ class pc_conv_network(nn.Module):
 
 		torch.cuda.empty_cache()
 		
-		# self.F = 0
+		self.F = 0
 		# self.F_last = self.F
 		#self.lin.requires_grad_(True)
 		# self.fc2.requires_grad_(True)
