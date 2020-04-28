@@ -737,10 +737,10 @@ class pc_conv_network(nn.Module):
 		print(iteration)
 		print(self.i)
 		# print(self.kl_loss)
-		# print(self.F)
+		print(self.F)
 		# print(self.phi[-1])
 		# if learn == 1:
-		GPUInfo.gpu_usage()
+		print(GPUInfo.gpu_usage())
 
 		
 
