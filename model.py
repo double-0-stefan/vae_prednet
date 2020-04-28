@@ -577,7 +577,7 @@ class pc_conv_network(nn.Module):
 		#self.z_pc.requires_grad_(True)
 		self.lin_up.requires_grad_(False)
 		self.lin_down.requires_grad_(False)
-		self.conv_trans.requires_grad_(Falses)
+		self.conv_trans.requires_grad_(False)
 
 		for i in range(self.iter):
 			if i == self.iter -1:
