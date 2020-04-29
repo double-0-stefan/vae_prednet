@@ -581,9 +581,9 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(False)
 
 		for i in range(self.iter):
-			if i == self.iter -1:
+			if i > self.iter/2:
 				# learn = 1
-				self.phi.requires_grad_(False)
+				# self.phi.requires_grad_(False)
 				self.conv_trans.requires_grad_(True)
 				#self.z_pc.requires_grad_(True)
 				self.lin_up.requires_grad_(True)
