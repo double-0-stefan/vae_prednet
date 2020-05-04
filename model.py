@@ -699,7 +699,7 @@ class pc_conv_network(nn.Module):
 		# 		self.P_chol = self.P_chol_old
 				
 
-	def forward(self, iteration, images, learn=1):
+	def forward(self, iteration, images, learn=1, eval=False):
 
 		#self.cuda()
 
@@ -749,6 +749,9 @@ class pc_conv_network(nn.Module):
 		# print(self.phi[-1])
 		# if learn == 1:
 		print(GPUInfo.gpu_usage())
+
+		if eval:
+			return self.z_pc
 
 #		del self.optimizer
 		
