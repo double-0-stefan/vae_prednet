@@ -699,7 +699,7 @@ class pc_conv_network(nn.Module):
 		# 		self.P_chol = self.P_chol_old
 				
 
-	def forward(self, iteration, images, learn=1, eval=False):
+	def forward(self, iteration, images, act=None, eval=False):
 
 		#self.cuda()
 
