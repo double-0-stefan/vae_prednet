@@ -673,9 +673,9 @@ class pc_cnn_Trainer(Trainer):
 
 			#self.model.scheduler.step(self.epoch_loss)
 
-			with no_grad():
-				self.model.eval()
-				self.eval_batch(e)
+			#with no_grad():
+			self.model.eval()
+			self.eval_batch(e)
 		self.eval_batch(e, force_write=True)
 		self.plot_loss()
 
