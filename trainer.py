@@ -655,11 +655,11 @@ class pc_cnn_Trainer(Trainer):
 
 
 		self.logger.info('\n Training Observation Model \n ')
-		# self.logger.info('Model Overview: \n {} \n'.format(self.model.parameters))
-		# trainp  = sum(_p.numel() for _p in self.model.parameters() if _p.requires_grad)
-		# ntrainp = sum(_p.numel() for _p in self.model.parameters() if not _p.requires_grad)
-		# self.logger.info('Trainable Params {} \n'.format(tutils.group(trainp)))
-		# self.logger.info('Non-Trainable Params {} \n'.format(tutils.group(ntrainp)))
+		self.logger.info('Model Overview: \n {} \n'.format(self.model.parameters))
+		trainp  = sum(_p.numel() for _p in self.model.parameters() if _p.requires_grad)
+		ntrainp = sum(_p.numel() for _p in self.model.parameters() if not _p.requires_grad)
+		self.logger.info('Trainable Params {} \n'.format(tutils.group(trainp)))
+		self.logger.info('Non-Trainable Params {} \n'.format(tutils.group(ntrainp)))
 
 		#while self.iteration < self.model.p['n_iter']:
 		for e in range(self.p['e']):
@@ -673,12 +673,18 @@ class pc_cnn_Trainer(Trainer):
 
 			#self.model.scheduler.step(self.epoch_loss)
 
-			if e % self.model.p['plot_iter'] == 0:
-				tutils.save_checkpoint({'model': self.model, 
-								'state_dict': self.model.state_dict(),
-								'args': self.model.p}, 
-								 self.model.p['model_dir'],  
-								 self.model.p['model_name'], 0)	
+			with no_grad():
+				self.model.eval()
+				self.eval_batch(e)
+		self.eval_batch(e, force_write=True)
+		self.plot_loss()
+
+			# if e % self.model.p['plot_iter'] == 0:
+			# 	tutils.save_checkpoint({'model': self.model, 
+			# 					'state_dict': self.model.state_dict(),
+			# 					'args': self.model.p}, 
+			# 					 self.model.p['model_dir'],  
+			# 					 self.model.p['model_name'], 0)	
 
 			
 		# 	with no_grad():
