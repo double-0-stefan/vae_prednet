@@ -7,7 +7,7 @@ vae:
     - True
 
 pc_cnn:
-    - False
+    - True
 
 xla:
     - False
