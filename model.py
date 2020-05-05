@@ -592,6 +592,32 @@ class pc_conv_network(nn.Module):
 		# metrics = (err_loss.item(), norm_kl_loss.item(), cat_kl_loss.item())
 
 		return norm_kl_loss#, metrics
+
+	def _decode_latents(self,prior_samples):
+		# need to include Precisions
+		x = F.relu(self.lin_up[0](prior_samples)) # get rid of 'top phi', call z or somewthign
+		x = F.relu(self.lin_up[1](dec))
+
+		x = x.view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
+		for i in reversed(range(len(self.p['ks']))):
+			
+			for j in reversed(range(len(self.p['ks'][i]))):
+				# top - done below
+				# if i == len(self.p['ks']) -1 and j = len(self.p['ks'][i]) -1:
+				# 	x = F.relu(self.fc1(x))
+				# 	x = F.relu(self.fc2(x))
+				# 	x = F.relu(self.conv_trans[i][j](x))
+
+				# bottom
+				if i == 0 and j == 0:
+					# print('hello')
+					x = sigmoid(self.conv_trans[i][j](x))
+
+				# everything else
+				else:
+					x = F.relu(self.conv_trans[i][j](x))
+		return x
+
 		
 	def inference(self):
 
