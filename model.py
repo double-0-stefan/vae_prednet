@@ -32,7 +32,7 @@ class pc_conv_network(nn.Module):
 		l=0 # sb add for conveience/testing
 		self.latents = sum(p['z_dim'][l:l+2]) 
 
-		self.p['ldim'] = [[p['bs'],32,32]]
+
 
 		self.hidden	  = p['enc_h'][l] 
 
@@ -41,6 +41,7 @@ class pc_conv_network(nn.Module):
 		self.enc_mode = False
 		
 		self.p = p
+		self.p['ldim'] = [[p['bs'],32,32]]
 		self.p['imdim_'] = self.p['imdim'][1]
 		self.bs = p['bs']
 		self.iter = p['iter']
