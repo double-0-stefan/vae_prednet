@@ -64,9 +64,6 @@ class Visualiser():
 		# If there are fewer examples given than spaces available in grid,
 		# augment with blank images
 		num_examples = originals.size()[0]
-		print(data.size())
-		print(reconstructions.size())
-		print(originals.size())
 
 		if self.model.p['pc_cnn']:
 			originals = torch.squeeze(originals,1)

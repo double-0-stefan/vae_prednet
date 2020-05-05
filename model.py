@@ -80,7 +80,7 @@ class pc_conv_network(nn.Module):
 		
 		# ascending
 		fc1= Linear(self.phi[-1].size(1), self.hidden)
-		fc2 = Linear(self.hidden, int(self.latents)) # not divided by 2 here!
+		fc2 = Linear(self.hidden, int(self.latents*2)) # not divided by 2 here!
 
 		lin = []
 		lin.append(fc1)
@@ -89,7 +89,7 @@ class pc_conv_network(nn.Module):
 
 
 		# descending
-		fc1 = Linear(int(self.latents/2), self.hidden)
+		fc1 = Linear(int(self.latents), self.hidden)
 		fc2 = Linear(self.hidden, self.phi[-1].size(1))
 		lin = []
 		lin.append(fc1)
@@ -597,6 +597,7 @@ class pc_conv_network(nn.Module):
 
 	def decode(self,latent_samples, ff=0):
 		# need to include Precisions
+		latent_samples.size()
 		x = F.relu(self.lin_down[0](latent_samples)) # get rid of 'top phi', call z or somewthign
 		x = F.relu(self.lin_down[1](x))
 
@@ -618,7 +619,7 @@ class pc_conv_network(nn.Module):
 				# everything else
 				else:
 					x = F.relu(self.conv_trans[i][j](x))
-		return x
+		return x.data
 
 		
 	def inference(self):
