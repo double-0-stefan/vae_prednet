@@ -64,7 +64,7 @@ class Visualiser():
 		# If there are fewer examples given than spaces available in grid,
 		# augment with blank images
 		num_examples = originals.size()[0]
-
+		print(data.size())
 		print(num_examples)
 		print(num_images)
 		print(reconstructions.size())
