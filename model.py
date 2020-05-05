@@ -41,7 +41,7 @@ class pc_conv_network(nn.Module):
 		self.enc_mode = False
 		
 		self.p = p
-		self.p['ldim'] = [[32,32]]
+		self.p['ldim'] = [[p['bs'],1,32,32]]
 		self.p['imdim_'] = self.p['imdim'][1]
 		self.bs = p['bs']
 		self.iter = p['iter']
