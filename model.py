@@ -128,6 +128,7 @@ class pc_conv_network(nn.Module):
 		weights = []
 		P_chol = []
 
+
 		# # Image level - needs Precision
 		if self.p['include_precision']:
 
@@ -192,7 +193,8 @@ class pc_conv_network(nn.Module):
 		#else:
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 		#self.Precision = nn.ModuleList(Precision)
-		#self.P_chol = nn.ParameterList(P_chol)
+		self.P_chol = nn.ParameterList(P_chol)
+		self.Precision = [None] * len(P_chol) # empty list for chol multiplications
 		#self.weights = nn.ParameterList(weights)
 		self.phi = nn.ParameterList(phi)
 		self.dim = self.p['dim']
@@ -399,7 +401,7 @@ class pc_conv_network(nn.Module):
 			if i == 0:
 				PE_0 = self.images   - x.view(self.bs,-1)
 				if self.eval_:
-					self.pred = [x.view(self.bs,-1)]
+					self.pred = x.view(self.bs,-1)
 			else:
 				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
 
@@ -457,11 +459,7 @@ class pc_conv_network(nn.Module):
 		# 		)
 		#else:
 
-		## for Cholesky-based precision
-		# tril: ensure upper tri doesn't get involved at all!
-		#if learn == 1:
-		# P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
-		# P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
+		
 
 		# self.F +=  0.5*(
 		# 	# logdet cov = -logdet precision
@@ -477,26 +475,40 @@ class pc_conv_network(nn.Module):
 
 
 		# normalise (so equal precision at all levels)
-		ratio = sum(sum(torch.matmul(PE_1,PE_1.t())))/sum(sum(torch.matmul(PE_0,PE_0.t())))
+		#ratio = sum(sum(torch.matmul(PE_1,PE_1.t())))/sum(sum(torch.matmul(PE_0,PE_0.t())))
 		#print(ratio)
 		# print(sum(sum(torch.matmul(PE_1,PE_1.t()))))
 		# print(sum(sum(torch.matmul(PE_0,PE_0.t()))))
 
 		#print(self.phi[0])  - issue is precision-weighting!!
-		f =  0.5*sum(sum((
-			# logdet cov = -logdet precision
-			#- torch.logdet(P1)
+		if not self.p['include_precision']:
+			f =  0.5*sum(sum((
+				# logdet cov = -logdet precision
+				#- torch.logdet(P1)
 
-			torch.matmul(PE_1,PE_1.t())
+				torch.matmul(PE_1,PE_1.t())
 
-			#- torch.logdet(P0)
+				#- torch.logdet(P0)
 
-			+ ratio * torch.matmul(PE_0,PE_0.t())
-			)))
+				+ torch.matmul(PE_0,PE_0.t())
+				)))
+
+		else:
+			if not self.update_phi_only or self.i == 0:
+			## for Cholesky-based precision
+			# tril: ensure upper tri doesn't get involved
+			P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+			P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
+
+			self.Precision[i+1] = P1
+			self.Precision[i]   = P0
+
 
 		loss = f + kl_loss
 		loss.backward()
-		print(loss)
+		if self.i == 0 or self.i == self.iter - 1:
+			print(loss)
+		
 		return loss
 
 
@@ -575,7 +587,7 @@ class pc_conv_network(nn.Module):
 		# 	self.phi[l].requires_grad_(True)
 		#self.optimizer.lr = self.p['lr']
 		
-
+		self.update_phi_only = True
 		self.phi.requires_grad_(True)
 		#self.z_pc.requires_grad_(True)
 		self.lin_up.requires_grad_(False)
@@ -583,7 +595,9 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(False)
 
 		for i in range(self.iter):
+			self.i = i
 			if i > self.iter/2 and self.eval_ == False:
+				self.update_phi_only = False
 				# learn = 1
 				# self.phi.requires_grad_(False)
 				self.conv_trans.requires_grad_(True)
