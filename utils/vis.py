@@ -65,6 +65,11 @@ class Visualiser():
 		# augment with blank images
 		num_examples = originals.size()[0]
 
+		print(num_examples)
+		print(num_images)
+		print(reconstructions.size())
+		print(originals.size())
+
 		if num_images > num_examples:
 			blank_images = torch.zeros((num_images - num_examples,) + originals.size()[1:])
 			originals = torch.cat([originals, blank_images])
