@@ -398,6 +398,8 @@ class pc_conv_network(nn.Module):
 
 			if i == 0:
 				PE_0 = self.images   - x.view(self.bs,-1)
+				if self.eval:
+					self.pred = [x.view(self.bs,-1)]
 			else:
 				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
 
@@ -581,7 +583,7 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(False)
 
 		for i in range(self.iter):
-			if i > self.iter/2:
+			if i > self.iter/2 and self.eval == False:
 				# learn = 1
 				# self.phi.requires_grad_(False)
 				self.conv_trans.requires_grad_(True)
@@ -702,6 +704,7 @@ class pc_conv_network(nn.Module):
 	def forward(self, iteration, images, act=None, eval=False):
 
 		#self.cuda()
+		self.eval = eval
 
 		if not self.optimizer:
 			self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
@@ -751,7 +754,7 @@ class pc_conv_network(nn.Module):
 		print(GPUInfo.gpu_usage())
 
 		if eval:
-			return self.z_pc
+			return self.z_pc, self.pred
 
 #		del self.optimizer
 		
