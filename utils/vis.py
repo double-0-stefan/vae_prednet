@@ -65,10 +65,12 @@ class Visualiser():
 		# augment with blank images
 		num_examples = originals.size()[0]
 		print(data.size())
-		print(num_examples)
-		print(num_images)
 		print(reconstructions.size())
 		print(originals.size())
+
+		if self.model.p['pc_cnn']:
+			originals = torch.squeeze(originals,1)
+			reconstructions = torch.squeeze(reconstructions,1)
 
 		if num_images > num_examples:
 			blank_images = torch.zeros((num_images - num_examples,) + originals.size()[1:])
