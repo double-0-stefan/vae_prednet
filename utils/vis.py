@@ -396,7 +396,7 @@ class LatentTraverser():
 		if self.is_continuous:
 			samples.append(self._traverse_continuous_grid(idx=cont_idx,
 														  axis=cont_axis,
-		# 												  size=size))
+														  size=size))
 		# if self.is_discrete 
 		# 	for i, disc_dim in enumerate(self.disc_dims):
 		# 		if i == disc_idx:
