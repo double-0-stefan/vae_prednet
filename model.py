@@ -32,6 +32,8 @@ class pc_conv_network(nn.Module):
 		l=0 # sb add for conveience/testing
 		self.latents = sum(p['z_dim'][l:l+2]) 
 
+		self.p['ldim'] = [[p['bs'],32,32]]
+
 		self.hidden	  = p['enc_h'][l] 
 
 		self.err_plot_flag = True
@@ -279,9 +281,7 @@ class pc_conv_network(nn.Module):
 		os.makedirs(pdir) if not os.path.exists(pdir) else None
 		os.makedirs(matsdir) if not os.path.exists(matsdir) else None
 		
-		print(pred.size())
-		print(pred[0].size())
-
+		
 		# save_image(pred.data.cpu(), pdir+'/p{}.png'.format(i))
 		save_image(pred[0].data.cpu(), pdir+'/p{}.png'.format(i))
 		save_image(input_image[0].data.cpu(), pdir+'/b{}.png'.format(i))
