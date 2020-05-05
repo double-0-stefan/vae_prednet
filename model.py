@@ -281,10 +281,9 @@ class pc_conv_network(nn.Module):
 		
 		print(pred.size())
 		print(pred[0].size())
-		print(pred)
 
-		save_image(pred.data.cpu(), pdir+'/p{}.png'.format(i))
-		# save_image(pred[0].data.cpu(), pdir+'/p{}.png'.format(i))
+		# save_image(pred.data.cpu(), pdir+'/p{}.png'.format(i))
+		save_image(pred[0].data.cpu(), pdir+'/p{}.png'.format(i))
 		save_image(input_image[0].data.cpu(), pdir+'/b{}.png'.format(i))
 		
 		#if p['vae']:
@@ -406,7 +405,7 @@ class pc_conv_network(nn.Module):
 			if i == 0:
 				PE_0 = self.images   - x.view(self.bs,-1)
 				if self.eval_:
-					self.pred = x.view(self.bs,-1)
+					self.pred = x.view(self.bs,1,32,32)
 			else:
 				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
 
