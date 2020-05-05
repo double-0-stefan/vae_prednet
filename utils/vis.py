@@ -396,19 +396,19 @@ class LatentTraverser():
 		if self.is_continuous:
 			samples.append(self._traverse_continuous_grid(idx=cont_idx,
 														  axis=cont_axis,
-														  size=size))
-		if self.is_discrete and self.model.p['pc_cnn'] == False:
-			for i, disc_dim in enumerate(self.disc_dims):
-				if i == disc_idx:
-					samples.append(self._traverse_discrete_grid(dim=disc_dim,
-																axis=disc_axis,
-																traverse=True,
-																size=size))
-				else:
-					samples.append(self._traverse_discrete_grid(dim=disc_dim,
-																axis=disc_axis,
-																traverse=False,
-																size=size))
+		# 												  size=size))
+		# if self.is_discrete 
+		# 	for i, disc_dim in enumerate(self.disc_dims):
+		# 		if i == disc_idx:
+		# 			samples.append(self._traverse_discrete_grid(dim=disc_dim,
+		# 														axis=disc_axis,
+		# 														traverse=True,
+		# 														size=size))
+		# 		else:
+		# 			samples.append(self._traverse_discrete_grid(dim=disc_dim,
+		# 														axis=disc_axis,
+		# 														traverse=False,
+		# 														size=size))
 
 		return torch.cat(samples, dim=1)
 
