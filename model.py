@@ -278,8 +278,13 @@ class pc_conv_network(nn.Module):
 		
 		os.makedirs(pdir) if not os.path.exists(pdir) else None
 		os.makedirs(matsdir) if not os.path.exists(matsdir) else None
-	
-		save_image(pred[0].data.cpu(), pdir+'/p{}.png'.format(i))
+		
+		print(pred.size())
+		print(pred[0].size())
+		print(pred)
+
+		save_image(pred.data.cpu(), pdir+'/p{}.png'.format(i))
+		# save_image(pred[0].data.cpu(), pdir+'/p{}.png'.format(i))
 		save_image(input_image[0].data.cpu(), pdir+'/b{}.png'.format(i))
 		
 		#if p['vae']:
@@ -669,7 +674,7 @@ class pc_conv_network(nn.Module):
 				self.optimizer.step()
 			#print(self.F)
 			# end inference if starting to diverge
-		print(loss)
+		#print(loss)
 					#break
 			#self.i = i
 			# print(self.F)
