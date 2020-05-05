@@ -497,11 +497,22 @@ class pc_conv_network(nn.Module):
 			if not self.update_phi_only or self.i == 0:
 			## for Cholesky-based precision
 			# tril: ensure upper tri doesn't get involved
-			P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
-			P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
+				P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+				P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
 
-			self.Precision[i+1] = P1
-			self.Precision[i]   = P0
+				self.Precision[i+1] = P1
+				self.Precision[i]   = P0
+
+			f =  0.5*sum(sum((
+				# logdet cov = -logdet precision
+				- torch.logdet(P1)
+
+				+ torch.matmul(PE_1,PE_1.t())
+
+				- torch.logdet(P0)
+
+				+ torch.matmul(PE_0,PE_0.t())
+				)))
 
 
 		loss = f + kl_loss
