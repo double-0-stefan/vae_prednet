@@ -595,7 +595,7 @@ class pc_conv_network(nn.Module):
 
 	def decode(self,latent_samples, ff=0):
 		# need to include Precisions
-		x = F.relu(self.lin_up[0](prior_samples)) # get rid of 'top phi', call z or somewthign
+		x = F.relu(self.lin_up[0](latent_samples)) # get rid of 'top phi', call z or somewthign
 		x = F.relu(self.lin_up[1](dec))
 
 		x = x.view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
