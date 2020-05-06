@@ -174,11 +174,11 @@ class Visualiser():
 																	  disc_idx=None,
 																	  size=size))
 
-		for disc_idx in range(len(self.model.p['nz_dis'][0])):
-			latent_samples.append(self.latent_traverser.traverse_line(cont_idx=None,
-																	  disc_idx=disc_idx,
-																	  size=size))
-		# Decode samples
+		# for disc_idx in range(len(self.model.p['nz_dis'][0])):
+		# 	latent_samples.append(self.latent_traverser.traverse_line(cont_idx=None,
+		# 															  disc_idx=disc_idx,
+		# 															  size=size))
+		# # Decode samples
 		generated = self._decode_latents(torch.cat(latent_samples, dim=0))
 
 		if self.save_images:
@@ -279,16 +279,16 @@ class LatentTraverser():
 		if self.is_continuous:
 			samples.append(self._traverse_continuous_line(idx=cont_idx,
 														  size=size))
-		if self.is_discrete:
-			for i, disc_dim in enumerate(self.disc_dims):
-				if i == disc_idx:
-					samples.append(self._traverse_discrete_line(dim=disc_dim,
-																traverse=True,
-																size=size))
-				else:
-					samples.append(self._traverse_discrete_line(dim=disc_dim,
-																traverse=False,
-																size=size))
+		# if self.is_discrete:
+		# 	for i, disc_dim in enumerate(self.disc_dims):
+		# 		if i == disc_idx:
+		# 			samples.append(self._traverse_discrete_line(dim=disc_dim,
+		# 														traverse=True,
+		# 														size=size))
+		# 		else:
+		# 			samples.append(self._traverse_discrete_line(dim=disc_dim,
+		# 														traverse=False,
+		# 														size=size))
 
 		return torch.cat(samples, dim=1)
 
