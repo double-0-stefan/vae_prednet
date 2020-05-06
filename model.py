@@ -601,7 +601,7 @@ class pc_conv_network(nn.Module):
 		x = F.relu(self.lin_down[0](latent_samples)) # get rid of 'top phi', call z or somewthign
 		x = F.relu(self.lin_down[1](x))
 
-		x = x.view(64*64, self.chan[-1][-1], self.dim[-1][-1], self.dim[-1][-1])
+		x = x.view(64, self.chan[-1][-1], self.dim[-1][-1], self.dim[-1][-1])
 		for i in reversed(range(len(self.p['ks']))):
 			
 			for j in reversed(range(len(self.p['ks'][i]))):
