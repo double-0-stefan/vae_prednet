@@ -285,6 +285,8 @@ class Trainer(object):
 		epoch_loss = 0
 
 		for data in self.train_loader:
+
+			print(data)
 	
 			if self.p['xla']:
 				data = [x.to(xm.xla_device()) for x in data]
