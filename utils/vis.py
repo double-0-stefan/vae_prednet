@@ -140,6 +140,12 @@ class Visualiser():
 		"""
 		filename = 'traversal_grid_d{}_c{}_e{}.png'.format(i,j,e)
 
+		print(cont_idx)
+		print(cont_axis)
+		print(disc_idx)
+		print(disc_axis)
+		print(size)
+
 		# Generate latent traversal
 		latent_samples = self.latent_traverser.traverse_grid(cont_idx=cont_idx,
 															 cont_axis=cont_axis,
