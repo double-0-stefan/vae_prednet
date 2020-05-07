@@ -278,14 +278,14 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 
 			def __call__(self, image):
 				
-				image = TTF.to_tensor(image) # (batch, c, h, w)
-				new_im = torch.zeros(image.shape[0],32,32)
-				new_im[:,2:30,2:30] = image
-				image = new_im.unsqueeze(1)	 # (batch, 1, c, h, w)
+				# image = TTF.to_tensor(image) # (batch, c, h, w)
+				# new_im = torch.zeros(image.shape[0],32,32)
+				# new_im[:,2:30,2:30] = image
+				# image = new_im.unsqueeze(1)	 # (batch, 1, c, h, w)
 				#print(self.dim)
 				
 				image = image.expand(self.t,*self.dim) # (batch, t, c, h, w)
-				print(image)
+
 				return image
 		if static:
 			transform = MNISTransform(p['b'],1,p['imdim'])
