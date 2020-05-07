@@ -500,7 +500,7 @@ class pc_conv_network(nn.Module):
 				+ torch.matmul(PE_0,PE_0.t())
 				)))
 
-			print(sum(sum(sum(PE_0))))
+			print(sum(sum(PE_0)))
 
 		else:
 			if not self.update_phi_only or self.i == 0:
