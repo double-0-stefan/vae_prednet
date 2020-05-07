@@ -87,7 +87,7 @@ def arg_check(p, iter=None):
 	if not p['conv']:
 		p['dec_h'] = p['enc_h']
 		
-	p['z_con_capacity'] = p['z_dis_capacity']
+	# p['z_con_capacity'] = p['z_dis_capacity']
 	p['beta'] = p['z_con_capacity'][0][1]
 		
 	if p['foveate'] or p['dataset']=='mnist_sequences':
