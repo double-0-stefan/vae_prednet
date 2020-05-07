@@ -305,5 +305,5 @@ def visualise(p, model, e, test_loader):
 		j=0
 		print('i')
 #		_v.latent_traversal_grid(j, i, e, cont_idx=i, cont_axis=1, disc_idx=j, disc_axis=0, size=(p['nz_dis'][0][j], p['nz_dis'][0][j]))
-		_v.latent_traversal_grid(j, i, e, cont_idx=i, cont_axis=1, disc_idx=None, disc_axis=None, size=(p['nz_dis'][0][j], p['nz_dis'][0][j]))
+		_v.latent_traversal_grid(j, i, e, cont_idx=i, cont_axis=1, disc_idx=None, disc_axis=None, size=(1,1))#(p['nz_dis'][0][j], p['nz_dis'][0][j]))
 
