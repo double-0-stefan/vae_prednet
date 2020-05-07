@@ -426,6 +426,7 @@ class pc_conv_network(nn.Module):
 			if i == 0:
 
 				PE_0 = self.images   - x.view(self.bs,-1)
+				print(sum(sum(x.view(self.bs,-1))))
 			else:
 				PE_0 = self.phi[i-1] - x.view(self.bs,-1)
 
@@ -500,7 +501,7 @@ class pc_conv_network(nn.Module):
 				+ torch.matmul(PE_0,PE_0.t())
 				)))
 
-			print(sum(sum(PE_0)))
+
 
 		else:
 			if not self.update_phi_only or self.i == 0:
