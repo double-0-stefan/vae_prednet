@@ -288,7 +288,7 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 
 				return image
 		if static:
-			transform = transforms.Compose([MNISTransform(p['b'],1,p['imdim'],transforms.Normalize((0.1307,), (0.3081,)))
+			transform = transforms.Compose([MNISTransform(p['b'],1,p['imdim']),transforms.Normalize((0.1307,), (0.3081,))
 		else:
 			transform = MNISTransform(p['b'],p['n_steps'],p['imdim'])
 
