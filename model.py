@@ -597,7 +597,7 @@ class pc_conv_network(nn.Module):
 
 	def decode(self,latent_samples, ff=0):
 		# need to include Precisions
-		latent_samples.size()
+		print(latent_samples.size())
 		x = F.relu(self.lin_down[0](latent_samples)) # get rid of 'top phi', call z or somewthign
 		x = F.relu(self.lin_down[1](x))
 
@@ -619,7 +619,7 @@ class pc_conv_network(nn.Module):
 				# everything else
 				else:
 					x = F.relu(self.conv_trans[i][j](x))
-		return x.data
+		return x
 
 		
 	def inference(self):

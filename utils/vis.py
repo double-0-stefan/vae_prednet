@@ -152,8 +152,7 @@ class Visualiser():
 
 		if self.save_images:
 			print(generated.size())
-			print(generated)
-			print(generated.data)
+
 			save_image(generated.data, self.plot_dir+'/' +filename, nrow=size[1])
 		else:
 			return make_grid(generated.data, nrow=size[1])
