@@ -155,13 +155,13 @@ def arg_check(p, iter=None):
 	#p['h_label'] = '_'.join(str(x) for x in p['enc_h'])
 	p['h_label'] = str(p['enc_h'][0])
 	# cap = p['z_dis_capacity'][0][2]
-	lmbda = str(p['z_dis_capacity'][0][-1]).split('.')[0]
+	# lmbda = str(p['z_dis_capacity'][0][-1]).split('.')[0]
 	
 	
 	pnet = 'pnt{}'.format(1 if p['prednet'] else 0)
 	vae	 = 'vae{}'.format(1	 if p['vae'] else 0)
 	#fov	 = 'fov{}'.format(1	 if p['foveate'] else 0)
-	p['model_name'] = 'l{}_{}_{}_{}_{}_z{}_h{}_c{}_b{}_ld{}_elbo{}'.format(p['layers'], p['dataset'], pnet, vae, p['z_dist'], p['z_label'], p['h_label'], lmbda, p['elbo_loss'])
+	p['model_name'] = 'l{}_{}_{}_{}_{}_z{}_h{}_c{}_b{}_ld{}_elbo{}'.format(p['layers'], p['dataset'], pnet, vae, p['z_dist'], p['z_label'], p['h_label'], p['elbo_loss'])
 
 	# p['model_name'] = 'l{}_{}_{}_{}_{}_z{}_h{}_c{}_b{}_ld{}_elbo{}'.format(p['layers'], p['dataset'], pnet, vae, p['z_dist'], p['z_label'], p['h_label'],cap,int(p['beta']), lmbda, p['elbo_loss'])
 
