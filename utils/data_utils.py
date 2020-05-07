@@ -299,7 +299,7 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 		# 					 transform=transform)
 
 		data =	datasets.MNIST(root=root,
-							  train=True, download=True,
+							  train=True,
 							  transform=transforms.Compose([
 								#transforms.Grayscale(num_output_channels=3),
 								transforms.ToTensor(),
