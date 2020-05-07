@@ -146,7 +146,7 @@ def arg_check(p, iter=None):
 
 	p['z_dim'] = []
 	for l in range(p['layers']):	
-		p['z_dim'].append(p['nz_con'][l] + sum(p['nz_dis'][l]))
+		p['z_dim'].append(p['nz_con'][l]) #+ sum(p['nz_dis'][l]))
 		#idxs = [x for x in range(p['z_dim'][l])]
 		#p['z_con_idx'] = idxs[:p['nz_con'][l]]
 		#p['z_dis_idx'] = idxs[sum(p['nz_dis'][l]):]
