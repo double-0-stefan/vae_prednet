@@ -619,9 +619,11 @@ class pc_conv_network(nn.Module):
 				# everything else
 				else:
 					x = F.relu(self.conv_trans[i][j](x))
-		return x
+
 
 		print(x.size())
+		return x
+
 
 		
 	def inference(self):
