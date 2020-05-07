@@ -290,17 +290,21 @@ def visualise(p, model, e, test_loader):
 	# Reconstruct data using Joint-VAE model
 	_v.reconstructions(e, batch)
 
+	print(_v)
+
 	# Plot samples
 	_v.samples(e)
 
 	# Plot all traversals
 	_v.all_latent_traversals(e, size=10)
 
+	print(_v)
+
 	# Plot a grid of some traversals
 	#for j in range(len(p['nz_dis'][0])):
 	for i in range(p['nz_con'][0]):
 		j=0
-		print(i)
+		print('i')
 #		_v.latent_traversal_grid(j, i, e, cont_idx=i, cont_axis=1, disc_idx=j, disc_axis=0, size=(p['nz_dis'][0][j], p['nz_dis'][0][j]))
 		_v.latent_traversal_grid(j, i, e, cont_idx=i, cont_axis=1, disc_idx=None, disc_axis=None, size=(p['nz_dis'][0][j], p['nz_dis'][0][j]))
 
