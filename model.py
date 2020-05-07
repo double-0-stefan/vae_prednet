@@ -72,7 +72,7 @@ class pc_conv_network(nn.Module):
 	def init_latents(self, p):
 
 		# Initialise Distributions
-		self.prior_dist, self.q_dist, self.x_dist, self.cat_dist = mutils.discheck(p)
+		self.prior_dist, self.q_dist, self.x_dist= mutils.discheck(p)
 		
 		p['z_params']	= self.q_dist.nparams
 
