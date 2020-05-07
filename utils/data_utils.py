@@ -270,33 +270,43 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 		
 		root = os.path.join(root, 'processed')
 		
-		class MNISTransform(object):
-			def __init__(self, b,t,dim):
-				self.b = b
-				self.t = t
-				self.dim = dim
-				self.norm = transforms.Normalize(0.1307, 0.3081, inplace=False)
+		# class MNISTransform(object):
+		# 	def __init__(self, b,t,dim):
+		# 		self.b = b
+		# 		self.t = t
+		# 		self.dim = dim
+		# 		self.norm = transforms.Normalize((0.1307,), (0.3081,), inplace=False)
 
-			def __call__(self, image):
+		# 	def __call__(self, image):
 				
-				image = TTF.to_tensor(image) # (batch, c, h, w)
-				image = self.norm(image)
-				new_im = torch.zeros(image.shape[0],32,32)
-				new_im[:,2:30,2:30] = image
-				image = new_im.unsqueeze(1)	 # (batch, 1, c, h, w)
-				#print(self.dim)
+		# 		image = TTF.to_tensor(image) # (batch, c, h, w)
+		# 		image = self.norm(image)
+		# 		new_im = torch.zeros(image.shape[0],32,32)
+		# 		new_im[:,2:30,2:30] = image
+		# 		image = new_im.unsqueeze(1)	 # (batch, 1, c, h, w)
+		# 		#print(self.dim)
 				
-				image = image.expand(self.t,*self.dim) # (batch, t, c, h, w)
+		# 		image = image.expand(self.t,*self.dim) # (batch, t, c, h, w)
 
-				return image
-		if static:
-			transform = MNISTransform(p['b'],1,p['imdim'])
-		else:
-			transform = MNISTransform(p['b'],p['n_steps'],p['imdim'])
+		# 		return image
+		# if static:
+		# 	transform = MNISTransform(p['b'],1,p['imdim'])
+		# else:
+		# 	transform = MNISTransform(p['b'],p['n_steps'],p['imdim'])
 
-		data = datasets.MNIST(root=root, 
-							 train=True, download=True,
-							 transform=transform)
+		# data = datasets.MNIST(root=root, 
+		# 					 train=True, download=True,
+		# 					 transform=transform)
+
+		data =	datasets.MNIST(root=root,
+							  train=True, download=True,
+							  transform=transforms.Compose([
+								#transforms.Grayscale(num_output_channels=3),
+								transforms.ToTensor(),
+								transforms.Normalize((0.1307,),(0.3081,)),
+								transforms.Pad(padding=2, fill=0, padding_mode='constant')	
+								]),
+							  download=True)
 							 
 		if from_matlab:
 			return data.data[:batch_size].numpy()
