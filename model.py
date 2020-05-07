@@ -810,8 +810,8 @@ class pc_conv_network(nn.Module):
 		
 		self.inference()
 		print(iteration)
-		print(self.phi[0])
-		print(self.images)
+		# print(self.phi[0])
+		# print(self.images)
 		# print(self.i)
 		# print(self.kl_loss)
 		#print(self.F)
