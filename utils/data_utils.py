@@ -275,10 +275,12 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 				self.b = b
 				self.t = t
 				self.dim = dim
+				self.norm = torchvision.transforms.Normalize(0.1307, 0.3081, inplace=False)
 
 			def __call__(self, image):
 				
 				image = TTF.to_tensor(image) # (batch, c, h, w)
+				image = self.norm(image)
 				new_im = torch.zeros(image.shape[0],32,32)
 				new_im[:,2:30,2:30] = image
 				image = new_im.unsqueeze(1)	 # (batch, 1, c, h, w)
@@ -288,7 +290,7 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 
 				return image
 		if static:
-			transform = transforms.Compose([transforms.Normalize((0.1307,), (0.3081,)),MNISTransform(p['b'],1,p['imdim'])])
+			transform = MNISTransform(p['b'],1,p['imdim'])
 		else:
 			transform = MNISTransform(p['b'],p['n_steps'],p['imdim'])
 
