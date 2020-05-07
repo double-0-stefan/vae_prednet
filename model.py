@@ -621,6 +621,7 @@ class pc_conv_network(nn.Module):
 					x = F.relu(self.conv_trans[i][j](x))
 
 
+		print('x')
 		print(x.size())
 		return x
 
