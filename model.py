@@ -399,7 +399,7 @@ class pc_conv_network(nn.Module):
 				# bottom
 				if i == 0 and j == 0:
 					# print('hello')
-					x = sigmoid(self.conv_trans[i][j](x))
+					x = F.relu(self.conv_trans[i][j](x))
 
 				# everything else
 				else:
@@ -619,7 +619,7 @@ class pc_conv_network(nn.Module):
 				# bottom
 				if i == 0 and j == 0:
 					# print('hello')
-					x = sigmoid(self.conv_trans[i][j](x))
+					x = Frelu(self.conv_trans[i][j](x))
 
 				# everything else
 				else:

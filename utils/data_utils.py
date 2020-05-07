@@ -304,7 +304,7 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 								#transforms.Grayscale(num_output_channels=3),
 								transforms.Pad(padding=2, fill=0, padding_mode='constant'),
 								transforms.ToTensor(),
-								transforms.Normalize((255*0.1307,),(255*0.3081,)),
+								transforms.Normalize((0.1307,),(0.3081,)),
 								]),
 							  download=True)
 							 
