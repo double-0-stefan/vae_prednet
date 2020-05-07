@@ -295,7 +295,7 @@ class Trainer(object):
 
 			# prepare model for training
 			self.model.reset()
-			print(data)
+			print(data[0])
 			# forward 
 			self.model(self.iteration, *data)
 			
