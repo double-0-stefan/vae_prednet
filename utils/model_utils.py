@@ -168,11 +168,11 @@ def discheck(p,hi=0,mu_low=0,sigma_low=1):
 		print('no z matching dist')
 		0/0
 	
-	cat_dist = [dist.Gumbel(p['nz_dis'][l], p['enc_temp']) for l in range(p['layers'])]
+	# cat_dist = [dist.Gumbel(p['nz_dis'][l], p['enc_temp']) for l in range(p['layers'])]
 	
 	prior_dist = [x.cuda() if p['gpu'] else x for x in prior_dist]
 	q_dist	   = [x.cuda() if p['gpu'] else x for x in q_dist]
-	cat_dist   = [x.cuda() if p['gpu'] else x for x in cat_dist]
+	# cat_dist   = [x.cuda() if p['gpu'] else x for x in cat_dist]
 	
 	x_dist = None
 	if p['x_dist'] == 'normal':
@@ -187,7 +187,7 @@ def discheck(p,hi=0,mu_low=0,sigma_low=1):
 		return prior_dist, q_dist, p['x_dist'], cat_dist
 	else:
 		# return prior_dist[0], q_dist[0], p['x_dist'], cat_dist
-		return prior_dist[0], q_dist[0], p['x_dist'], cat_dist[0]
+		return prior_dist[0], q_dist[0], p['x_dist']#, cat_dist[0]
 
 def plot(m, p, iter, bottom_up):
 
@@ -290,7 +290,6 @@ def visualise(p, model, e, test_loader):
 	# Reconstruct data using Joint-VAE model
 	_v.reconstructions(e, batch)
 
-	print(_v)
 
 	# Plot samples
 	_v.samples(e)
