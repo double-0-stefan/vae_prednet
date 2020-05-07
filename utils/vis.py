@@ -256,7 +256,7 @@ class LatentTraverser():
 		# self.is_discrete = p['nz_dis'] is not None
 		
 		self.cont_dim = p['nz_con'][0] if self.is_continuous else None
-		self.disc_dims = p['nz_dis'][0] if self.is_discrete else None
+		# self.disc_dims = p['nz_dis'][0] if self.is_discrete else None
 		if not isinstance(self.disc_dims, list):
 			self.disc_dims = [self.disc_dims]
 
