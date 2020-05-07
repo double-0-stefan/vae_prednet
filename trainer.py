@@ -293,7 +293,7 @@ class Trainer(object):
 
 			# prepare model for training
 			self.model.reset()
-
+			print(data)
 			# forward 
 			self.model(self.iteration, *data)
 			
