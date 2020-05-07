@@ -275,7 +275,7 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 				self.b = b
 				self.t = t
 				self.dim = dim
-				self.norm = torchvision.transforms.Normalize(0.1307, 0.3081, inplace=False)
+				self.norm = transforms.Normalize(0.1307, 0.3081, inplace=False)
 
 			def __call__(self, image):
 				
