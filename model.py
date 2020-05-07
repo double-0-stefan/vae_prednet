@@ -811,12 +811,13 @@ class pc_conv_network(nn.Module):
 		self.inference()
 		print(iteration)
 		print(self.phi[0])
+		print(self.images)
 		# print(self.i)
 		# print(self.kl_loss)
 		#print(self.F)
 		# print(self.phi[-1])
 		# if learn == 1:
-		print(GPUInfo.gpu_usage())
+		# print(GPUInfo.gpu_usage())
 
 		if eval:
 			return self.z_pc, self.pred
