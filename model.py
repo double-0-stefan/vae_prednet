@@ -777,7 +777,7 @@ class pc_conv_network(nn.Module):
 		
 		# random latents
 		#self.z_pc = nn.Parameter(torch.rand(self.bs,self.latents))
-		print(sum(images))
+		print(sum(sum(images)))
 		self.iteration = iteration
 		# del self.F
 
