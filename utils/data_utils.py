@@ -302,9 +302,9 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 							  train=True,
 							  transform=transforms.Compose([
 								#transforms.Grayscale(num_output_channels=3),
+								transforms.Pad(padding=2, fill=0, padding_mode='constant')	
 								transforms.ToTensor(),
 								transforms.Normalize((0.1307,),(0.3081,)),
-								transforms.Pad(padding=2, fill=0, padding_mode='constant')	
 								]),
 							  download=True)
 							 
