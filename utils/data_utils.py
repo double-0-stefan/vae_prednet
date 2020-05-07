@@ -278,10 +278,10 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 
 			def __call__(self, image):
 				
-				# image = TTF.to_tensor(image) # (batch, c, h, w)
-				# new_im = torch.zeros(image.shape[0],32,32)
-				# new_im[:,2:30,2:30] = image
-				# image = new_im.unsqueeze(1)	 # (batch, 1, c, h, w)
+				image = TTF.to_tensor(image) # (batch, c, h, w)
+				new_im = torch.zeros(image.shape[0],32,32)
+				new_im[:,2:30,2:30] = image
+				image = new_im.unsqueeze(1)	 # (batch, 1, c, h, w)
 				#print(self.dim)
 				
 				image = image.expand(self.t,*self.dim) # (batch, t, c, h, w)
@@ -294,7 +294,12 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 
 		data = datasets.MNIST(root=root, 
 							 train=True, download=True,
-							 transform=transform)
+							 transform=transforms.Compose([
+								#transforms.Grayscale(num_output_channels=3),
+								transforms.ToTensor(),
+								#transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5)),
+															
+								]))
 							 
 		if from_matlab:
 			return data.data[:batch_size].numpy()
