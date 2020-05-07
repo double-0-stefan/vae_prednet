@@ -294,12 +294,7 @@ def get_dataset(p, split='train', transform=None, static=False, exp=None,
 
 		data = datasets.MNIST(root=root, 
 							 train=True, download=True,
-							 transform=transforms.Compose([
-								#transforms.Grayscale(num_output_channels=3),
-								transforms.ToTensor(),
-								#transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5)),
-															
-								]))
+							 transform=transform)
 							 
 		if from_matlab:
 			return data.data[:batch_size].numpy()

@@ -284,8 +284,6 @@ class Trainer(object):
 			or overwrite this function in a subordinate class. """
 		epoch_loss = 0
 
-		print(self.train_loader)
-
 		for data in self.train_loader:
 
 			print(data)
