@@ -648,7 +648,7 @@ class pc_conv_network(nn.Module):
 
 		for i in range(self.iter):
 			self.i = i
-			if i > self.iter/2 and self.eval_ == False:
+			if i > 3*self.iter/4 and self.eval_ == False:
 				self.update_phi_only = False
 				# learn = 1
 				# self.phi.requires_grad_(False)
