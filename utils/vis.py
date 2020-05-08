@@ -66,7 +66,7 @@ class Visualiser():
 		num_examples = originals.size()[0]
 
 		if self.model.p['pc_cnn']:
-			originals = torch.squeeze(originals,1)
+			# originals = torch.squeeze(originals,1)
 			reconstructions = torch.squeeze(reconstructions,1)
 		print(originals.size())
 		print(reconstructions.size())
