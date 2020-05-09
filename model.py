@@ -508,6 +508,7 @@ class pc_conv_network(nn.Module):
 
 		if not self.p['include_precision']:
 			if self.p['layers'] > 1:
+				print('ffs')
 
 				f =  0.5*sum(sum((
 					# logdet cov = -logdet precision
@@ -530,7 +531,7 @@ class pc_conv_network(nn.Module):
 
 					torch.matmul(PE_0,PE_0.t())
 					)))
-				# print(f)
+				print(f)
 
 
 
