@@ -97,7 +97,7 @@ class pc_conv_network(nn.Module):
 		self.lin_down = nn.ModuleList(lin)
 
 		
-		self.z_pc = torch.zeros(self.bs,2*self.latents)
+		# self.z_pc = torch.zeros(self.bs,2*self.latents)
 
 
 		# self.has_con = p['nz_con'][l] is not None 
