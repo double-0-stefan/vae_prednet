@@ -639,7 +639,7 @@ class pc_conv_network(nn.Module):
 		
 		self.update_phi_only = True
 		self.phi.requires_grad_(True)
-		self.z_pc.requires_grad_(True)
+		# self.z_pc.requires_grad_(True)
 		self.lin_up.requires_grad_(False)
 		self.lin_down.requires_grad_(False)
 		self.conv_trans.requires_grad_(False)
@@ -651,7 +651,7 @@ class pc_conv_network(nn.Module):
 				# learn = 1
 				self.phi.requires_grad_(False)
 				self.conv_trans.requires_grad_(True)
-				self.z_pc.requires_grad_(False)
+				# self.z_pc.requires_grad_(False)
 				self.lin_up.requires_grad_(True)
 				self.lin_down.requires_grad_(True)
 
