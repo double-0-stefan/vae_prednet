@@ -83,7 +83,7 @@ class pc_conv_network(nn.Module):
 
 		# mu, logsigma = torch.chunk(params, 2, dim=-1)
 
-		fc1= Linear(self.phi_top.size(1), self.hidden)
+		fc1= Linear(self.phi[-1].size(1), self.hidden)
 		fc2 = Linear(self.hidden, int(self.latents*2)) # not divided by 2 here!
 
 		lin = []
