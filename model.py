@@ -807,7 +807,7 @@ class pc_conv_network(nn.Module):
 		for i in range(len(self.phi)):
 			# reset wactivations
 			self.z_pc = torch.zeros(self.bs,2*self.latents)
-			self.phi[i] = nn.Parameter(torch.zeros_like(self.phi[i]))
+			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
 		# 	#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		
