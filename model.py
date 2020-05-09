@@ -639,9 +639,9 @@ class pc_conv_network(nn.Module):
 		x = F.relu(self.lin_down[1](x))
 
 		x = x.view(-1, self.chan[-1][-1], self.dim[-1][-1], self.dim[-1][-1])
-		for i in reversed(range(len(self.p['ks']))):
+		for i in reversed(range(len(self.conv_trans))):
 			print(i)
-			for j in reversed(range(len(self.p['ks'][i]))):
+			for j in reversed(range(len(conv_trans[i]))):
 				print(j)
 				x = F.relu(self.conv_trans[i][j](x))
 
