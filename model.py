@@ -533,7 +533,7 @@ class pc_conv_network(nn.Module):
 				print(sum(sum(PE_0)))
 				print(f) 
 				print('weights')
-				print(self.conv_trans[0][0].weight)
+				print(sum(sum(self.conv_trans[0][0].weight)))
 
 
 
