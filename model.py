@@ -353,7 +353,7 @@ class pc_conv_network(nn.Module):
 			##### do block above #####
 
 			# latents #
-			if i == self.nlayers:
+			if i == self.nlayers -1:
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
