@@ -385,7 +385,7 @@ class pc_conv_network(nn.Module):
 			else:
 				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
 			
-			# process through if not latent
+				# process through if not latent
 				for j in reversed(range(len(self.p['ks'][i+1]))):
 					x = F.relu(self.conv_trans[i+1][j](x))
 			
@@ -394,6 +394,8 @@ class pc_conv_network(nn.Module):
 			# print('pe1')
 			# print(x)
 			# print(self.phi[i])
+
+
 			##### do lower block #####
 			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
 
@@ -413,6 +415,7 @@ class pc_conv_network(nn.Module):
 
 			if i == 0:
 				PE_0 = self.images   - x.view(self.bs,-1)
+				print(PE_0)
 				# ffs = (x.view(self.bs,-1))
 				# print('pe0')
 				# print(x)
