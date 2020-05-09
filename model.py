@@ -358,6 +358,8 @@ class pc_conv_network(nn.Module):
 				self.z_pc = F.relu(self.lin_up[0](self.phi[-1])) # get rid of 'top phi', call z or somewthign
 				self.z_pc = F.relu(self.lin_up[1](self.z_pc))
 
+				kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
+
 				# z_pc is the means and sds of the coordinates in latent sapce
 				# could ake this like phi - with covariance matrix
 
@@ -372,9 +374,6 @@ class pc_conv_network(nn.Module):
 
 				z = torch.cat(latent_sample, dim=-1)
 
-
-				kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
-
 				# Decoding - p(x|z)
 				x = F.relu(self.lin_down[0](z))
 				x = F.relu(self.lin_down[1](x))
@@ -382,7 +381,7 @@ class pc_conv_network(nn.Module):
 			else:
 				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
 				for j in reversed(range(len(self.p['ks'][i+1]))):
-					x = self.conv_trans[i+1][j](F.relu(x))
+					x = F.relu(self.conv_trans[i+1][j](x))
 			
 			PE_1 = self.phi[i] - x.view(self.bs,-1)
 
@@ -396,14 +395,7 @@ class pc_conv_network(nn.Module):
 				# 	x = F.relu(self.fc2(x))
 				# 	x = F.relu(self.conv_trans[i][j](x))
 
-				# bottom
-				if i == 0 and j == 0:
-					# print('hello')
-					x = F.relu(self.conv_trans[i][j](x))
-
-				# everything else
-				else:
-					x = F.relu(self.conv_trans[i][j](x))
+				x = F.relu(self.conv_trans[i][j](x))
 
 			if i == 0:
 				PE_0 = self.images   - x.view(self.bs,-1)
@@ -610,20 +602,8 @@ class pc_conv_network(nn.Module):
 		for i in reversed(range(len(self.p['ks']))):
 			
 			for j in reversed(range(len(self.p['ks'][i]))):
-				# top - done below
-				# if i == len(self.p['ks']) -1 and j = len(self.p['ks'][i]) -1:
-				# 	x = F.relu(self.fc1(x))
-				# 	x = F.relu(self.fc2(x))
-				# 	x = F.relu(self.conv_trans[i][j](x))
 
-				# bottom
-				if i == 0 and j == 0:
-					# print('hello')
-					x = F.relu(self.conv_trans[i][j](x))
-
-				# everything else
-				else:
-					x = F.relu(self.conv_trans[i][j](x))
+				x = F.relu(self.conv_trans[i][j](x))
 
 		return x
 
