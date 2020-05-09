@@ -373,7 +373,6 @@ class pc_conv_network(nn.Module):
 
 				z = torch.cat(latent_sample, dim=-1) 
 
-				print(z)
 
 				# Decoding - p(x|z)
 				x = F.relu(self.lin_down[0](z))
@@ -382,6 +381,8 @@ class pc_conv_network(nn.Module):
 				# print(self.z_pc)
 
 			else:
+				print(self.dim)
+				print(self.chan)
 				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
 				for j in reversed(range(len(self.p['ks'][i+1]))):
 					x = F.relu(self.conv_trans[i+1][j](x))
