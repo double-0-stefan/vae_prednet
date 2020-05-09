@@ -507,8 +507,8 @@ class pc_conv_network(nn.Module):
 		#print(self.phi[0])  - issue is precision-weighting!!
 
 		if not self.p['include_precision']:
-			print(i)
-			print(self.nlayers -1)
+			# print(i)
+			# print(self.nlayers -1)
 			if i < self.nlayers -1 :
 
 				f =  0.5*sum(sum((
@@ -533,7 +533,7 @@ class pc_conv_network(nn.Module):
 					torch.matmul(PE_0,PE_0.t())
 					)))
 				# print(sum(sum(PE_0)))
-				print(f) 
+				# print(f) 
 				# print('weights')
 				# print(sum(sum(self.conv_trans[0][0].weight)))
 
