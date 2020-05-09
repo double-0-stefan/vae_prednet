@@ -48,16 +48,18 @@ precisions: # block any length > 1 has 2 precisions
     # 0 = single number prior, 1 = diagonal prior
 
 ks:
-    - [[4,4,4,4]]
+    - [[4],[4],[4],[4]]
 
 nblocks: 
     - 1 # Sections with precisions at top and bottom, but not within
 
 imchan:
     - 1
+# maybe can't backprop through multiple layers
+# although does this in stnadard networks
 
 chan:
-    - [[16,32,64,64]]
+    - [[16],[32],[64],[64]]
 
 pad:
     - 1
