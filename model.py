@@ -97,7 +97,6 @@ class pc_conv_network(nn.Module):
 		self.lin_down = nn.ModuleList(lin)
 
 		
-
 		self.z_pc = (torch.rand(self.bs,self.latents))
 
 
@@ -355,8 +354,8 @@ class pc_conv_network(nn.Module):
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
-				self.z_pc = F.relu(self.lin_up[0](self.phi[-1]))
-				self.z_pc = F.relu(self.lin_up[1](self.z_pc))
+				# self.z_pc = F.relu(self.lin_up[0](self.phi[-1]))
+				# self.z_pc = F.relu(self.lin_up[1](self.z_pc))
 
 				kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 
@@ -372,18 +371,20 @@ class pc_conv_network(nn.Module):
 				norm_sample = self.q_dist.sample_normal(params=self.z_pc, train=self.training)
 				latent_sample.append(norm_sample)
 
-				z = torch.cat(latent_sample, dim=-1)
+				z = torch.cat(latent_sample, dim=-1) 
 
 				# Decoding - p(x|z)
 				x = F.relu(self.lin_down[0](z))
 				x = F.relu(self.lin_down[1](x))
+
+				print(self.z_pc)
 
 			else:
 				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
 				for j in reversed(range(len(self.p['ks'][i+1]))):
 					x = F.relu(self.conv_trans[i+1][j](x))
 			
-			PE_1 = self.phi[i] - x.view(self.bs,-1)
+			PE_1 = self.phi[i] - x.view(self.bs,-1) # this currently just phi[-1] -> vae -> phi[-1]
 
 			# do block
 			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
@@ -401,6 +402,7 @@ class pc_conv_network(nn.Module):
 				PE_0 = self.images   - x.view(self.bs,-1)
 				# ffs = (x.view(self.bs,-1))
 				print(x[0,0,11:15,11:15])
+
 				# print(sum(sum(x.view(self.bs,-1))))
 				# print(sum(sum(self.images)))
 				if self.eval_:
@@ -623,7 +625,7 @@ class pc_conv_network(nn.Module):
 		
 		self.update_phi_only = True
 		self.phi.requires_grad_(True)
-		#self.z_pc.requires_grad_(True)
+		self.z_pc.requires_grad_(True)
 		self.lin_up.requires_grad_(False)
 		self.lin_down.requires_grad_(False)
 		self.conv_trans.requires_grad_(False)
@@ -635,7 +637,7 @@ class pc_conv_network(nn.Module):
 				# learn = 1
 				self.phi.requires_grad_(False)
 				self.conv_trans.requires_grad_(True)
-				#self.z_pc.requires_grad_(True)
+				self.z_pc.requires_grad_(False)
 				self.lin_up.requires_grad_(True)
 				self.lin_down.requires_grad_(True)
 
