@@ -560,6 +560,7 @@ class pc_conv_network(nn.Module):
 
 
 		loss = f + kl_loss
+		loss.backward()
 		
 		
 		return loss
@@ -678,16 +679,14 @@ class pc_conv_network(nn.Module):
 			# self.F_old = self.F
 			# self.F = 0#nn.Parameter(torch.zeros(1))
 			# self.phi_old = self.phi
-			loss = 0
+
 			for l in range(0, self.nlayers):
 				
 				self.optimizer.zero_grad()
-				loss += self.loss(l)
-				
-			loss.backward()
-			if self.i == 0 or self.i == self.iter - 1:
-				print(loss)
-			self.optimizer.step()
+				loss = self.loss(l)
+
+				if self.i == 0 or self.i == self.iter - 1:
+					print(loss)
 			
 			# predictive coding and reconstruction loss
 
@@ -729,7 +728,7 @@ class pc_conv_network(nn.Module):
 				#print(i)
 				#print(self.F)
 				# xm.optimizer_step(self.optimizer)#.step()
-				
+				self.optimizer.step()
 			#print(self.F)
 			# end inference if starting to diverge
 		#print(loss)
