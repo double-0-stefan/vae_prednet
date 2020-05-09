@@ -393,6 +393,7 @@ class pc_conv_network(nn.Module):
 				# process through if not latent
 				for j in reversed(range(len(self.p['ks'][i+1]))):
 					x = F.relu(self.conv_trans[i+1][j](x))
+					print(x)
 			
 			# get PE
 			PE_1 = self.phi[i] - x.view(self.bs,-1) # this currently just phi[-1] -> vae -> phi[-1]
