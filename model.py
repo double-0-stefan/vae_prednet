@@ -507,6 +507,7 @@ class pc_conv_network(nn.Module):
 		#print(self.phi[0])  - issue is precision-weighting!!
 
 		if not self.p['include_precision']:
+			print(i)
 			if i < self.nlayers -1 :
 
 				f =  0.5*sum(sum((
