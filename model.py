@@ -396,6 +396,9 @@ class pc_conv_network(nn.Module):
 			print(self.phi[i])
 			##### do lower block #####
 			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
+
+			print('processing')
+			print(x)
 			
 			for j in reversed(range(len(self.p['ks'][i]))):
 				# top - done below
