@@ -349,7 +349,9 @@ class pc_conv_network(nn.Module):
 
 			# NEED TO ADD PRECISIONS IN HERE TOO! NO WONDER THEY WEREN'T BEING LEARNED #
 
-			# do block above - movr to loss vae?
+			##### do block above #####
+
+			# latents #
 			if i == self.nlayers-1:
 				# top block - where self.phi['i+1'] is latents
 
@@ -380,16 +382,18 @@ class pc_conv_network(nn.Module):
 
 				# print(self.z_pc)
 
+			# or phi above #
 			else:
-				print(self.dim)
-				print(self.chan)
 				x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
-				for j in reversed(range(len(self.p['ks'][i+1]))):
-					x = F.relu(self.conv_trans[i+1][j](x))
 			
-				PE_1 = self.phi[i] - x.view(self.bs,-1) # this currently just phi[-1] -> vae -> phi[-1]
+			# process through
+			for j in reversed(range(len(self.p['ks'][i+1]))):
+				x = F.relu(self.conv_trans[i+1][j](x))
+			
+			# get PE
+			PE_1 = self.phi[i] - x.view(self.bs,-1) # this currently just phi[-1] -> vae -> phi[-1]
 
-			# do block
+			##### do lower block #####
 			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
 			
 			for j in reversed(range(len(self.p['ks'][i]))):
