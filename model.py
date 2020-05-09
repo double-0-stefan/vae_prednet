@@ -531,7 +531,7 @@ class pc_conv_network(nn.Module):
 					torch.matmul(PE_0,PE_0.t())
 					)))
 				# print(sum(sum(PE_0)))
-				# print(f) 
+				print(f) 
 				# print('weights')
 				# print(sum(sum(self.conv_trans[0][0].weight)))
 
@@ -640,9 +640,9 @@ class pc_conv_network(nn.Module):
 
 		x = x.view(-1, self.chan[-1][-1], self.dim[-1][-1], self.dim[-1][-1])
 		for i in reversed(range(len(self.p['ks']))):
-			
+			print(i)
 			for j in reversed(range(len(self.p['ks'][i]))):
-
+				print(j)
 				x = F.relu(self.conv_trans[i][j](x))
 
 		return x
