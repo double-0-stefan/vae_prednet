@@ -355,7 +355,7 @@ class pc_conv_network(nn.Module):
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
-				self.z_pc = F.relu(self.lin_up[0](self.phi[-1])) # get rid of 'top phi', call z or somewthign
+				self.z_pc = F.relu(self.lin_up[0](self.phi[-1]))
 				self.z_pc = F.relu(self.lin_up[1](self.z_pc))
 
 				kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
@@ -631,7 +631,7 @@ class pc_conv_network(nn.Module):
 			if i == self.iter - 1 and self.eval_ == False:
 				self.update_phi_only = False
 				# learn = 1
-				# self.phi.requires_grad_(False)
+				self.phi.requires_grad_(False)
 				self.conv_trans.requires_grad_(True)
 				#self.z_pc.requires_grad_(True)
 				self.lin_up.requires_grad_(True)
@@ -787,7 +787,7 @@ class pc_conv_network(nn.Module):
 		# put weights into bilinear for inference and see if faster (no update done)
 		for i in range(len(self.phi)):
 			# reset wactivations
-			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
+			self.phi[i] = nn.Parameter(torch.zeros_like(self.phi[i]))
 		# 	#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 
 		
