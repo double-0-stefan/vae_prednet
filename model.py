@@ -77,8 +77,12 @@ class pc_conv_network(nn.Module):
 		p['z_params']	= self.q_dist.nparams
 
 		# layer configuration 
-		self.phi_top = nn.Parameter(torch.zeros(self.bs,self.phi[-1].size(1))) # doesn't have to be this
+		# self.phi_top = nn.Parameter(torch.zeros(self.bs,self.phi[-1].size(1))) # doesn't have to be this
 		# ascending
+		self.z_pc = nn.Parameter(self.p['bs'],self.latents*2)
+
+		# mu, logsigma = torch.chunk(params, 2, dim=-1)
+
 		fc1= Linear(self.phi_top.size(1), self.hidden)
 		fc2 = Linear(self.hidden, int(self.latents*2)) # not divided by 2 here!
 
@@ -357,8 +361,8 @@ class pc_conv_network(nn.Module):
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
-				self.z_pc = F.relu(self.lin_up[0](self.phi_top))
-				self.z_pc = F.relu(self.lin_up[1](self.z_pc))
+				# self.z_pc = F.relu(self.lin_up[0](self.phi_top))
+				# self.z_pc = F.relu(self.lin_up[1](self.z_pc))
 
 				kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 
@@ -663,7 +667,7 @@ class pc_conv_network(nn.Module):
 		
 		self.update_phi_only = True
 		self.phi.requires_grad_(True)
-		self.phi_top.requires_grad_(True)
+		self.z_pc.requires_grad_(True)
 		# self.z_pc.requires_grad_(True)
 		self.lin_up.requires_grad_(False)
 		self.lin_down.requires_grad_(False)
@@ -675,7 +679,7 @@ class pc_conv_network(nn.Module):
 				self.update_phi_only = False
 				# learn = 1
 				self.phi.requires_grad_(False)
-				self.phi_top.requires_grad_(False)
+				self.z_pc.requires_grad_(False)
 				self.conv_trans.requires_grad_(True)
 				# self.z_pc.requires_grad_(False)
 				self.lin_up.requires_grad_(True)
