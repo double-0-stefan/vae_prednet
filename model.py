@@ -509,29 +509,29 @@ class pc_conv_network(nn.Module):
 		if not self.p['include_precision']:
 			# print(i)
 			# print(self.nlayers -1)
-			if i < self.nlayers -1 :
+			# if i < self.nlayers -1 :
 
-				f =  0.5*sum(sum((
-					# logdet cov = -logdet precision
-					#- torch.logdet(P1)
+			f =  0.5*sum(sum((
+				# logdet cov = -logdet precision
+				#- torch.logdet(P1)
 
-					torch.matmul(PE_1,PE_1.t())
+				torch.matmul(PE_1,PE_1.t())
 
-					#- torch.logdet(P0)
+				#- torch.logdet(P0)
 
-					+ torch.matmul(PE_0,PE_0.t())
-					)))
-			else:
-				f =  0.5*sum(sum((
-					# logdet cov = -logdet precision
-					#- torch.logdet(P1)
+				+ torch.matmul(PE_0,PE_0.t())
+				)))
+			# else:
+			# 	f =  0.5*sum(sum((
+			# 		# logdet cov = -logdet precision
+			# 		#- torch.logdet(P1)
 
-					# torch.matmul(PE_1,PE_1.t())
+			# 		# torch.matmul(PE_1,PE_1.t())
 
-					#- torch.logdet(P0)
+			# 		#- torch.logdet(P0)
 
-					torch.matmul(PE_0,PE_0.t())
-					)))
+			# 		torch.matmul(PE_0,PE_0.t())
+			# 		)))
 				# print(sum(sum(PE_0)))
 				# print(f) 
 				# print('weights')
