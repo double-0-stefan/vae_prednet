@@ -749,7 +749,7 @@ class pc_conv_network(nn.Module):
 				
 
 	def forward(self, iteration, images, act=None, eval=False):
-		torch.set_printoptions(threshold=5000)
+		torch.set_printoptions(threshold=50000)
 
 		#self.cuda()
 		self.eval_ = eval
