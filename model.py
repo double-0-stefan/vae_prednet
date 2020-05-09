@@ -391,9 +391,9 @@ class pc_conv_network(nn.Module):
 			
 			# get PE
 			PE_1 = self.phi[i] - x.view(self.bs,-1) # this currently just phi[-1] -> vae -> phi[-1]
-			print('pe1')
-			print(x)
-			print(self.phi[i])
+			# print('pe1')
+			# print(x)
+			# print(self.phi[i])
 			##### do lower block #####
 			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
 
@@ -408,14 +408,14 @@ class pc_conv_network(nn.Module):
 				# 	x = F.relu(self.conv_trans[i][j](x))
 
 				x = F.relu(self.conv_trans[i][j](x))
-				print('processing')
-				print(x)
+				# print('processing')
+				# print(x)
 
 			if i == 0:
 				PE_0 = self.images   - x.view(self.bs,-1)
 				# ffs = (x.view(self.bs,-1))
-				print('pe0')
-				print(x)
+				# print('pe0')
+				# print(x)
 				print(self.images.view(self.bs,1,32,32)[0,0,11:15,11:15])
 
 				# print(sum(sum(x.view(self.bs,-1))))
