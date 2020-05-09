@@ -79,7 +79,7 @@ class pc_conv_network(nn.Module):
 		# layer configuration 
 		# self.phi_top = nn.Parameter(torch.zeros(self.bs,self.phi[-1].size(1))) # doesn't have to be this
 		# ascending
-		self.z_pc = nn.Parameter(self.p['bs'],self.latents*2)
+		self.z_pc = nn.Parameter(torch.rand(self.p['bs'],self.latents*2))
 
 		# mu, logsigma = torch.chunk(params, 2, dim=-1)
 
@@ -838,7 +838,7 @@ class pc_conv_network(nn.Module):
 			# self.z_pc = torch.zeros(self.bs,2*self.latents)
 			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
 		# 	#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
-
+		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc))
 		
 		self.inference()
 		print(iteration)
