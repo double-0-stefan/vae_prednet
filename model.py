@@ -397,8 +397,8 @@ class pc_conv_network(nn.Module):
 			##### do lower block #####
 			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
 
-			print('processing')
-			print(x)
+			# print('processing')
+			# print(x)
 			
 			for j in reversed(range(len(self.p['ks'][i]))):
 				# top - done below
@@ -408,6 +408,8 @@ class pc_conv_network(nn.Module):
 				# 	x = F.relu(self.conv_trans[i][j](x))
 
 				x = F.relu(self.conv_trans[i][j](x))
+				print('processing')
+				print(x)
 
 			if i == 0:
 				PE_0 = self.images   - x.view(self.bs,-1)
