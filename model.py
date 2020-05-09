@@ -190,10 +190,11 @@ class pc_conv_network(nn.Module):
 			self.p['dim'].append(dim_block)
 
 		# top level phi
-		if not self.p['vae']:
-			#phi.append(nn.Parameter(torch.rand(self.bs,self.latents)))   # how does mean/sd work with this??
-		#else:
+		if self.p['vae']:
+			phi.append(nn.Parameter(torch.rand(self.bs,self.latents*2)))   # how does mean/sd work with this??
+		else:
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
+
 		#self.Precision = nn.ModuleList(Precision)
 		self.P_chol = nn.ParameterList(P_chol)
 		self.Precision = [None] * len(P_chol) # empty list for chol multiplications
@@ -352,7 +353,7 @@ class pc_conv_network(nn.Module):
 			##### do block above #####
 
 			# latents #
-			if i == self.nlayers-1:
+			if i == self.nlayers:
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
@@ -683,7 +684,7 @@ class pc_conv_network(nn.Module):
 			# self.F = 0#nn.Parameter(torch.zeros(1))
 			# self.phi_old = self.phi
 
-			for l in range(self.nlayers):
+			for l in range(self.nlayers+1):
 				
 				self.optimizer.zero_grad()
 				loss = self.loss(l)
