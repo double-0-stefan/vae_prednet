@@ -400,7 +400,7 @@ class pc_conv_network(nn.Module):
 			if i == 0:
 				PE_0 = self.images   - x.view(self.bs,-1)
 				# ffs = (x.view(self.bs,-1))
-				print(x[0,100:200])
+				print(x.view(self.bs,-1)[0,100:200])
 				# print(sum(sum(x.view(self.bs,-1))))
 				# print(sum(sum(self.images)))
 				if self.eval_:
