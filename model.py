@@ -97,8 +97,8 @@ class pc_conv_network(nn.Module):
 		self.lin_down = nn.ModuleList(lin)
 
 		
-		# self.z_pc = torch.zeros(self.bs,2*self.latents)
-
+		self.phi_top = nn.Parameter(torch.zeros(self.bs,2*self.latents))
+# phi.append(nn.Parameter(torch.rand(self.bs,self.latents*2))) 
 
 		# self.has_con = p['nz_con'][l] is not None 
 		# self.z_con_dim = 0;
@@ -190,9 +190,9 @@ class pc_conv_network(nn.Module):
 			self.p['dim'].append(dim_block)
 
 		# top level phi
-		if self.p['vae']:
-			phi.append(nn.Parameter(torch.rand(self.bs,self.latents*2)))   # how does mean/sd work with this??
-		else:
+		if not self.p['vae']:
+		# 	phi.append(nn.Parameter(torch.rand(self.bs,self.latents*2)))   # how does mean/sd work with this??
+		# else:
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
 		#self.Precision = nn.ModuleList(Precision)
@@ -357,7 +357,7 @@ class pc_conv_network(nn.Module):
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
-				self.z_pc = F.relu(self.lin_up[0](self.phi[-1]))
+				self.z_pc = F.relu(self.lin_up[0](self.phi_top))
 				self.z_pc = F.relu(self.lin_up[1](self.z_pc))
 
 				kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
@@ -663,6 +663,7 @@ class pc_conv_network(nn.Module):
 		
 		self.update_phi_only = True
 		self.phi.requires_grad_(True)
+		self.phi_top.requires_grad_(True)
 		# self.z_pc.requires_grad_(True)
 		self.lin_up.requires_grad_(False)
 		self.lin_down.requires_grad_(False)
@@ -674,6 +675,7 @@ class pc_conv_network(nn.Module):
 				self.update_phi_only = False
 				# learn = 1
 				self.phi.requires_grad_(False)
+				self.phi_top.requires_grad_(False)
 				self.conv_trans.requires_grad_(True)
 				# self.z_pc.requires_grad_(False)
 				self.lin_up.requires_grad_(True)
@@ -684,7 +686,7 @@ class pc_conv_network(nn.Module):
 			# self.F = 0#nn.Parameter(torch.zeros(1))
 			# self.phi_old = self.phi
 
-			for l in range(self.nlayers+1):
+			for l in range(self.nlayers):
 				
 				self.optimizer.zero_grad()
 				loss = self.loss(l)
