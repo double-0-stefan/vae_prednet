@@ -508,6 +508,7 @@ class pc_conv_network(nn.Module):
 
 		if not self.p['include_precision']:
 			print(i)
+			print(self.nlayers -1)
 			if i < self.nlayers -1 :
 
 				f =  0.5*sum(sum((
@@ -567,7 +568,7 @@ class pc_conv_network(nn.Module):
 		
 		return loss
 
-
+		self.optimizer.step()
 		#else:
 			# self.F +=  0.5*(
 			# 	# logdet cov = -logdet precision
@@ -727,7 +728,7 @@ class pc_conv_network(nn.Module):
 				#print(i)
 				#print(self.F)
 				# xm.optimizer_step(self.optimizer)#.step()
-				self.optimizer.step()
+				# self.optimizer.step()
 			#print(self.F)
 			# end inference if starting to diverge
 		#print(loss)
