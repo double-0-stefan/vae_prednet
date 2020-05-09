@@ -568,7 +568,7 @@ class pc_conv_network(nn.Module):
 		
 		return loss
 
-		self.optimizer.step()
+		
 		#else:
 			# self.F +=  0.5*(
 			# 	# logdet cov = -logdet precision
@@ -687,7 +687,7 @@ class pc_conv_network(nn.Module):
 				
 				self.optimizer.zero_grad()
 				loss = self.loss(l)
-			
+				self.optimizer.step()
 			# predictive coding and reconstruction loss
 
 			# self.kl_loss = 0
