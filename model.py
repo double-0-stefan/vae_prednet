@@ -530,6 +530,7 @@ class pc_conv_network(nn.Module):
 
 					torch.matmul(PE_0,PE_0.t())
 					)))
+				print(f)
 
 
 
