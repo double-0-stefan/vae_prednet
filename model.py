@@ -437,7 +437,7 @@ class pc_conv_network(nn.Module):
 			for j in reversed(range(len(self.p['ks'][i]))):
 				
 				x = self.conv_trans[i][j](F.relu(x))
-				print(x)
+				# print(x)
 
 			if i == 0:
 
