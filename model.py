@@ -354,8 +354,8 @@ class pc_conv_network(nn.Module):
 				# top block - where self.phi['i+1'] is latents
 
 				# Encoding - p(z2|x) or p(z1 |x,z2)
-				# self.z_pc = F.relu(self.lin_up[0](self.phi[-1]))
-				# self.z_pc = F.relu(self.lin_up[1](self.z_pc))
+				self.z_pc = F.relu(self.lin_up[0](self.phi[-1]))
+				self.z_pc = F.relu(self.lin_up[1](self.z_pc))
 
 				kl_loss  = self.vae_loss(self.iteration, self.z_pc) 
 
@@ -384,7 +384,7 @@ class pc_conv_network(nn.Module):
 				for j in reversed(range(len(self.p['ks'][i+1]))):
 					x = F.relu(self.conv_trans[i+1][j](x))
 			
-			PE_1 = self.phi[i] - x.view(self.bs,-1) # this currently just phi[-1] -> vae -> phi[-1]
+				PE_1 = self.phi[i] - x.view(self.bs,-1) # this currently just phi[-1] -> vae -> phi[-1]
 
 			# do block
 			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
@@ -487,17 +487,31 @@ class pc_conv_network(nn.Module):
 		# print(sum(sum(torch.matmul(PE_0,PE_0.t()))))
 
 		#print(self.phi[0])  - issue is precision-weighting!!
+
 		if not self.p['include_precision']:
-			f =  0.5*sum(sum((
-				# logdet cov = -logdet precision
-				#- torch.logdet(P1)
+			if self.p['layers'] > 1:
 
-				torch.matmul(PE_1,PE_1.t())
+				f =  0.5*sum(sum((
+					# logdet cov = -logdet precision
+					#- torch.logdet(P1)
 
-				#- torch.logdet(P0)
+					torch.matmul(PE_1,PE_1.t())
 
-				+ torch.matmul(PE_0,PE_0.t())
-				)))
+					#- torch.logdet(P0)
+
+					+ torch.matmul(PE_0,PE_0.t())
+					)))
+			else:
+				f =  0.5*sum(sum((
+					# logdet cov = -logdet precision
+					#- torch.logdet(P1)
+
+					# torch.matmul(PE_1,PE_1.t())
+
+					#- torch.logdet(P0)
+
+					torch.matmul(PE_0,PE_0.t())
+					)))
 
 
 
