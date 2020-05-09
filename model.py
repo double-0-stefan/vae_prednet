@@ -533,7 +533,7 @@ class pc_conv_network(nn.Module):
 					torch.matmul(PE_0,PE_0.t())
 					)))
 				# print(sum(sum(PE_0)))
-				print(f) 
+				# print(f) 
 				# print('weights')
 				# print(sum(sum(self.conv_trans[0][0].weight)))
 
