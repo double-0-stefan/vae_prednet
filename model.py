@@ -380,7 +380,6 @@ class pc_conv_network(nn.Module):
 				x = F.relu(self.lin_down[0](z))
 				x = F.relu(self.lin_down[1](x))
 
-				# print(self.z_pc)
 
 			# or phi above #
 			else:
@@ -408,8 +407,8 @@ class pc_conv_network(nn.Module):
 			if i == 0:
 				PE_0 = self.images   - x.view(self.bs,-1)
 				# ffs = (x.view(self.bs,-1))
-				# print(x[0,0,11:15,11:15])
-				# print(self.images.view(self.bs,1,32,32)[0,0,11:15,11:15])
+				print(x[0,0,11:15,11:15])
+				print(self.images.view(self.bs,1,32,32)[0,0,11:15,11:15])
 
 				# print(sum(sum(x.view(self.bs,-1))))
 				# print(sum(sum(self.images)))
