@@ -415,7 +415,7 @@ class pc_conv_network(nn.Module):
 				PE_0 = self.images   - x.view(self.bs,-1)
 				# ffs = (x.view(self.bs,-1))
 				print('pe0')
-				print(x[0,0,11:15,11:15])
+				print(x)
 				print(self.images.view(self.bs,1,32,32)[0,0,11:15,11:15])
 
 				# print(sum(sum(x.view(self.bs,-1))))
