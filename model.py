@@ -77,9 +77,9 @@ class pc_conv_network(nn.Module):
 		p['z_params']	= self.q_dist.nparams
 
 		# layer configuration 
-		
+		self.phi_top = nn.Parameter(torch.zeros(self.bs,self.phi[-1].size(1))) # doesn't have to be this
 		# ascending
-		fc1= Linear(self.phi[-1].size(1), self.hidden)
+		fc1= Linear(self.phi_top.size(1), self.hidden)
 		fc2 = Linear(self.hidden, int(self.latents*2)) # not divided by 2 here!
 
 		lin = []
@@ -97,7 +97,7 @@ class pc_conv_network(nn.Module):
 		self.lin_down = nn.ModuleList(lin)
 
 		
-		self.phi_top = nn.Parameter(torch.zeros(self.bs,2*self.latents))
+		
 # phi.append(nn.Parameter(torch.rand(self.bs,self.latents*2))) 
 
 		# self.has_con = p['nz_con'][l] is not None 
