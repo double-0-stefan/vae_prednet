@@ -392,8 +392,8 @@ class pc_conv_network(nn.Module):
 			# get PE
 			PE_1 = self.phi[i] - x.view(self.bs,-1) # this currently just phi[-1] -> vae -> phi[-1]
 			print('pe1')
-			print(x[0,0,11:15,11:15])
-			print(self.phi[i].view(self.bs,1,32,32)[0,0,11:15,11:15])
+			print(x)
+			print(self.phi[i]
 			##### do lower block #####
 			x = self.phi[i].view(self.bs, self.chan[i][-1], self.dim[i][-1], self.dim[i][-1])
 			
