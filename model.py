@@ -31,6 +31,328 @@ class pc_conv_network(nn.Module):
 
 		l=0 # sb add for conveience/testing
 		self.latents = sum(p['z_dim'][l:l+2]) 
+		self.hidden	  = p['enc_h'][l] 
+
+		self.err_plot_flag = True
+		self.plot_errs = []
+		self.enc_mode = False
+		
+		self.p = p
+		self.p['ldim'] = [[1,1,32,32]]
+		self.p['imdim_'] = self.p['imdim'][1]
+		self.bs = p['bs']
+		self.iter = p['iter']
+		self.nlayers = p['nblocks']
+		self.chan = p['chan']
+
+		self.init_conv_trans(p)
+		self.imchan = p['imchan']
+		self.init_latents(p)
+		self.optimizer = None
+		print(self)
+		
+	def init_latents(self, p):
+
+		# Initialise Distributions
+		self.prior_dist, self.q_dist, self.x_dist= mutils.discheck(p)
+		
+		p['z_params']	= self.q_dist.nparams
+		self.z_pc = nn.Parameter(torch.rand(self.p['bs'],self.latents*2))
+
+		fc1= Linear(self.phi[-1].size(1), self.hidden)
+		fc2 = Linear(self.hidden, int(self.latents*2))
+
+		lin = []
+		lin.append(fc1)
+		lin.append(fc2)
+		self.lin_up = nn.ModuleList(lin)
+
+		# descending
+		fc1 = Linear(int(self.latents), self.hidden)
+		fc2 = Linear(self.hidden, self.phi[-1].size(1))
+		lin = []
+		lin.append(fc1)
+		lin.append(fc2)
+		self.lin_down = nn.ModuleList(lin)
+
+	def init_conv_trans(self, p): 
+
+		x = torch.zeros([p['bs'],p['imchan'],self.p['imdim_'],self.p['imdim_']])
+
+		self.p['dim'] = []
+		self.conv_trans = []
+		phi = []
+		Precision = []
+		weights = []
+		P_chol = []
+
+
+		if self.p['include_precision']:
+
+			## Precision as cholesky factor -> ensure symetric positive semi-definite
+			a = torch.eye(p['imchan']*p['imdim_']*p['imdim_'])/10 + 0.001 * torch.rand(p['imchan']*p['imdim_']*p['imdim_'],p['imchan']*p['imdim_']*p['imdim_'])
+			a = torch.cholesky(a)
+			P_chol.append(nn.Parameter(a))
+			Precision.append(nn.Bilinear(p['imchan']*p['imdim_']*p['imdim_'], p['imchan']*p['imdim_']*p['imdim_'], 1, bias=False))
+			Precision[0].weight = nn.Parameter(a)
+
+		# Create network
+		for j in range(p['nblocks']):
+			conv_trans_block = []
+			conv_block = []
+			dim_block = []
+
+			for i in range(len(p['ks'][j]) ):
+				if i == 0:
+					if j == 0:
+						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
+						conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
+					else: 
+						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding= p['pad']))
+						conv_block.append(Conv2d(p['chan'][j-1][-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
+				else:
+					conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=p['pad']))
+					conv_block.append(Conv2d(p['chan'][j][i-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
+				
+				x = conv_block[i](x)
+				dim_block.append(x.size(2))
+
+			## CREATE PHI ABOVE EACH BLOCK ##
+			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
+
+			if self.p['include_precision']:
+				## Precision as cholesky factor -> ensure symetric positive semi-definite
+				a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
+				a = torch.cholesky(a)
+				P_chol.append(nn.Parameter(a))
+				Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
+				Precision[j+1].weight = nn.Parameter(a)
+
+
+			self.conv_trans.append(nn.ModuleList(conv_trans_block))
+			self.p['dim'].append(dim_block)
+
+		# top level phi
+		if not self.p['vae']:
+			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
+
+		self.P_chol = nn.ParameterList(P_chol)
+		self.Precision = [None] * len(P_chol) 
+		self.phi = nn.ParameterList(phi)
+		self.dim = self.p['dim']
+		self.conv_trans = nn.ModuleList(self.conv_trans)
+
+
+	def plot(self, i, input_image, plot_vars):
+	
+		z, pred = plot_vars
+		pdir = os.path.join(self.p['plot_dir'], self.p['model_name'])
+		matsdir = os.path.join(self.p['plot_dir'], self.p['model_name'], 'mats')
+		os.makedirs(pdir) if not os.path.exists(pdir) else None
+		os.makedirs(matsdir) if not os.path.exists(matsdir) else None
+		save_image(pred[0].data.cpu(), pdir+'/p{}.png'.format(i))
+		save_image(input_image[0].data.cpu(), pdir+'/b{}.png'.format(i))
+		z	= z.data.cpu().numpy()
+		sio.savemat(os.path.join(matsdir,'z_{}.mat'.format(i)), {'r':z})
+
+
+	def reset(self):
+
+		self.F = None
+		self.F_last = None
+		self.baseline = None
+
+	def latent_sample(self):
+		latent_sample = []
+		norm_sample = self.q_dist.sample_normal(params=self.z_pc, train=self.training)
+		latent_sample.append(norm_sample)
+		z = torch.cat(latent_sample, dim=-1) 
+		return z
+
+	def vae_loss(self, curiter, z_pc):
+
+		loss 			   = 0.		
+		train_loss 		   = [] 
+		train_norm_kl_loss = []
+		train_cat_kl_loss  = [] 
+		layer_loss 		   = 0.
+	
+		kloss_args	= (z_pc,   # mu, sig
+					   self.p['z_con_capacity'][0], # anealing params
+					   curiter)	# data size
+					   
+		norm_kl_loss = self.q_dist.calc_kloss(*kloss_args) #/ self.p['b']
+
+		return norm_kl_loss#, metrics
+
+	def decode(self,latent_samples, ff=0):
+		# need to include Precisions
+		#print(latent_samples.size())
+		x = F.relu(self.lin_down[0](latent_samples)) # get rid of 'top phi', call z or somewthign
+		x = F.relu(self.lin_down[1](x))
+
+		x = x.view(-1, self.chan[-1][-1], self.dim[-1][-1], self.dim[-1][-1])
+		for i in reversed(range(len(self.conv_trans))):
+
+			for j in reversed(range(len(self.conv_trans[i]))):
+				x = F.relu(self.conv_trans[i][j](x))
+
+		return x
+
+	def loss(self, i):
+		loss = 0.0
+		kl_loss = 0.0
+
+		# if top layer - latents:
+		if i == self.nlayers -1:
+			# get kl_loss
+			kl_loss  = self.vae_loss(self.iteration, self.z_pc)
+			# get sample
+			z = self.latent_sample()
+			# Linear layers
+			x = F.relu(self.lin_down[0](z))
+			x = F.relu(self.lin_down[1](x))
+
+		# if not top layer - phi from layer above:
+		else:
+			x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
+		
+			# convolutional block
+			for j in reversed(range(len(self.p['ks'][i+1]))):
+				x = F.relu(self.conv_trans[i+1][j](x))
+
+		# Either way, calculate PE with i'th level or images
+		if i == 0:
+			PE = self.images - x.view(self.bs,-1)
+		else:
+			PE = self.phi[i] - x.view(self.bs,-1)
+
+		# calculate loss
+		if not self.p['include_precision']:
+			f =  0.5*sum(sum((
+				#- torch.logdet(P1)
+				torch.matmul(PE,PE.t())
+				)))
+			print(f) 
+
+		else:
+			if not self.update_phi_only or self.i == 0:
+			## for Cholesky-based precision
+			# tril: ensure upper tri doesn't get involved
+				P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+				P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
+
+				self.Precision[i+1] = P1
+				self.Precision[i]   = P0
+
+			f =  0.5*sum(sum((
+				# logdet cov = -logdet precision
+				- torch.logdet(P1)
+
+				+ torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
+
+				# - torch.logdet(P0)
+
+				# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
+				)))
+
+
+		loss = f + kl_loss
+		return loss
+
+		
+	def inference(self):
+		
+		total_loss = 0.
+		self.update_phi_only = True
+		self.phi.requires_grad_(True)
+		self.z_pc.requires_grad_(True)
+		self.lin_up.requires_grad_(False)
+		self.lin_down.requires_grad_(False)
+		self.conv_trans.requires_grad_(False)
+
+		for i in range(self.iter):
+			self.i = i
+			# update synaptic stuff on final iteration only
+			if i == self.iter - 1 and self.eval_ == False:
+				self.update_phi_only = False
+				# learn = 1
+				self.phi.requires_grad_(False)
+				self.z_pc.requires_grad_(False)
+				self.conv_trans.requires_grad_(True)
+				# self.z_pc.requires_grad_(False)
+				self.lin_up.requires_grad_(True)
+				self.lin_down.requires_grad_(True)
+
+			# run the loss function
+			self.optimizer.zero_grad()
+			for l in range(-1, self.nlayers): # -1 so does image comparison
+				loss = self.loss(l)
+				total_loss += loss
+
+			total_loss.backward()
+			self.optimizer.step()
+
+			# if self.i == 0 or self.i == self.iter - 1:
+			print(total_loss)
+				
+
+	def forward(self, iteration, images, act=None, eval=False):
+		
+		torch.set_printoptions(threshold=50000)
+		self.eval_ = eval
+
+		if not self.optimizer:
+			self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
+
+		self.iteration = iteration
+		torch.cuda.empty_cache()
+		
+		self.F = 0
+
+		# if iteration == 0:
+		# 	self.iter = 1
+		# else:
+		# 	self.iter = self.p['iter']
+
+		self.iter = self.p['iter']
+
+		if self.p['xla']:
+			self.images = images.view(self.bs, -1).to(xm.xla_device())
+		else:	
+			self.images = images.view(self.bs, -1).cuda()
+
+		# reset activations
+		for i in range(len(self.phi)):
+			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
+		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc))
+		
+		self.inference()
+		print(iteration)
+
+		if eval:
+			return self.z_pc, self.pred
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class pc_conv_network_old(nn.Module):
+	def __init__(self,p):
+		super(pc_conv_network, self).__init__()
+
+		l=0 # sb add for conveience/testing
+		self.latents = sum(p['z_dim'][l:l+2]) 
 
 
 
@@ -393,7 +715,7 @@ class pc_conv_network(nn.Module):
 				# process through if not latent
 				for j in reversed(range(len(self.p['ks'][i+1]))):
 					x = F.relu(self.conv_trans[i+1][j](x))
-					print(x)
+					#print(x)
 			
 			# get PE
 			PE_1 = self.phi[i] - x.view(self.bs,-1) # this currently just phi[-1] -> vae -> phi[-1]
@@ -857,7 +1179,16 @@ class pc_conv_network(nn.Module):
 
 #		del self.optimizer
 		
-		
+
+
+
+
+
+
+
+
+
+
 
 
 class GenerativeModel(Module):
