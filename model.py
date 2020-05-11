@@ -345,8 +345,8 @@ class pc_conv_network(nn.Module):
 		print(iteration)
 
 		if eval:
-			# self.decode()
-			return self.z_pc#, self.pred
+			pred = self.decode()
+			return self.z_pc, pred#, self.pred
 
 
 
