@@ -201,7 +201,7 @@ class pc_conv_network(nn.Module):
 			for j in reversed(range(len(self.conv_trans[i]))):
 				x = F.relu(self.conv_trans[i][j](x))
 
-		return x
+		self.pred = x
 
 	def loss(self, i):
 		loss = 0.
@@ -345,6 +345,7 @@ class pc_conv_network(nn.Module):
 		print(iteration)
 
 		if eval:
+			self.decode()
 			return self.z_pc, self.pred
 
 
