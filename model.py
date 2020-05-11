@@ -1190,7 +1190,7 @@ class pc_conv_network_old(nn.Module):
 		# print(GPUInfo.gpu_usage())
 
 		if eval:
-			return self.z_pc, self.pred
+			return self.z_pc#, self.pred
 
 #		del self.optimizer
 		
