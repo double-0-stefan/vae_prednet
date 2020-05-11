@@ -262,8 +262,9 @@ class pc_conv_network(nn.Module):
 
 		if kl_loss:
 			loss = f + kl_loss			
-
-		return loss
+			return loss
+		else:
+			return f
 
 		
 	def inference(self):
