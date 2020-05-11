@@ -202,6 +202,7 @@ class pc_conv_network(nn.Module):
 				x = F.relu(self.conv_trans[i][j](x))
 
 		self.pred = x
+		return x
 
 	def loss(self, i):
 		loss = 0.
