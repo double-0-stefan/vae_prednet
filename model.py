@@ -231,7 +231,7 @@ class pc_conv_network(nn.Module):
 			PE = self.images - x.view(self.bs,-1)
 		else:
 			PE = self.phi[i] - x.view(self.bs,-1)
-		print(PE)
+		# print(PE)
 
 		# calculate loss
 		if not self.p['include_precision']:
