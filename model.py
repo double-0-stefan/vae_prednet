@@ -233,6 +233,7 @@ class pc_conv_network(nn.Module):
 				#- torch.logdet(P1)
 				torch.matmul(PE,PE.t())
 				)))
+			print(i)
 			print(f) 
 
 		else:
