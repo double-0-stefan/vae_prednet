@@ -314,9 +314,9 @@ class pc_conv_network(nn.Module):
 		torch.set_printoptions(threshold=50000)
 		self.eval_ = eval
 
-		if not self.optimizer:
+		# if not self.optimizer:
 			# self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
-			self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
+		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 
 		self.iteration = iteration
 		torch.cuda.empty_cache()
