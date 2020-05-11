@@ -263,7 +263,7 @@ class pc_conv_network(nn.Module):
 		
 	def inference(self):
 		
-		total_loss = 0.
+		
 		self.update_phi_only = True
 		self.phi.requires_grad_(True)
 		self.z_pc.requires_grad_(True)
@@ -272,7 +272,9 @@ class pc_conv_network(nn.Module):
 		self.conv_trans.requires_grad_(False)
 
 		for i in range(self.iter):
+			total_loss = 0.
 			self.i = i
+			print(i)
 			# update synaptic stuff on final iteration only
 			if i == self.iter - 1 and self.eval_ == False:
 				self.update_phi_only = False
