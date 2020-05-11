@@ -299,8 +299,8 @@ class pc_conv_network(nn.Module):
 			self.optimizer.zero_grad()
 			for l in range(-1, self.nlayers): # -1 so does image comparison
 				loss = self.loss(l)
-				# print(l)
-				# print(loss) 
+				print(l)
+				print(loss) 
 				total_loss += loss
 
 			total_loss.backward()
