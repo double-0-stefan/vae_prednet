@@ -346,7 +346,7 @@ class pc_conv_network(nn.Module):
 
 		if eval:
 			# self.decode()
-			return self.z_pc, self.pred
+			return self.z_pc#, self.pred
 
 
 
