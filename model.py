@@ -285,7 +285,7 @@ class pc_conv_network(nn.Module):
 			total_loss = 0.
 			self.i = i
 			# update synaptic stuff on final iteration only
-			if i == self.iter - 1 and self.eval_ == False:
+			if i > 4*self.iter/5 and self.eval_ == False:
 				self.update_phi_only = False
 				# learn = 1
 				self.phi.requires_grad_(False)
