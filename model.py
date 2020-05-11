@@ -189,13 +189,10 @@ class pc_conv_network(nn.Module):
 
 		return norm_kl_loss#, metrics
 
-	def decode(self,latent_samples=None, ff=0):
+	def decode(self,latent_samples, ff=0):
 		# need to include Precisions
 		#print(latent_samples.size())
-		if latent_samples:
-			x = F.relu(self.lin_down[0](latent_samples)) # get rid of 'top phi', call z or somewthign
-		else:
-			x = F.relu(self.lin_down[0](self.z_pc))
+		x = F.relu(self.lin_down[0](latent_samples)) # get rid of 'top phi', call z or somewthign
 		x = F.relu(self.lin_down[1](x))
 
 		x = x.view(-1, self.chan[-1][-1], self.dim[-1][-1], self.dim[-1][-1])
@@ -232,6 +229,8 @@ class pc_conv_network(nn.Module):
 		# Either way, calculate PE with i'th level or images
 		if i == -1:
 			PE = self.images - x.view(self.bs,-1)
+			if self.eval_:
+				self.pred = x.view(self.bs,1,32,32)
 		else:
 			PE = self.phi[i] - x.view(self.bs,-1)
 		# print(PE)
@@ -348,8 +347,7 @@ class pc_conv_network(nn.Module):
 		print(iteration)
 
 		if eval:
-			pred = self.decode()
-			return self.z_pc, pred#, self.pred
+			return self.z_pc, self.pred
 
 
 
@@ -1197,6 +1195,18 @@ class pc_conv_network_old(nn.Module):
 
 #		del self.optimizer
 		
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
