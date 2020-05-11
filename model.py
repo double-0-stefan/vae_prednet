@@ -225,6 +225,7 @@ class pc_conv_network(nn.Module):
 		if i == 0:
 			PE = self.images - x.view(self.bs,-1)
 		else:
+			print(i)
 			PE = self.phi[i] - x.view(self.bs,-1)
 
 		# calculate loss
@@ -303,7 +304,8 @@ class pc_conv_network(nn.Module):
 		self.eval_ = eval
 
 		if not self.optimizer:
-			self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
+			# self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
+			self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
 
 		self.iteration = iteration
 		torch.cuda.empty_cache()
