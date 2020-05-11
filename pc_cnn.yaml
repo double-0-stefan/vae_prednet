@@ -27,7 +27,7 @@ rotating: False
 
 e    :  25000
 b    :  200
-lr   :  0.005
+lr   :  0.0005
 
 err_noise:
     - True
@@ -68,7 +68,7 @@ iter:
     - 25
 
 bs:
-    - 200
+    - 50
 
 imdim_sb:
     - 32
