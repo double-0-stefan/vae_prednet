@@ -256,10 +256,10 @@ class pc_conv_network(nn.Module):
 				# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 				)))
 
-		loss = f + kl_loss
-
 		f.backward()
-			
+		
+		if kl_loss:
+			loss = f + kl_loss			
 
 		return loss
 
