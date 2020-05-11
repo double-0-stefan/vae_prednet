@@ -183,7 +183,9 @@ class pc_conv_network(nn.Module):
 					   
 		norm_kl_loss = self.q_dist.calc_kloss(*kloss_args) #/ self.p['b']
 
+		self.optimizer.zero_grad()
 		norm_kl_loss.backward()
+		self.optimizer.step()
 
 		return norm_kl_loss#, metrics
 
@@ -257,8 +259,10 @@ class pc_conv_network(nn.Module):
 
 				# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 				)))
-
+			
+		self.optimizer.zero_grad()
 		f.backward()
+		self.optimizer.step()
 
 		if kl_loss:
 			loss = f + kl_loss			
@@ -292,7 +296,7 @@ class pc_conv_network(nn.Module):
 				self.lin_down.requires_grad_(True)
 
 			# run the loss function
-			self.optimizer.zero_grad()
+			# self.optimizer.zero_grad()
 			for l in range(-1, self.nlayers): # -1 so does image comparison
 				loss = self.loss(l)
 				print(l)
@@ -300,7 +304,7 @@ class pc_conv_network(nn.Module):
 				total_loss += loss
 
 			# total_loss.backward()
-			self.optimizer.step()
+			# self.optimizer.step()
 
 			# if self.i == 0 or self.i == self.iter - 1:
 			print(total_loss)
