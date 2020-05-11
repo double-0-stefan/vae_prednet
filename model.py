@@ -183,6 +183,8 @@ class pc_conv_network(nn.Module):
 					   
 		norm_kl_loss = self.q_dist.calc_kloss(*kloss_args) #/ self.p['b']
 
+		norm_kl_loss.backward()
+
 		return norm_kl_loss#, metrics
 
 	def decode(self,latent_samples, ff=0):
@@ -200,8 +202,6 @@ class pc_conv_network(nn.Module):
 		return x
 
 	def loss(self, i):
-		loss = 0.0
-		kl_loss = 0.0
 
 		# if top layer - latents:
 		if i == self.nlayers -1:
@@ -233,8 +233,7 @@ class pc_conv_network(nn.Module):
 				#- torch.logdet(P1)
 				torch.matmul(PE,PE.t())
 				)))
-			print(i)
-			print(f) 
+			
 
 		else:
 			if not self.update_phi_only or self.i == 0:
@@ -257,8 +256,11 @@ class pc_conv_network(nn.Module):
 				# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 				)))
 
-
 		loss = f + kl_loss
+
+		f.backward()
+			
+
 		return loss
 
 		
@@ -275,7 +277,6 @@ class pc_conv_network(nn.Module):
 		for i in range(self.iter):
 			total_loss = 0.
 			self.i = i
-			print(i)
 			# update synaptic stuff on final iteration only
 			if i == self.iter - 1 and self.eval_ == False:
 				self.update_phi_only = False
@@ -291,9 +292,11 @@ class pc_conv_network(nn.Module):
 			self.optimizer.zero_grad()
 			for l in range(-1, self.nlayers): # -1 so does image comparison
 				loss = self.loss(l)
+				print(l)
+				print(loss) 
 				total_loss += loss
 
-			total_loss.backward()
+			# total_loss.backward()
 			self.optimizer.step()
 
 			# if self.i == 0 or self.i == self.iter - 1:
