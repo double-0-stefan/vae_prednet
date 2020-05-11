@@ -306,8 +306,8 @@ class pc_conv_network(nn.Module):
 			total_loss.backward()
 			self.optimizer.step()
 
-			# if self.i == 0 or self.i == self.iter - 1:
-			print(total_loss)
+			if self.i == 0 or self.i == self.iter - 1:
+				print(total_loss)
 				
 
 	def forward(self, iteration, images, act=None, eval=False):
