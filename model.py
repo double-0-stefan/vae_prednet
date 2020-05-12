@@ -275,7 +275,7 @@ class pc_conv_network(nn.Module):
 
 		
 	def inference(self):
-		for j in range(self.p['iter_outer'])
+		for j in range(self.p['iter_outer']):
 			for i in range(self.iter):
 				
 
@@ -286,7 +286,7 @@ class pc_conv_network(nn.Module):
 					total_loss += loss
 				if i == 0:
 					print(total_loss)
-					
+
 				if i == self.iter-1:
 					break
 				else:
