@@ -108,10 +108,10 @@ class pc_conv_network(nn.Module):
 			for i in range(len(p['ks'][j]) ):
 				if j == 0:
 					if i == len(p['ks'][j]) -1:
-						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
+						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
 						# nn.BatchNorm2d(num_features)
 						# conv_trans_block.append(nn.ReLU())
-						conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
+						conv_block.append(Conv2d(p['imchan'], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 					else: 
 						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding= p['pad']))
 						conv_trans_block.append(nn.BatchNorm2d(p['chan'][j-1][-1]))
