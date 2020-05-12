@@ -404,9 +404,9 @@ class pc_conv_network(nn.Module):
 		else:	
 			self.images = images.view(self.bs, -1).cuda()
 
-		
-		self.inference()
 		print(iteration)
+		self.inference()
+		
 
 		if eval:
 			return self.z_pc, self.pred
