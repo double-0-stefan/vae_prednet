@@ -289,13 +289,15 @@ class pc_conv_network(nn.Module):
 					if i == self.iter - 1:
 						if l == self.nlayers - 1:
 							self.opt_lin.zero_grad()
+							print(self.z_pc)
 						else:
 							self.opt_ct[l+1].zero_grad()
+							print(self.phi[l+1])
 
 						loss = self.loss(l)
 						total_loss += loss
 						loss.backward()
-						print(l)
+						
 						print(loss)
 
 						if l == self.nlayers - 1:
