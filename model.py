@@ -300,8 +300,8 @@ class pc_conv_network(nn.Module):
 
 			total_loss.backward()
 
-			self.opt.ct.step()
-			self.opt.lin.step()
+			self.opt_ct.step()
+			self.opt_lin.step()
 
 			print(total_loss)
 
