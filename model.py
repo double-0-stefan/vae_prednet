@@ -123,6 +123,7 @@ class pc_conv_network(nn.Module):
 					conv_trans_block.append(nn.ReLU())
 					conv_block.append(Conv2d(p['chan'][j][i-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 				
+				print(i)
 				x = conv_block[i](x)
 				dim_block.append(x.size(2))
 
