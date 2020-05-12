@@ -245,9 +245,9 @@ class pc_conv_network(nn.Module):
 				if self.eval_:
 					self.pred = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1).view(self.bs,1,32,32)
 			
-		self.opt_phi[l+1].zero_grad()
+		self.opt_phi[i+1].zero_grad()
 		f.backward()
-		self.opt_phi[l+1].step()
+		self.opt_phi[i+1].step()
 		
 
 		print(i)
