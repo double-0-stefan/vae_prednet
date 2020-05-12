@@ -242,6 +242,7 @@ class pc_conv_network(nn.Module):
 				#- torch.logdet(P1)
 				torch.matmul(PE,PE.t())
 				)))
+			print(f)
 			
 
 		else:
@@ -297,8 +298,6 @@ class pc_conv_network(nn.Module):
 						loss = self.loss(l)
 						total_loss += loss
 						loss.backward()
-						
-						print(loss)
 
 						if l == self.nlayers - 1:
 							self.opt_lin.step()
@@ -316,8 +315,6 @@ class pc_conv_network(nn.Module):
 						loss = self.loss(l)
 						total_loss += loss
 						loss.backward()
-						print(l)
-						print(loss)
 
 						if l == self.nlayers - 1:
 							self.opt_z_pc.step()
