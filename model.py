@@ -75,7 +75,7 @@ class pc_conv_network(nn.Module):
 		lin.append(nn.ReLU())
 		lin.append(fc2)
 		lin.append(nn.ReLU())
-		self.lin_down = nn.Sequential(lin)
+		self.lin_down = nn.Sequential(*lin)
 
 	def init_conv_trans(self, p): 
 
@@ -134,7 +134,7 @@ class pc_conv_network(nn.Module):
 				Precision[j+1].weight = nn.Parameter(a)
 
 
-			self.conv_trans.append(nn.Sequential(conv_trans_block))
+			self.conv_trans.append(nn.Sequential(*conv_trans_block))
 			self.p['dim'].append(dim_block)
 
 		# top level phi
