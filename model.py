@@ -277,7 +277,7 @@ class pc_conv_network(nn.Module):
 	def inference(self):
 		for j in range(self.p['iter_outer']):
 			for i in range(self.iter):
-				
+				total_loss = 0.
 
 				# run the loss function
 				self.opt_phi.zero_grad()
