@@ -104,9 +104,9 @@ class pc_conv_network(nn.Module):
 			conv_trans_block = []
 			conv_block = []
 			dim_block = []
-			ii = -1
-			for i in reversed(range(len(p['ks'][j]))):
-				ii+=1
+			# ii = -1
+			for i in range(len(p['ks'][j])):
+				# ii+=1
 				if i == 0:
 					if j == 0: # ie lowest level
 						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
@@ -146,7 +146,7 @@ class pc_conv_network(nn.Module):
 				print(j)
 				print(i)
 				print(conv_block)
-				x = conv_block[ii](x)
+				x = conv_block[i](x)
 				dim_block.append(x.size(2))
 
 			## CREATE PHI ABOVE EACH BLOCK ##
