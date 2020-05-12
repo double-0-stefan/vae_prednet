@@ -235,13 +235,13 @@ class pc_conv_network(nn.Module):
 		else:
 			if i == -1:
 				f = 0.5*sum(sum((
-					torch.matmul(
+					torch.mm(
 						self.images - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1),
 						(self.images - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)).t()
 						))))
 			else:
 				f = 0.5*sum(sum((
-					torch.matmul(
+					torch.mm(
 						self.phi[i] - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1),
 						(self.phi[i] - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)).t()
 						))))
