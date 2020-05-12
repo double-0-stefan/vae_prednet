@@ -210,6 +210,7 @@ class pc_conv_network(nn.Module):
 		return x
 
 	def loss(self, i):
+
 		loss = 0.
 		f = 0.
 		kl_loss = None
@@ -244,6 +245,11 @@ class pc_conv_network(nn.Module):
 				if self.eval_:
 					self.pred = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1).view(self.bs,1,32,32)
 			
+		self.opt_phi[l+1].zero_grad()
+		f.backward()
+		self.opt_phi[l+1].step()
+		
+
 		print(i)
 		print(f)
 			
@@ -289,45 +295,46 @@ class pc_conv_network(nn.Module):
 					print('------ end -------')
 				
 				for l in range(-1, self.nlayers):
+					loss = self.loss(l)
 
-					# Final iteration. Update synaptic parameters
-					if i == self.iter - 1:
-						if l == self.nlayers - 1:
-							self.opt_lin.zero_grad()
-							# print(self.z_pc)
-						else:
-							self.opt_ct[l+1].zero_grad()
-							# print(self.phi[l+1])
+					# # Final iteration. Update synaptic parameters
+					# if i == self.iter - 1:
+					# 	if l == self.nlayers - 1:
+					# 		self.opt_lin.zero_grad()
+					# 		# print(self.z_pc)
+					# 	else:
+					# 		self.opt_ct[l+1].zero_grad()
+					# 		# print(self.phi[l+1])
 
-						loss = self.loss(l)
-						total_loss += loss
-						loss.backward()
+					# 	loss = self.loss(l)
+					# 	total_loss += loss
+					# 	loss.backward()
 
-						if l == self.nlayers - 1:
-							self.opt_lin.step()
-						else:
-							self.opt_ct[l+1].step()
+					# 	if l == self.nlayers - 1:
+					# 		self.opt_lin.step()
+					# 	else:
+					# 		self.opt_ct[l+1].step()
 
-					# Other iterations. Update activations
-					else:
-						if l == self.nlayers - 1:
-							self.opt_z_pc.zero_grad()
-							# print(self.z_pc.grad)
-						else:
-							self.opt_phi[l+1].zero_grad()
-							# print(self.phi[l+1].grad)
+					# # Other iterations. Update activations
+					# else:
+					# 	if l == self.nlayers - 1:
+					# 		self.opt_z_pc.zero_grad()
+					# 		# print(self.z_pc.grad)
+					# 	else:
+					# 		self.opt_phi[l+1].zero_grad()
+					# 		# print(self.phi[l+1].grad)
 
-							# print(self.phi[l+1])
+					# 		# print(self.phi[l+1])
 
-						loss = self.loss(l)
-						total_loss += loss
-						loss.backward()
+					# 	loss = self.loss(l)
+					# 	total_loss += loss
+					# 	loss.backward()
 
 
-						if l == self.nlayers - 1:
-							self.opt_z_pc.step()
-						else:
-							self.opt_phi[l+1].step()
+					# 	if l == self.nlayers - 1:
+					# 		self.opt_z_pc.step()
+					# 	else:
+					# 		self.opt_phi[l+1].step()
 
 
 	def forward(self, iteration, images, act=None, eval=False):
@@ -341,10 +348,10 @@ class pc_conv_network(nn.Module):
 		self.opt_ct = [None] * len(self.phi)
 		for i in range(len(self.phi)):
 			self.opt_phi[i] = Adam([self.phi[i]], lr=self.p['lr'])
-			self.opt_ct[i]  = Adam(self.conv_trans[i][:].parameters(), lr=self.p['lr'])
+			self.opt_ct[i]  = Adam(self.conv_trans[i].parameters(), lr=self.p['lr'])
 
 		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
-		self.opt_lin  = Adam(self.lin_down[:].parameters(), lr=self.p['lr'])
+		self.opt_lin  = Adam(self.lin_down.parameters(), lr=self.p['lr'])
 		
 		self.iteration = iteration
 		torch.cuda.empty_cache()
