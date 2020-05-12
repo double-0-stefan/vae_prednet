@@ -278,36 +278,48 @@ class pc_conv_network(nn.Module):
 		for j in range(self.p['iter_outer']):
 			for i in range(self.iter):
 				total_loss = 0.
-
-				# run the loss function
-				self.opt_phi.zero_grad()
-				self.opt_z_pc.zero_grad()
-				for l in range(-1, self.nlayers): # -1 so does image comparison
-					loss = self.loss(l)
-					total_loss += loss
-					print(l)
-					print(loss)
 				if i == 0:
-					print('start')
-					print(total_loss)
+					print('----- start ------')
+				elif i == self.iter - 1:
+					print('------ end -------')
+				
+				for l in range(-1, self.nlayers):
 
-				if i == self.iter-1:
-					break
-				else:
-					total_loss.backward()
-					self.opt_phi.step()
-					self.opt_z_pc.step()
-					
-			self.opt_ct.zero_grad()
-			self.opt_lin.zero_grad()
+					# Final iteration. Update synaptic parameters
+					if i == self.iter - 1:
+						if l == self.nlayers - 1:
+							self.opt_lin.zero_grad()
+						else:
+							self.opt_ct[l].zero_grad()
 
-			total_loss.backward()
+						loss = self.loss(l)
+						total_loss += loss
+						loss.backward()
+						print(l)
+						print(loss)
 
-			self.opt_ct.step()
-			self.opt_lin.step()
+						if l == self.nlayers - 1:
+							self.opt_lin.step()
+						else:
+							self.opt_ct[l].step()
 
-			print('finish')
-			print(total_loss)
+					# Other iterations. Update activations
+					else:
+						if l == self.nlayers - 1:
+							self.opt_z_pc.zero_grad()
+						else:
+							self.opt_phi[l].zero_grad()
+
+						loss = self.loss(l)
+						total_loss += loss
+						loss.backward()
+						print(l)
+						print(loss)
+
+						if l == self.nlayers - 1:
+							self.opt_z_pc.step()
+						else:
+							self.opt_phi[l].step()
 
 
 	def forward(self, iteration, images, act=None, eval=False):
@@ -317,12 +329,13 @@ class pc_conv_network(nn.Module):
 
 		# if not self.optimizer:
 			# self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
-		self.opt_phi = Adam(self.phi, lr=self.p['lr'])
-		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
-		self.opt_ct  = Adam(self.conv_trans.parameters(), lr=self.p['lr'])
-		self.opt_lin  = Adam(self.lin_down.parameters(), lr=self.p['lr'])
-		
+		for i in range(self.phi):
+			self.opt_phi[i] = Adam(self.phi, lr=self.p['lr'])
+			self.opt_ct[i]  = Adam(self.conv_trans[i][:].parameters(), lr=self.p['lr'])
 
+		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
+		self.opt_lin  = Adam(self.lin_down[:].parameters(), lr=self.p['lr'])
+		
 		self.iteration = iteration
 		torch.cuda.empty_cache()
 		
