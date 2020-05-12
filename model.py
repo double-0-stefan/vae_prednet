@@ -292,7 +292,7 @@ class pc_conv_network(nn.Module):
 					break
 				else:
 					total_loss.backward()
-					self.opt_act.step()
+					self.opt_ct.step()
 					self.opt_z_pc.step()
 					
 			self.opt_ct.zero_grad()
