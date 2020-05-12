@@ -281,6 +281,7 @@ class pc_conv_network(nn.Module):
 
 				# run the loss function
 				self.opt_act.zero_grad()
+				self.opt_z_pc.zero_grad()
 				for l in range(-1, self.nlayers): # -1 so does image comparison
 					loss = self.loss(l)
 					total_loss += loss
@@ -292,13 +293,18 @@ class pc_conv_network(nn.Module):
 				else:
 					total_loss.backward()
 					self.opt_act.step()
+					self.opt_z_pc.step()
 					
-			self.opt_syn.zero_grad()
+			self.opt_ct.zero_grad()
+			self.opt_lib.zero_grad()
+
 			total_loss.backward()
-			self.opt.syn.step()
+
+			self.opt.ct.step()
+			self.opt.lin.step()
+
 			print(total_loss)
 
-				
 
 	def forward(self, iteration, images, act=None, eval=False):
 		
@@ -307,8 +313,11 @@ class pc_conv_network(nn.Module):
 
 		# if not self.optimizer:
 			# self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
-		self.opt_act = Adam([self.phi, self.z_pc], lr=self.p['lr'])
-		self.opt_syn  = Adam([self.conv_trans,self.lin_down], lr=self.p['lr'])
+		self.opt_phi = Adam(self.phi, lr=self.p['lr'])
+		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
+		self.opt_ct  = Adam(self.conv_trans.parameters(), lr=self.p['lr'])
+		self.opt_lin  = Adam(self.lin_down.parameters(), lr=self.p['lr'])
+		
 
 		self.iteration = iteration
 		torch.cuda.empty_cache()
