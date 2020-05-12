@@ -254,6 +254,7 @@ class pc_conv_network(nn.Module):
 			f.backward()
 			self.opt_phi[i+1].step()
 		else:
+			f += kl_loss
 			self.opt_z_pc.zero_grad()
 			f.backward()
 			self.opt_z_pc.step()
