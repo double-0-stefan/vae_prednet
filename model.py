@@ -201,14 +201,10 @@ class pc_conv_network(nn.Module):
 	def decode(self,latent_samples, ff=0):
 		# need to include Precisions
 		#print(latent_samples.size())
-		x = F.relu(self.lin_down[0](latent_samples)) # get rid of 'top phi', call z or somewthign
-		x = F.relu(self.lin_down[1](x))
+		x = self.lin_down(latent_samples).view(-1, self.chan[-1][-1], self.dim[-1][-1], self.dim[-1][-1])
 
-		x = x.view(-1, self.chan[-1][-1], self.dim[-1][-1], self.dim[-1][-1])
 		for i in reversed(range(len(self.conv_trans))):
-
-			for j in reversed(range(len(self.conv_trans[i]))):
-				x = F.relu(self.conv_trans[i][j](x))
+			x = self.conv_trans[i](x)
 
 		self.pred = x
 		return x
@@ -240,6 +236,8 @@ class pc_conv_network(nn.Module):
 						self.images - x,
 						(self.images - x).t()
 						))))
+				if self.eval_:
+					self.pred = x.view(self.bs,1,32,32)
 			else:
 				f = 0.5*sum(sum((
 					torch.mm(
@@ -247,8 +245,7 @@ class pc_conv_network(nn.Module):
 						(self.phi[i] - x).t()
 						))))
 
-				if self.eval_:
-					self.pred = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1).view(self.bs,1,32,32)
+				
 		if learn == 0:
 			if i < self.nlayers - 1:
 				self.opt_phi[i+1].zero_grad()
