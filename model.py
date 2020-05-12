@@ -316,12 +316,11 @@ class pc_conv_network(nn.Module):
 
 				if i == 0:
 					print(loss)
-				elif i == self.iter - 1:
-					print(loss)
 
 			loss = 0.
 			for l in range(-1, self.nlayers):
 				loss += self.loss(l, learn=1)
+			print(loss)
 
 					# # Final iteration. Update synaptic parameters
 					# if i == self.iter - 1:
