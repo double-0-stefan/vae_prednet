@@ -285,8 +285,10 @@ class pc_conv_network(nn.Module):
 				for l in range(-1, self.nlayers): # -1 so does image comparison
 					loss = self.loss(l)
 					total_loss += loss
+					print(i)
 					print(loss)
 				if i == 0:
+					print('start')
 					print(total_loss)
 
 				if i == self.iter-1:
@@ -304,6 +306,7 @@ class pc_conv_network(nn.Module):
 			self.opt_ct.step()
 			self.opt_lin.step()
 
+			print('finish')
 			print(total_loss)
 
 
