@@ -290,7 +290,7 @@ class pc_conv_network(nn.Module):
 						if l == self.nlayers - 1:
 							self.opt_lin.zero_grad()
 						else:
-							self.opt_ct[l].zero_grad()
+							self.opt_ct[l+1].zero_grad()
 
 						loss = self.loss(l)
 						total_loss += loss
@@ -301,14 +301,14 @@ class pc_conv_network(nn.Module):
 						if l == self.nlayers - 1:
 							self.opt_lin.step()
 						else:
-							self.opt_ct[l].step()
+							self.opt_ct[l+1].step()
 
 					# Other iterations. Update activations
 					else:
 						if l == self.nlayers - 1:
 							self.opt_z_pc.zero_grad()
 						else:
-							self.opt_phi[l].zero_grad()
+							self.opt_phi[l+1].zero_grad()
 
 						loss = self.loss(l)
 						total_loss += loss
@@ -319,7 +319,7 @@ class pc_conv_network(nn.Module):
 						if l == self.nlayers - 1:
 							self.opt_z_pc.step()
 						else:
-							self.opt_phi[l].step()
+							self.opt_phi[l+1].step()
 
 
 	def forward(self, iteration, images, act=None, eval=False):
