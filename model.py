@@ -114,12 +114,12 @@ class pc_conv_network(nn.Module):
 						conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
 					else: 
 						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding= p['pad']))
-						# conv_trans_block.append(nn.BatchNorm2d(p['chan'][j-1][-1]))
+						conv_trans_block.append(nn.BatchNorm2d(p['chan'][j-1][-1]))
 						conv_trans_block.append(nn.ReLU())
 						conv_block.append(Conv2d(p['chan'][j-1][-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 				else:
 					conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=p['pad']))
-					# conv_trans_block.append(nn.BatchNorm2d(p['chan'][j][i-1]))
+					conv_trans_block.append(nn.BatchNorm2d(p['chan'][j][i-1]))
 					conv_trans_block.append(nn.ReLU())
 					conv_block.append(Conv2d(p['chan'][j][i-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 				
@@ -224,26 +224,27 @@ class pc_conv_network(nn.Module):
 			# get kl_loss
 			kl_loss  = self.vae_loss(self.iteration, self.z_pc)
 			# get sample
-			x = self.lin_down(self.latent_sample())
+			x = self.lin_down(self.latent_sample()).view(self.bs,-1)
 			f = 0.5*sum(sum((
-					torch.matmul(
-						self.phi[-1] - self.lin_down(self.latent_sample()).view(self.bs,-1),
-						(self.phi[-1] - self.lin_down(self.latent_sample()).view(self.bs,-1)).t()
+					torch.mm(
+						self.phi[-1] - x,
+						(self.phi[-1] - x).t()
 						))))
 
 		# if not top layer - phi from layer above:
 		else:
+			x = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)
 			if i == -1:
 				f = 0.5*sum(sum((
 					torch.mm(
-						self.images - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1),
-						(self.images - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)).t()
+						self.images - x,
+						(self.images - x).t()
 						))))
 			else:
 				f = 0.5*sum(sum((
 					torch.mm(
-						self.phi[i] - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1),
-						(self.phi[i] - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)).t()
+						self.phi[i] - x,
+						(self.phi[i] - x).t()
 						))))
 
 				if self.eval_:
