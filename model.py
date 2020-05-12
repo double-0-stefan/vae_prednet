@@ -322,6 +322,7 @@ class pc_conv_network(nn.Module):
 			loss = 0.
 			for l in range(-1, self.nlayers):
 				loss += self.loss(l, learn=1)
+			print('total')
 			print(loss)
 
 					# # Final iteration. Update synaptic parameters
