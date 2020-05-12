@@ -259,8 +259,7 @@ class pc_conv_network(nn.Module):
 			f.backward()
 			self.opt_z_pc.step()
 
-		print(i)
-		print(f)
+		return f
 			
 
 		# else:
@@ -284,27 +283,28 @@ class pc_conv_network(nn.Module):
 		# 		# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 		# 		)))
 
-		if kl_loss:
-			loss = f + kl_loss
-			print(kl_loss)	
+		# if kl_loss:
+		# 	loss = f + kl_loss
+		# 	print(kl_loss)	
 
-		else:
-			loss = f
+		# else:
+		# 	loss = f
 
-		return loss
+		# return loss
 
 		
 	def inference(self):
 		for j in range(self.p['iter_outer']):
 			for i in range(self.iter):
-				total_loss = 0.
-				if i == 0:
-					print('----- start ------')
-				elif i == self.iter - 1:
-					print('------ end -------')
+				loss = 0.
 				
 				for l in range(-1, self.nlayers):
-					loss = self.loss(l)
+					loss += self.loss(l)
+
+				if i == 0:
+					print(loss)
+				elif i == self.iter - 1:
+					print(loss)
 
 					# # Final iteration. Update synaptic parameters
 					# if i == self.iter - 1:
