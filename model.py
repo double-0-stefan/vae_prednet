@@ -107,7 +107,7 @@ class pc_conv_network(nn.Module):
 			ii = -1
 			for i in reversed(range(len(p['ks'][j]))):
 				ii+=1
-				if i == len(p['ks'][j]) -1:
+				if i == 0:
 					if j == 0: # ie lowest level
 						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
 						conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
