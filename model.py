@@ -105,13 +105,11 @@ class pc_conv_network(nn.Module):
 			conv_block = []
 			dim_block = []
 
-			for i in range(len(p['ks'][j]) ):
-				if j == 0:
-					if i == len(p['ks'][j]) -1:
-						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
-						# nn.BatchNorm2d(num_features)
-						# conv_trans_block.append(nn.ReLU())
-						conv_block.append(Conv2d(p['imchan'], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
+			for i in reversed(range(len(p['ks'][j]))):
+				if i == 0:
+					if j == 0: # ie lowest level
+						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
+						conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
 					else: 
 						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding= p['pad']))
 						conv_trans_block.append(nn.BatchNorm2d(p['chan'][j-1][-1]))
@@ -119,9 +117,31 @@ class pc_conv_network(nn.Module):
 						conv_block.append(Conv2d(p['chan'][j-1][-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 				else:
 					conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=p['pad']))
-					conv_trans_block.append(nn.BatchNorm2d(p['chan'][j][i-1]))
+					onv_trans_block.append(nn.BatchNorm2d(p['chan'][j][i-1]))
 					conv_trans_block.append(nn.ReLU())
 					conv_block.append(Conv2d(p['chan'][j][i-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
+			
+
+
+
+
+				# 	if i == len(p['ks'][j]) -1:
+				# 		conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
+				# 		# nn.BatchNorm2d(num_features)
+				# 		# conv_trans_block.append(nn.ReLU())
+				# 		conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
+				# 	else: 
+				# 		conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding= p['pad']))
+				# 		conv_trans_block.append(nn.BatchNorm2d(p['chan'][j-1][-1]))
+				# 		conv_trans_block.append(nn.ReLU())
+				# 		conv_block.append(Conv2d(p['chan'][j-1][-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
+				# else:
+				# 	conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=p['pad']))
+				# 	conv_trans_block.append(nn.BatchNorm2d(p['chan'][j][i-1]))
+				# 	conv_trans_block.append(nn.ReLU())
+				# 	conv_block.append(Conv2d(p['chan'][j][i-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
+				
+
 				print(j)
 				print(i)
 				print(conv_block)
