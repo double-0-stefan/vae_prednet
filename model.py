@@ -296,7 +296,7 @@ class pc_conv_network(nn.Module):
 					self.opt_z_pc.step()
 					
 			self.opt_ct.zero_grad()
-			self.opt_lib.zero_grad()
+			self.opt_lin.zero_grad()
 
 			total_loss.backward()
 
