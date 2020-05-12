@@ -230,12 +230,12 @@ class pc_conv_network(nn.Module):
 		# Either way, calculate PE with i'th level or images
 		if i == -1:
 			PE = self.images - x.view(self.bs,-1)
-			f = 0.5* nn.MSELoss(self.images, x.view(self.bs,-1))
+			f = 0.5* self.mse(x.view(self.bs,-1), self.images)
 			if self.eval_:
 				self.pred = x.view(self.bs,1,32,32)
 		else:
 			PE = self.phi[i] - x.view(self.bs,-1)
-			f = 0.5* nn.MSELoss(elf.phi[i], x.view(self.bs,-1))
+			f = 0.5* self.mse(x.view(self.bs,-1),self.phi[i])
 		# print(PE)
 
 		# # calculate loss
@@ -326,7 +326,7 @@ class pc_conv_network(nn.Module):
 
 
 	def forward(self, iteration, images, act=None, eval=False):
-		
+		self.mse = nn.MSELoss()
 		torch.set_printoptions(threshold=50000)
 		self.eval_ = eval
 
