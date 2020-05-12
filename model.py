@@ -213,7 +213,7 @@ class pc_conv_network(nn.Module):
 		self.pred = x
 		return x
 
-	def loss(self, i):
+	def loss(self, i, learn=0):
 
 		loss = 0.
 		f = 0.
@@ -249,16 +249,26 @@ class pc_conv_network(nn.Module):
 
 				if self.eval_:
 					self.pred = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1).view(self.bs,1,32,32)
-		if i < self.nlayers - 1:
-			self.opt_phi[i+1].zero_grad()
-			f.backward()
-			self.opt_phi[i+1].step()
+		if learn == 0:
+			if i < self.nlayers - 1:
+				self.opt_phi[i+1].zero_grad()
+				f.backward()
+				self.opt_phi[i+1].step()
+			else:
+				f += kl_loss
+				self.opt_z_pc.zero_grad()
+				f.backward()
+				self.opt_z_pc.step()
 		else:
-			f += kl_loss
-			self.opt_z_pc.zero_grad()
-			f.backward()
-			self.opt_z_pc.step()
-
+			if i < self.nlayers - 1:
+				self.opt_ct[i+1].zero_grad()
+				f.backward()
+				self.opt_ct[i+1].step()
+			else:
+				f += kl_loss
+				self.opt_lin.zero_grad()
+				f.backward()
+				self.opt_lin.step()
 		return f
 			
 
@@ -305,6 +315,10 @@ class pc_conv_network(nn.Module):
 					print(loss)
 				elif i == self.iter - 1:
 					print(loss)
+
+			loss = 0.
+			for l in range(-1, self.nlayers):
+				loss += self.loss(l, learn=1)
 
 					# # Final iteration. Update synaptic parameters
 					# if i == self.iter - 1:
