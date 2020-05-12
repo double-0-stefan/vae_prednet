@@ -343,6 +343,12 @@ class pc_conv_network(nn.Module):
 
 	def forward(self, iteration, images, act=None, eval=False):
 		
+		# reset activations
+		for i in range(len(self.phi)):
+			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]),requires_grad=True)
+		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc),requires_grad=True)
+		
+		
 		torch.set_printoptions(threshold=50000)
 		self.eval_ = eval
 
@@ -374,10 +380,6 @@ class pc_conv_network(nn.Module):
 		else:	
 			self.images = images.view(self.bs, -1).cuda()
 
-		# reset activations
-		for i in range(len(self.phi)):
-			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]),requires_grad=True)
-		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc),requires_grad=True)
 		
 		self.inference()
 		print(iteration)
