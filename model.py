@@ -106,8 +106,8 @@ class pc_conv_network(nn.Module):
 			dim_block = []
 
 			for i in range(len(p['ks'][j]) ):
-				if i == 0:
-					if j == len(p['ks'][j]) -1:
+				if j == 0:
+					if i == len(p['ks'][j]) -1:
 						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
 						# nn.BatchNorm2d(num_features)
 						# conv_trans_block.append(nn.ReLU())
