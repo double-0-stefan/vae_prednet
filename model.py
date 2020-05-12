@@ -228,6 +228,7 @@ class pc_conv_network(nn.Module):
 				x = F.relu(self.conv_trans[i+1][j](x))
 
 		# Either way, calculate PE with i'th level or images
+		print(i)
 		if i == -1:
 			PE = self.images - x.view(self.bs,-1)
 			f = 0.5* self.mse(x.view(self.bs,-1), self.images)
@@ -236,6 +237,7 @@ class pc_conv_network(nn.Module):
 		else:
 			PE = self.phi[i] - x.view(self.bs,-1)
 			f = 0.5* self.mse(x.view(self.bs,-1),self.phi[i])
+		print(f)
 		# print(PE)
 
 		# # calculate loss
@@ -293,7 +295,7 @@ class pc_conv_network(nn.Module):
 					if i == self.iter - 1:
 						if l == self.nlayers - 1:
 							self.opt_lin.zero_grad()
-							print(self.z_pc)
+							# print(self.z_pc)
 						else:
 							self.opt_ct[l+1].zero_grad()
 							# print(self.phi[l+1])
