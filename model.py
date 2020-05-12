@@ -311,6 +311,7 @@ class pc_conv_network(nn.Module):
 							self.opt_z_pc.zero_grad()
 						else:
 							self.opt_phi[l+1].zero_grad()
+							print(self.phi[l+1])
 
 						loss = self.loss(l)
 						total_loss += loss
