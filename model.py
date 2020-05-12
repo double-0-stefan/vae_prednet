@@ -268,7 +268,8 @@ class pc_conv_network(nn.Module):
 				)))
 
 		if kl_loss:
-			loss = f + kl_loss			
+			loss = f + kl_loss
+			print(kl_loss)	
 
 		else:
 			loss = f
@@ -358,8 +359,8 @@ class pc_conv_network(nn.Module):
 
 		# reset activations
 		for i in range(len(self.phi)):
-			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
-		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc))
+			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]),requires_grad=True)
+		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc),requires_grad=True)
 		
 		self.inference()
 		print(iteration)
