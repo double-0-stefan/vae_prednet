@@ -263,11 +263,14 @@ class pc_conv_network(nn.Module):
 			if i < self.nlayers - 1:
 				self.opt_ct[i+1].zero_grad()
 				f.backward()
+				print(f)
 				self.opt_ct[i+1].step()
 			else:
 				f += kl_loss
 				self.opt_lin.zero_grad()
 				f.backward()
+				print(f)
+				print(kl_loss)
 				self.opt_lin.step()
 		return f
 			
