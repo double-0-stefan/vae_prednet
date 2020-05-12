@@ -252,7 +252,10 @@ class pc_conv_network(nn.Module):
 			self.opt_phi[i+1].zero_grad()
 			f.backward()
 			self.opt_phi[i+1].step()
-		
+		else:
+			self.opt_z_pc.zero_grad()
+			f.backward()
+			self.opt_z_pc.step()
 
 		print(i)
 		print(f)
@@ -348,7 +351,7 @@ class pc_conv_network(nn.Module):
 			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]),requires_grad=True)
 		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc),requires_grad=True)
 		
-		
+
 		torch.set_printoptions(threshold=50000)
 		self.eval_ = eval
 
