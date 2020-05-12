@@ -72,8 +72,10 @@ class pc_conv_network(nn.Module):
 		fc2 = Linear(self.hidden, self.phi[-1].size(1))
 		lin = []
 		lin.append(fc1)
+		lin.append(nn.ReLU())
 		lin.append(fc2)
-		self.lin_down = nn.ModuleList(lin)
+		lin.append(nn.ReLU())
+		self.lin_down = nn.Sequential(lin)
 
 	def init_conv_trans(self, p): 
 
@@ -106,12 +108,15 @@ class pc_conv_network(nn.Module):
 				if i == 0:
 					if j == 0:
 						conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
+						conv_trans_block.append(nn.ReLU())
 						conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
 					else: 
 						conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding= p['pad']))
+						conv_trans_block.append(nn.ReLU())
 						conv_block.append(Conv2d(p['chan'][j-1][-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 				else:
 					conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=p['pad']))
+					conv_trans_block.append(nn.ReLU())
 					conv_block.append(Conv2d(p['chan'][j][i-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 				
 				x = conv_block[i](x)
@@ -129,7 +134,7 @@ class pc_conv_network(nn.Module):
 				Precision[j+1].weight = nn.Parameter(a)
 
 
-			self.conv_trans.append(nn.ModuleList(conv_trans_block))
+			self.conv_trans.append(nn.Sequential(conv_trans_block))
 			self.p['dim'].append(dim_block)
 
 		# top level phi
@@ -214,58 +219,55 @@ class pc_conv_network(nn.Module):
 			# get kl_loss
 			kl_loss  = self.vae_loss(self.iteration, self.z_pc)
 			# get sample
-			z = self.latent_sample()
-			# Linear layers
-			x = F.relu(self.lin_down[0](z))
-			x = F.relu(self.lin_down[1](x))
+			x = self.lin_down(self.latent_sample())
+			f = 0.5*sum(sum((
+					torch.matmul(
+						self.phi[-1] - self.lin_down(self.latent_sample()).view(self.bs,-1),
+						(self.phi[-1] - self.lin_down(self.latent_sample()).view(self.bs,-1)).t()
+						))))
 
 		# if not top layer - phi from layer above:
 		else:
-			x = self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])
-		
-			# convolutional block
-			for j in reversed(range(len(self.p['ks'][i+1]))):
-				x = F.relu(self.conv_trans[i+1][j](x))
+			if i == -1:
+				f = 0.5*sum(sum((
+					torch.matmul(
+						self.images - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1),
+						(self.images - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)).t()
+						))))
+			else:
+				f = 0.5*sum(sum((
+					torch.matmul(
+						self.phi[i] - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1),
+						(self.phi[i] - self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)).t()
+						))))
 
-		# Either way, calculate PE with i'th level or images
-		if i == -1:
-			PE = self.images - x.view(self.bs,-1)
-			if self.eval_:
-				self.pred = x.view(self.bs,1,32,32)
-		else:
-			PE = self.phi[i] - x.view(self.bs,-1)
-		# print(PE)
-
-		# calculate loss
-		if not self.p['include_precision']:
-			f =  0.5*sum(sum((
-				#- torch.logdet(P1)
-				torch.matmul(PE,PE.t())
-				)))
-			print(i)
-			print(f)
+				if self.eval_:
+					self.pred = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1).view(self.bs,1,32,32)
+			
+		print(i)
+		print(f)
 			
 
-		else:
-			if not self.update_phi_only or self.i == 0:
-			## for Cholesky-based precision
-			# tril: ensure upper tri doesn't get involved
-				P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
-				P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
+		# else:
+		# 	if not self.update_phi_only or self.i == 0:
+		# 	## for Cholesky-based precision
+		# 	# tril: ensure upper tri doesn't get involved
+		# 		P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+		# 		P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
 
-				self.Precision[i+1] = P1
-				self.Precision[i]   = P0
+		# 		self.Precision[i+1] = P1
+		# 		self.Precision[i]   = P0
 
-			f =  0.5*sum(sum((
-				# logdet cov = -logdet precision
-				- torch.logdet(P1)
+		# 	f =  0.5*sum(sum((
+		# 		# logdet cov = -logdet precision
+		# 		- torch.logdet(P1)
 
-				+ torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
+		# 		+ torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
 
-				# - torch.logdet(P0)
+		# 		# - torch.logdet(P0)
 
-				# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
-				)))
+		# 		# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
+		# 		)))
 
 		if kl_loss:
 			loss = f + kl_loss
