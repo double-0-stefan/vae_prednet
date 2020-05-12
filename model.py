@@ -362,11 +362,11 @@ class pc_conv_network(nn.Module):
 		self.opt_phi = [None] * len(self.phi)
 		self.opt_ct = [None] * len(self.phi)
 		for i in range(len(self.phi)):
-			self.opt_phi[i] = SGD([self.phi[i]], lr=self.p['lr'])
-			self.opt_ct[i]  = SGD(self.conv_trans[i].parameters(), lr=self.p['lr'])
+			self.opt_phi[i] = Adam([self.phi[i]], lr=self.p['lr'])
+			self.opt_ct[i]  = Adam(self.conv_trans[i].parameters(), lr=self.p['lr'])
 
-		self.opt_z_pc = SGD([self.z_pc], lr=self.p['lr'])
-		self.opt_lin  = SGD(self.lin_down.parameters(), lr=self.p['lr'])
+		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
+		self.opt_lin  = Adam(self.lin_down.parameters(), lr=self.p['lr'])
 		
 		self.iteration = iteration
 		torch.cuda.empty_cache()
