@@ -59,7 +59,7 @@ imchan:
 # although does this in stnadard networks
 
 chan:
-    - [[16, 32],[32, 64],[64, 128],[128, 128]]
+    - [[32, 16],[64, 32],[128, 64],[128, 128]] # reversed
 
 pad:
     - 1
