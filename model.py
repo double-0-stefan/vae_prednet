@@ -144,7 +144,7 @@ class pc_conv_network(nn.Module):
 				# print(j)
 				# print(i)
 				# print(conv_block)
-			for i in range(len(p['ks'][j])):
+			for i in reversed(range(len(p['ks'][j]))):
 				x = conv_block[i](x)
 				dim_block.append(x.size(2))
 
