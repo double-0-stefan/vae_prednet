@@ -275,42 +275,29 @@ class pc_conv_network(nn.Module):
 
 		
 	def inference(self):
-		
-		
-		self.update_phi_only = True
-		self.phi.requires_grad_(True)
-		self.z_pc.requires_grad_(True)
-		self.lin_up.requires_grad_(False)
-		self.lin_down.requires_grad_(False)
-		self.conv_trans.requires_grad_(False)
+		for j in range(self.p['iter_outer'])
+			for i in range(self.iter):
+				
 
-		for i in range(self.iter):
-			total_loss = 0.
-			self.i = i
-			# update synaptic stuff on final iteration only
-			if i > 4*self.iter/5 and self.eval_ == False:
-				self.update_phi_only = False
-				# learn = 1
-				self.phi.requires_grad_(False)
-				self.z_pc.requires_grad_(False)
-				self.conv_trans.requires_grad_(True)
-				# self.z_pc.requires_grad_(False)
-				self.lin_up.requires_grad_(True)
-				self.lin_down.requires_grad_(True)
-
-			# run the loss function
-			self.optimizer.zero_grad()
-			for l in range(-1, self.nlayers): # -1 so does image comparison
-				loss = self.loss(l)
-				# print(l)
-				# print(loss) 
-				total_loss += loss
-
+				# run the loss function
+				self.opt_act.zero_grad()
+				for l in range(-1, self.nlayers): # -1 so does image comparison
+					loss = self.loss(l)
+					total_loss += loss
+				if i == 0:
+					print(total_loss)
+					
+				if i == self.iter-1:
+					break
+				else:
+					total_loss.backward()
+					self.opt_act.step()
+					
+			self.opt_syn.zero_grad()
 			total_loss.backward()
-			self.optimizer.step()
+			self.opt.syn.step()
+			print(total_loss)
 
-			if self.i == 0 or self.i == self.iter - 1:
-				print(total_loss)
 				
 
 	def forward(self, iteration, images, act=None, eval=False):
@@ -320,7 +307,8 @@ class pc_conv_network(nn.Module):
 
 		# if not self.optimizer:
 			# self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
-		self.optimizer = Adam(self.parameters(), lr=self.p['lr'], weight_decay=1e-5)
+		self.opt_act = Adam([self.phi, self.z_pc], lr=self.p['lr'])
+		self.opt_syn  = Adam([self.conv_trans,self.lin_down], lr=self.p['lr'])
 
 		self.iteration = iteration
 		torch.cuda.empty_cache()
