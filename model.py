@@ -57,7 +57,7 @@ class pc_conv_network(nn.Module):
 		self.prior_dist, self.q_dist, self.x_dist= mutils.discheck(p)
 		
 		p['z_params']	= self.q_dist.nparams
-		self.z_pc = nn.Parameter(torch.rand(self.p['bs'],self.latents*2))
+		self.z_pc = nn.Parameter(torch.rand(self.p['bs'],self.latents*2),requires_grad = True)
 
 		fc1= Linear(self.phi[-1].size(1), self.hidden)
 		fc2 = Linear(self.hidden, int(self.latents*2))
@@ -118,7 +118,7 @@ class pc_conv_network(nn.Module):
 				dim_block.append(x.size(2))
 
 			## CREATE PHI ABOVE EACH BLOCK ##
-			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
+			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1),requires_grad = True))
 
 			if self.p['include_precision']:
 				## Precision as cholesky factor -> ensure symetric positive semi-definite
@@ -228,48 +228,43 @@ class pc_conv_network(nn.Module):
 				x = F.relu(self.conv_trans[i+1][j](x))
 
 		# Either way, calculate PE with i'th level or images
-		print(i)
 		if i == -1:
 			PE = self.images - x.view(self.bs,-1)
-			f = 0.5* self.mse(x.view(self.bs,-1), self.images)
 			if self.eval_:
 				self.pred = x.view(self.bs,1,32,32)
 		else:
 			PE = self.phi[i] - x.view(self.bs,-1)
-			f = 0.5* self.mse(x.view(self.bs,-1),self.phi[i])
-		print(f)
 		# print(PE)
 
-		# # calculate loss
-		# if not self.p['include_precision']:
-		# 	f = 0.5* nn.MSELoss()
-		# 	f =  0.5*sum(sum((
-		# 		#- torch.logdet(P1)
-		# 		torch.matmul(PE,PE.t())
-		# 		)))
-		# 	print(f)
+		# calculate loss
+		if not self.p['include_precision']:
+			f =  0.5*sum(sum((
+				#- torch.logdet(P1)
+				torch.matmul(PE,PE.t())
+				)))
+			print(f)
 			
 
-		# else:
-		# 	if not self.update_phi_only or self.i == 0:
-		# 	## for Cholesky-based precision
-		# 	# tril: ensure upper tri doesn't get involved
-		# 		P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
-		# 		P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
+		else:
+			if not self.update_phi_only or self.i == 0:
+			## for Cholesky-based precision
+			# tril: ensure upper tri doesn't get involved
+				P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+				P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
 
-		# 		self.Precision[i+1] = P1
-		# 		self.Precision[i]   = P0
+				self.Precision[i+1] = P1
+				self.Precision[i]   = P0
 
-		# 	f =  0.5*sum(sum((
-		# 		# logdet cov = -logdet precision
-		# 		- torch.logdet(P1)
+			f =  0.5*sum(sum((
+				# logdet cov = -logdet precision
+				- torch.logdet(P1)
 
-		# 		+ torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
+				+ torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
 
-		# 		# - torch.logdet(P0)
+				# - torch.logdet(P0)
 
-		# 		# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
-		# 		)))
+				# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
+				)))
 
 		if kl_loss:
 			loss = f + kl_loss			
@@ -328,7 +323,7 @@ class pc_conv_network(nn.Module):
 
 
 	def forward(self, iteration, images, act=None, eval=False):
-		self.mse = nn.MSELoss()
+		
 		torch.set_printoptions(threshold=50000)
 		self.eval_ = eval
 
