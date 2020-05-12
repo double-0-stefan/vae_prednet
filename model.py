@@ -329,6 +329,8 @@ class pc_conv_network(nn.Module):
 
 		# if not self.optimizer:
 			# self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
+		self.opt_phi = []
+		self.opt_ct = []
 		for i in range(len(self.phi)):
 			self.opt_phi[i] = Adam(self.phi, lr=self.p['lr'])
 			self.opt_ct[i]  = Adam(self.conv_trans[i][:].parameters(), lr=self.p['lr'])
