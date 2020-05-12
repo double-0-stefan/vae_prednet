@@ -280,7 +280,7 @@ class pc_conv_network(nn.Module):
 				
 
 				# run the loss function
-				self.opt_act.zero_grad()
+				self.opt_phi.zero_grad()
 				self.opt_z_pc.zero_grad()
 				for l in range(-1, self.nlayers): # -1 so does image comparison
 					loss = self.loss(l)
@@ -292,7 +292,7 @@ class pc_conv_network(nn.Module):
 					break
 				else:
 					total_loss.backward()
-					self.opt_ct.step()
+					self.opt_phi.step()
 					self.opt_z_pc.step()
 					
 			self.opt_ct.zero_grad()
