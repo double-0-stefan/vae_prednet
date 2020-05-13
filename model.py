@@ -121,29 +121,6 @@ class pc_conv_network(nn.Module):
 					conv_block.append(Conv2d(p['chan'][j][i-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
 			
 
-
-
-
-				# 	if i == len(p['ks'][j]) -1:
-				# 		conv_trans_block.append(ConvTranspose2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=p['pad']))
-				# 		# nn.BatchNorm2d(num_features)
-				# 		# conv_trans_block.append(nn.ReLU())
-				# 		conv_block.append(Conv2d(p['imchan'], p['chan'][0][0], p['ks'][j][i], stride=1, padding=p['pad']))
-				# 	else: 
-				# 		conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding= p['pad']))
-				# 		conv_trans_block.append(nn.BatchNorm2d(p['chan'][j-1][-1]))
-				# 		conv_trans_block.append(nn.ReLU())
-				# 		conv_block.append(Conv2d(p['chan'][j-1][-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
-				# else:
-				# 	conv_trans_block.append(ConvTranspose2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=p['pad']))
-				# 	conv_trans_block.append(nn.BatchNorm2d(p['chan'][j][i-1]))
-				# 	conv_trans_block.append(nn.ReLU())
-				# 	conv_block.append(Conv2d(p['chan'][j][i-1], p['chan'][j][i], p['ks'][j][i], stride=1, padding=p['pad']))
-				
-
-				# print(j)
-				# print(i)
-				# print(conv_block)
 			for i in reversed(range(len(p['ks'][j]))):
 				x = conv_block[i](x)
 				dim_block.append(x.size(2))
@@ -214,10 +191,6 @@ class pc_conv_network(nn.Module):
 					   
 		norm_kl_loss = self.q_dist.calc_kloss(*kloss_args) #/ self.p['b']
 
-		# self.optimizer.zero_grad()
-		# norm_kl_loss.backward()
-		# self.optimizer.step()
-
 		return norm_kl_loss#, metrics
 
 	def decode(self,latent_samples, ff=0):
@@ -267,7 +240,6 @@ class pc_conv_network(nn.Module):
 						(self.phi[i] - x).t()
 						))))
 
-				
 		if learn == 0:
 			if i < self.nlayers - 1:
 				self.opt_phi[i+1].zero_grad()
@@ -317,15 +289,6 @@ class pc_conv_network(nn.Module):
 		# 		# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
 		# 		)))
 
-		# if kl_loss:
-		# 	loss = f + kl_loss
-		# 	print(kl_loss)	
-
-		# else:
-		# 	loss = f
-
-		# return loss
-
 		
 	def inference(self):
 		for j in range(self.p['iter_outer']):
@@ -344,52 +307,13 @@ class pc_conv_network(nn.Module):
 				
 			print(loss)
 
-					# # Final iteration. Update synaptic parameters
-					# if i == self.iter - 1:
-					# 	if l == self.nlayers - 1:
-					# 		self.opt_lin.zero_grad()
-					# 		# print(self.z_pc)
-					# 	else:
-					# 		self.opt_ct[l+1].zero_grad()
-					# 		# print(self.phi[l+1])
-
-					# 	loss = self.loss(l)
-					# 	total_loss += loss
-					# 	loss.backward()
-
-					# 	if l == self.nlayers - 1:
-					# 		self.opt_lin.step()
-					# 	else:
-					# 		self.opt_ct[l+1].step()
-
-					# # Other iterations. Update activations
-					# else:
-					# 	if l == self.nlayers - 1:
-					# 		self.opt_z_pc.zero_grad()
-					# 		# print(self.z_pc.grad)
-					# 	else:
-					# 		self.opt_phi[l+1].zero_grad()
-					# 		# print(self.phi[l+1].grad)
-
-					# 		# print(self.phi[l+1])
-
-					# 	loss = self.loss(l)
-					# 	total_loss += loss
-					# 	loss.backward()
-
-
-					# 	if l == self.nlayers - 1:
-					# 		self.opt_z_pc.step()
-					# 	else:
-					# 		self.opt_phi[l+1].step()
-
 
 	def forward(self, iteration, images, act=None, eval=False):
 		
 		# reset activations
 		for i in range(len(self.phi)):
-			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]),requires_grad=True)
-		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc),requires_grad=True)
+			self.phi[i] = nn.Parameter(torch.zeros_like(self.phi[i]),requires_grad=True)
+		self.z_pc = nn.Parameter(torch.zeros_like(self.z_pc),requires_grad=True)
 		
 
 		torch.set_printoptions(threshold=50000)
@@ -410,11 +334,6 @@ class pc_conv_network(nn.Module):
 		torch.cuda.empty_cache()
 		
 		self.F = 0
-
-		# if iteration == 0:
-		# 	self.iter = 1
-		# else:
-		# 	self.iter = self.p['iter']
 
 		self.iter = self.p['iter']
 
