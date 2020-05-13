@@ -127,14 +127,36 @@ class pc_conv_network(nn.Module):
 
 			## CREATE PHI ABOVE EACH BLOCK ##
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1),requires_grad = True))
-			if self.p['include_precision']:
+
+			# Precision
+			if self.p['conv_precision']:
+				# Idea is to use 3D convolutions to model covariance matrix
+				# Only certain (those that, hopefully, evolve to be 'nearby') and spatial regions are involved in the covariance
+				# edge effect: not a problem spatially, but channels should ideally be 'wraparound'
+
+				# For 3D conv - turn into image-like format and add dummy dimension in channel position
+				phi_3d = phi[j].view(x.size()).unsqueeze(1)
+				#size will be say batch by 1 by 128 by 32 by 32
+				Conv3d(in_channels=1, out_channels=1, kernel_size, stride=1, padding=[1,0,0], dilation=1, groups=1, bias=True, padding_mode='circular')
+
+				# Practically, additional dimension added to replace channels, such that channels becomes just another data dimension for 3D conv
+				# 
+
+			elif self.p['include_precision']:
 				## Precision as cholesky factor -> ensure symetric positive semi-definite
 				# a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
-				a = torch.eye(phi[j].size(1))#/10 + 0.001 * torch.rand(phi[j].size(1).phi[j].size(1))			
+				a = torch.eye(phi[j].size(1))/10 + 0.001 * torch.rand(phi[j].size(1).phi[j].size(1))			
 				a = torch.cholesky(a)
 				P_chol.append(nn.Parameter(a))
 				# Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
 				# Precision[j+1].weight = nn.Parameter(a)
+
+			elif self.p['bilinear_precision']:
+				Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
+				
+			# alternatively do something clever with (Bi-)linear network
+
+
 
 			self.conv_trans.append(nn.Sequential(*conv_trans_block))
 			self.p['dim'].append(dim_block)
