@@ -128,11 +128,11 @@ class pc_conv_network(nn.Module):
 			## CREATE PHI ABOVE EACH BLOCK ##
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1),requires_grad = True))
 			print(phi)
-			print(phi[j].size(1))
+			print(phi[j+1].size(1))
 			if self.p['include_precision']:
 				## Precision as cholesky factor -> ensure symetric positive semi-definite
 				# a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
-				a = torch.eye(phi[j].size(1))/10 + 0.001 * torch.rand(phi[j].size(1).phi[j].size(1))			
+				a = torch.eye(phi[j+1].size(1))/10 + 0.001 * torch.rand(phi[j].size(1).phi[j].size(1))			
 				a = torch.cholesky(a)
 				P_chol.append(nn.Parameter(a), requires_grad=True)
 				# Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
