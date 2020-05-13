@@ -242,15 +242,16 @@ class pc_conv_network(nn.Module):
 					torch.mm(PE,P), PE.t()
 					)
 				))
+			# for testing purposes:
+			print(i)
+			print(self.P_chol[i+1])
 		else:
 			f = 0.5*sum(sum(
 				torch.mm(PE, PE.t())
 				))
 
 
-		# for testing purposes:
-		print(i)
-		print(self.P_chol[i+1])
+		
 
 
 		# update activation parameters
