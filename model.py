@@ -130,12 +130,12 @@ class pc_conv_network(nn.Module):
 
 			if self.p['include_precision']:
 				## Precision as cholesky factor -> ensure symetric positive semi-definite
-				a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
+				# a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
+				a = torch.eye(phi[j].size(1))/10 + 0.001 * torch.rand(phi[j].size(1).phi[j].size(1))			
 				a = torch.cholesky(a)
-				P_chol.append(nn.Parameter(a))
-				Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
-				Precision[j+1].weight = nn.Parameter(a)
-
+				P_chol.append(nn.Parameter(a), requires_grad=True)
+				# Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
+				# Precision[j+1].weight = nn.Parameter(a)
 
 			self.conv_trans.append(nn.Sequential(*conv_trans_block))
 			self.p['dim'].append(dim_block)
@@ -216,30 +216,38 @@ class pc_conv_network(nn.Module):
 			kl_loss  = self.vae_loss(self.iteration, self.z_pc)
 			# get sample
 			x = self.lin_down(self.latent_sample()).view(self.bs,-1)
-			f = 0.5*sum(sum((
-					torch.mm(
-						self.phi[-1] - x,
-						(self.phi[-1] - x).t()
-						))))
 
 		# if not top layer - phi from layer above:
 		else:
 			x = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)
-			if i == -1:
-				f = 0.5*sum(sum((
-					torch.mm(
-						self.images - x,
-						(self.images - x).t()
-						))))
-				if self.eval_:
-					self.pred = x.view(self.bs,1,32,32)
-			else:
-				f = 0.5*sum(sum((
-					torch.mm(
-						self.phi[i] - x,
-						(self.phi[i] - x).t()
-						))))
+		
+		# calculate PE
+		if i == -1:
+			PE = self.images - x
+			# do image prediction if required
+			if self.eval_:
+				self.pred = x.view(self.bs,1,32,32)
+		else:
+			PE = self.phi[i] - x
 
+		# calculate free energy - negative of usual formula so works with loss
+		if self.p['include_precision']:
+			# calculate inverse covariance matrix from cholesky factorisation
+			# NB using transpose (rather than conjugate transpose) ensures P is symmetric
+			P = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+
+			f = 0.5*sum(sum(
+				- torch.logdet(P) # -ve here because more precise = good (nb will need to balance over layers somehow)
+				+ torch.mm(
+					torch.mm(PE,P), PE.t()
+					)
+				))
+		else:
+			f = 0.5*sum(sum(
+				torch.mm(PE, PE.t())
+				))
+
+		# update activation parameters
 		if learn == 0:
 			if i < self.nlayers - 1:
 				self.opt_phi[i+1].zero_grad()
@@ -250,7 +258,9 @@ class pc_conv_network(nn.Module):
 				self.opt_z_pc.zero_grad()
 				f.backward()
 				self.opt_z_pc.step()
+		# update synaptic parameters
 		else:
+			self.opt_P[i+1].zero_grad() 
 			if i < self.nlayers - 1:
 				self.opt_ct[i+1].zero_grad()
 				f.backward()
@@ -265,29 +275,11 @@ class pc_conv_network(nn.Module):
 				# print(f)
 				# print(kl_loss)
 				self.opt_lin.step()
+			self.opt_P[i+1].step() 
 		return f
 			
 
-		# else:
-		# 	if not self.update_phi_only or self.i == 0:
-		# 	## for Cholesky-based precision
-		# 	# tril: ensure upper tri doesn't get involved
-		# 		P1 = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
-		# 		P0 = torch.mm(torch.tril(self.P_chol[i]), torch.tril(self.P_chol[i]).t())
 
-		# 		self.Precision[i+1] = P1
-		# 		self.Precision[i]   = P0
-
-		# 	f =  0.5*sum(sum((
-		# 		# logdet cov = -logdet precision
-		# 		- torch.logdet(P1)
-
-		# 		+ torch.matmul(torch.matmul(PE_1,P1),PE_1.t())
-
-		# 		# - torch.logdet(P0)
-
-		# 		# + torch.matmul(torch.matmul(PE_0,P0),PE_0.t())
-		# 		)))
 
 		
 	def inference(self):
@@ -312,8 +304,8 @@ class pc_conv_network(nn.Module):
 		
 		# reset activations
 		for i in range(len(self.phi)):
-			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]),requires_grad=True)
-		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc),requires_grad=True)
+			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i])/100,requires_grad=True)
+		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc)/100,requires_grad=True)
 		
 
 		torch.set_printoptions(threshold=50000)
@@ -326,6 +318,7 @@ class pc_conv_network(nn.Module):
 		for i in range(len(self.phi)):
 			self.opt_phi[i] = Adam([self.phi[i]], lr=self.p['lr'])
 			self.opt_ct[i]  = Adam(self.conv_trans[i].parameters(), lr=self.p['lr'])
+			self.opt_P[i]   = Adam([self.P_chol[i]], lr=self.p['lr'])
 
 		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
 		self.opt_lin  = Adam(self.lin_down.parameters(), lr=self.p['lr'])
