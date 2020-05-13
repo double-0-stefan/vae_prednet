@@ -168,7 +168,7 @@ class pc_conv_network(nn.Module):
 		self.P_chol = nn.ParameterList(P_chol)
 		self.Precision = [None] * len(P_chol)
 		if self.p['bilinear_precision']:
-			self.Precision = nn.ParameterList(Precision)
+			self.Precision = nn.ModuleList(Precision)
 		self.phi = nn.ParameterList(phi)
 		self.dim = self.p['dim']
 		self.conv_trans = nn.ModuleList(self.conv_trans)
