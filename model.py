@@ -267,7 +267,8 @@ class pc_conv_network(nn.Module):
 				self.opt_z_pc.step()
 		# update synaptic parameters
 		else:
-			self.opt_P[i+1].zero_grad() 
+			if self.p['include_precision']:
+				self.opt_P[i+1].zero_grad() 
 			if i < self.nlayers - 1:
 				self.opt_ct[i+1].zero_grad()
 				f.backward()
@@ -282,7 +283,8 @@ class pc_conv_network(nn.Module):
 				# print(f)
 				# print(kl_loss)
 				self.opt_lin.step()
-			self.opt_P[i+1].step() 
+			if self.p['include_precision']:
+				self.opt_P[i+1].step()
 		return f
 			
 
