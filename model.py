@@ -133,8 +133,8 @@ class pc_conv_network(nn.Module):
 				## Precision as cholesky factor -> ensure symetric positive semi-definite
 				# a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
 				a = torch.eye(phi[j].size(1))#/10 + 0.001 * torch.rand(phi[j].size(1).phi[j].size(1))			
-				a = torch.cholesky(a)
-				P_chol.append(nn.Parameter(a), requires_grad=True)
+				a = torch.cholesky(a, require_grad=True)
+				P_chol.append(nn.Parameter(a))
 				# Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
 				# Precision[j+1].weight = nn.Parameter(a)
 
