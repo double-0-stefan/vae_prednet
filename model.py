@@ -135,7 +135,7 @@ class pc_conv_network(nn.Module):
 				# edge effect: not a problem spatially, but channels should ideally be 'wraparound'
 
 				# For 3D conv - turn into image-like format and add dummy dimension in channel position
-				# phi_3d = phi[j].view(x.size()).unsqueeze(1)
+				phi_3d = phi[j].view(x.size()).unsqueeze(1)
 				# #size will be say batch by 1 by 128 by 32 by 32
 				# Conv3d(in_channels=1, out_channels=1, kernel_size, stride=1, padding=[1,0,0], dilation=1, groups=1, bias=True, padding_mode='circular')
 
