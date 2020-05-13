@@ -5,6 +5,9 @@ conv_precision:
     - False
 
 bilinear_precision:
+    - True
+
+include_precision:
     - False
 
 vae:
@@ -16,8 +19,6 @@ pc_cnn:
 xla:
     - False
 
-include_precision:
-    - True
 
 imdim : [33, 33] # expand to odd for padding reasons
 

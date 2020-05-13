@@ -145,14 +145,14 @@ class pc_conv_network(nn.Module):
 			elif self.p['include_precision']:
 				## Precision as cholesky factor -> ensure symetric positive semi-definite
 				# a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
-				a = torch.eye(phi[j].size(1))/10 + 0.001 * torch.rand(phi[j].size(1).phi[j].size(1))			
+				a = torch.eye(phi[j].size(1))/10 + 0.001 * torch.rand(phi[j].size(1), phi[j].size(1))			
 				a = torch.cholesky(a)
 				P_chol.append(nn.Parameter(a))
 				# Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
 				# Precision[j+1].weight = nn.Parameter(a)
 
 			elif self.p['bilinear_precision']:
-				Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
+				Precision.append(nn.Bilinear(phi[j].size(1),phi[j].size(1), 1, bias=False))
 				
 			# alternatively do something clever with (Bi-)linear network
 
@@ -166,7 +166,9 @@ class pc_conv_network(nn.Module):
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
 		self.P_chol = nn.ParameterList(P_chol)
-		self.Precision = [None] * len(P_chol) 
+		self.Precision = [None] * len(P_chol)
+		if self.p['bilinear_precision']:
+			self.Precision = nn.ParameterList(Precision)
 		self.phi = nn.ParameterList(phi)
 		self.dim = self.p['dim']
 		self.conv_trans = nn.ModuleList(self.conv_trans)
@@ -344,6 +346,8 @@ class pc_conv_network(nn.Module):
 			self.opt_ct[i]  = Adam(self.conv_trans[i].parameters(), lr=self.p['lr'])
 			if self.p['include_precision']:
 				self.opt_P[i]   = Adam([self.P_chol[i]], lr=self.p['lr'])
+			elif self.p['bilinear_precision']:
+				self.opt_P[i]   = Adam([torch.tril(squeeze(self.Precision[i].weight))], lr=self.p['lr'])
 
 		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
 		self.opt_lin  = Adam(self.lin_down.parameters(), lr=self.p['lr'])
