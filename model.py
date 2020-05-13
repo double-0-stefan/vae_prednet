@@ -100,7 +100,7 @@ class pc_conv_network(nn.Module):
 			Precision[0].weight = nn.Parameter(a)
 
 		# Create network
-		for j in range(p['nblocks']):
+		for j in range(len(p['ks']):
 			conv_trans_block = []
 			conv_block = []
 			dim_block = []
