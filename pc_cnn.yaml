@@ -13,7 +13,7 @@ xla:
     - False
 
 include_precision:
-    - False
+    - True
 
 imdim : [33, 33] # expand to odd for padding reasons
 

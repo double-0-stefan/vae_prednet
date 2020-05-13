@@ -251,9 +251,6 @@ class pc_conv_network(nn.Module):
 				))
 
 
-		
-
-
 		# update activation parameters
 		if learn == 0:
 			if i < self.nlayers - 1:
@@ -286,9 +283,6 @@ class pc_conv_network(nn.Module):
 			if self.p['include_precision']:
 				self.opt_P[i+1].step()
 		return f
-			
-
-
 
 		
 	def inference(self):
