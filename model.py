@@ -248,7 +248,6 @@ class pc_conv_network(nn.Module):
 				))
 
 
-
 		# for testing purposes:
 		print(i)
 		print(self.P_chol[i+1])
@@ -325,7 +324,8 @@ class pc_conv_network(nn.Module):
 		for i in range(len(self.phi)):
 			self.opt_phi[i] = Adam([self.phi[i]], lr=self.p['lr'])
 			self.opt_ct[i]  = Adam(self.conv_trans[i].parameters(), lr=self.p['lr'])
-			self.opt_P[i]   = Adam([self.P_chol[i]], lr=self.p['lr'])
+			if self.p['include_precision']:
+				self.opt_P[i]   = Adam([self.P_chol[i]], lr=self.p['lr'])
 
 		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
 		self.opt_lin  = Adam(self.lin_down.parameters(), lr=self.p['lr'])
