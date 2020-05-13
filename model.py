@@ -291,7 +291,7 @@ class pc_conv_network(nn.Module):
 				f.backward()
 				# print(i)
 				# print(f)
-				print(kl_loss)
+				# print(kl_loss)
 				self.opt_lin.step()
 		return f
 			
@@ -332,16 +332,15 @@ class pc_conv_network(nn.Module):
 			for i in range(self.iter):
 				loss = 0.
 				
-				if i < 4*self.iter/5:
-					for l in range(-1, self.nlayers):
-						loss += self.loss(l)
-
-					if i == 0:
-						print(loss)
-
+				if i < 9*self.iter/10:
+					learn = 0
 				else:
-					for l in range(-1, self.nlayers):
-						loss += self.loss(l, learn=1)
+					learn = 1
+				for l in range(-1, self.nlayers):
+					loss += self.loss(l, learn)
+
+				if i == 0:
+					print(loss)
 				
 			print(loss)
 
