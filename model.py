@@ -348,7 +348,7 @@ class pc_conv_network(nn.Module):
 				self.opt_P[i]   = Adam([self.P_chol[i]], lr=self.p['lr'])
 			elif self.p['bilinear_precision']:
 				# self.opt_P[i]   = Adam([torch.tril(squeeze(self.Precision[i].weight))], lr=self.p['lr'])
-				self.opt_P[i]   = Adam([self.Precision[i].parameters()], lr=self.p['lr'])
+				self.opt_P[i]   = Adam(self.Precision[i].parameters(), lr=self.p['lr'])
 
 		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
 		self.opt_lin  = Adam(self.lin_down.parameters(), lr=self.p['lr'])
