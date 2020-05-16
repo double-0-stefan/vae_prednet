@@ -47,7 +47,9 @@ class pc_conv_network(nn.Module):
 		self.chan = p['chan']
 
 		self.init_conv_trans(p)
+
 		self.imchan = p['imchan']
+		self.init_covariance(p)
 		self.init_latents(p)
 		self.optimizer = None
 		print(self)
@@ -89,7 +91,6 @@ class pc_conv_network(nn.Module):
 		weights = []
 		P_chol = []
 
-
 		if self.p['include_precision']:
 
 			## Precision as cholesky factor -> ensure symetric positive semi-definite
@@ -128,50 +129,89 @@ class pc_conv_network(nn.Module):
 			## CREATE PHI ABOVE EACH BLOCK ##
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1),requires_grad = True))
 
-			# Precision
-			if self.p['conv_precision']:
-				# Idea is to use 3D convolutions to model covariance matrix
-				# Only certain (those that, hopefully, evolve to be 'nearby') and spatial regions are involved in the covariance
-				# edge effect: not a problem spatially, but channels should ideally be 'wraparound'
-
-				# For 3D conv - turn into image-like format and add dummy dimension in channel position
-				phi_3d = phi[j].view(x.size()).unsqueeze(1)
-				# #size will be say batch by 1 by 128 by 32 by 32
-				# Conv3d(in_channels=1, out_channels=1, kernel_size, stride=1, padding=[1,0,0], dilation=1, groups=1, bias=True, padding_mode='circular')
-
-				# Practically, additional dimension added to replace channels, such that channels becomes just another data dimension for 3D conv
-				# 
-
-			elif self.p['include_precision']:
-				## Precision as cholesky factor -> ensure symetric positive semi-definite
-				# a = torch.eye(p['chan'][j][-1]*x.size(2)*x.size(2))/10 + 0.001 * torch.rand(p['chan'][j][-1]*x.size(2)*x.size(2),p['chan'][j][-1]*x.size(2)*x.size(2))
-				a = torch.eye(phi[j].size(1))/10 + 0.001 * torch.rand(phi[j].size(1), phi[j].size(1))			
-				a = torch.cholesky(a)
-				P_chol.append(nn.Parameter(a))
-				# Precision.append(nn.Bilinear(p['chan'][j][-1]*x.size(2)*x.size(2), p['chan'][j][-1]*x.size(2)*x.size(2), 1, bias=False))
-				# Precision[j+1].weight = nn.Parameter(a)
-
-			elif self.p['bilinear_precision']:
-				Precision.append(nn.Bilinear(phi[j].size(1),phi[j].size(1), 1, bias=False))
-				
-			# alternatively do something clever with (Bi-)linear network
-
-
-
 			self.conv_trans.append(nn.Sequential(*conv_trans_block))
 			self.p['dim'].append(dim_block)
 
+		self.phi = nn.ParameterList(phi)
+		self.dim = self.p['dim']
+		self.conv_trans = nn.ModuleList(self.conv_trans)
 		# top level phi
 		if not self.p['vae']:
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-		self.P_chol = nn.ParameterList(P_chol)
-		self.Precision = [None] * len(P_chol)
-		if self.p['bilinear_precision']:
-			self.Precision = nn.ModuleList(Precision)
-		self.phi = nn.ParameterList(phi)
-		self.dim = self.p['dim']
-		self.conv_trans = nn.ModuleList(self.conv_trans)
+	def init_covariance(self, p): 
+		Precision = []
+
+		# will prob be better with class of Precision CNN that enforces requirements
+
+		for i in range(len(self.phi)):
+
+			if self.p['conv_precision']: 
+
+				Precision.append(
+					Conv2d(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
+
+						# if kernel is odd, centroid is central pixel at current channel for input and output
+
+						kernel_size= self.p['cov_size'][i],
+						stride=1, 
+						padding= (self.p['cov_size'][i]-1)/2
+						dilation=1, groups=1, bias=False, padding_mode='zero')
+					)
+
+		self.Precision = nn.ModuleList(Precision) 
+
+
+	def block_tridiagonal(self,p,l):
+		'''
+		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
+
+		Still need to crack placement of weights in large precision atrix
+		'''
+
+		length = self.Precision[l].weight.numel()
+
+		# rearrange so spatial dims first
+		w = self.Precision[l].weight.permute([2,3,0,1])
+		# should be in correct order now
+
+		# empty matrix to fill in
+		block = torch.zeros(2*length,length)
+		for i in range(length):
+			block[:,i] = torch.cat([torch.zeros([i]), row, torch.zeros([length-i])])
+
+		# select 'A' block. *Ignores edge effects*
+		A = block[:length,:]
+		# get lower triangle
+		A += torch.triu(a,diagonal=1).t()
+
+		B = block[length+1:,:]
+		B_inv = torch.inverse(B)
+		C = b.t()
+
+		Im_Zm = torch.cat([torch.eye(length), torch.zeros(length,length)])
+
+		T1 = torch.stack([
+			torch.cat([-A, -C]), 
+			Im_Zm
+			])
+
+		T2 = torch.matrix_power(
+			torch.stack([
+				torch.cat([	-torch.mm([B_inv,A]), -torch.mm([B_inv,C]) ]),
+				Im_Zm
+				]),
+			length*self.dim[l][-1] -2)
+
+		T3 = torch.stack([
+			torch.cat([-torch.mm([B_inv,A]), -B_inv]), 
+			Im_Zm
+			])
+
+		T = torch.chain_matmul([T1,T2,T3])
+
+		T11 = 
+
 
 
 	def plot(self, i, input_image, plot_vars):
@@ -273,6 +313,20 @@ class pc_conv_network(nn.Module):
 				torch.mm(PE, PE.t())
 				))
 
+		elif self.p['conv_precision']:
+		# For 3D conv - turn into image-like format and add dummy dimension in channel position
+			phi_3d = phi[j].view(self.p['bs'], p['chan'][j][-1],self.p['dim'][j][-1]).unsqueeze(1)
+			PE_coprecision = self.Precision[i](phi_3d).view(self.p['bs'],-1)
+
+			# the covariance matrix is therefore the 3D weights matrix turned into a vector and tiled to make square
+			
+			print(PE_coprecision.size())
+
+			f = 0.5*sum(sum(
+				- torch.logdet(P) # -ve here because more precise = good (nb will need to balance over layers somehow)
+				+ torch.mm(PE, PE_coprecision.t())
+				))
+
 
 		# update activation parameters
 		if learn == 0:
@@ -324,7 +378,6 @@ class pc_conv_network(nn.Module):
 					print(loss)
 				
 			print(loss)
-
 
 	def forward(self, iteration, images, act=None, eval=False):
 		

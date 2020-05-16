@@ -19,6 +19,11 @@ pc_cnn:
 xla:
     - False
 
+# change to maintian input size
+
+conv_filter_size: # len = number of layers
+    - [5,5]
+
 
 imdim : [33, 33] # expand to odd for padding reasons
 
@@ -53,7 +58,7 @@ precisions: # block any length > 1 has 2 precisions
     # 0 = single number prior, 1 = diagonal prior
 
 ks:
-    - [[4,4],[4,4]]
+    - [[3,3],[3,3]]
 
 nblocks: 
     - 2 # Sections with precisions at top and bottom, but not within
