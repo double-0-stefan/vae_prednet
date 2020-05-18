@@ -140,6 +140,11 @@ class pc_conv_network(nn.Module):
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
 	def init_covariance(self, p): 
+
+
+		# NEW PLAN
+		# relationship
+
 		Precision = []
 
 		# will prob be better with class of Precision CNN that enforces requirements
@@ -168,28 +173,65 @@ class pc_conv_network(nn.Module):
 
 		Still need to crack placement of weights in large precision atrix
 		'''
+		# Covariance is between components of phi
+		# need to determine pattern of placement of conv weights
+		# in order to calculate log determinant
 
-		length = self.Precision[l].weight.numel()
+		phi = self.phi[l].view(self.bs,self.p['chan'][l][-1],self.dim[i][-1],self.dim[i][-1])
+		ps = phi.size(1), phi.size(2), phi.size(3)
 
-		# rearrange so spatial dims first
+		# check order of input/output
 		w = self.Precision[l].weight.permute([2,3,0,1])
-		# should be in correct order now
+		ws = w.size() # 5 5 64 64
+		v = w.view(-1,w.size(2),w.size(3))
+		vs = v.size() # 25, 64 64
 
-		# empty matrix to fill in
-		block = torch.zeros(2*length,length)
-		for i in range(length):
-			block[:,i] = torch.cat([torch.zeros([i]), row, torch.zeros([length-i])])
 
-		# select 'A' block. *Ignores edge effects*
-		A = block[:length,:]
-		# get lower triangle
-		A += torch.triu(a,diagonal=1).t()
+		# TRY ANOTHER WAY
+		b = torch.zeros([v.size(1),v.size(0)*(1+v1.size(1))])
 
-		B = block[length+1:,:]
-		B_inv = torch.inverse(B)
-		C = b.t()
+		# size of (section of) phi is 25*  64
+		# size of weights is 25*64*64
+		
+		fi = torch.ones_like(v[:,:,j])
+		fi[int((vs[0]-1)/2),j] = 0
+		fi = fi == 1
 
-		Im_Zm = torch.cat([torch.eye(length), torch.zeros(length,length)])
+		for j in range(vs[1]):
+			b[j,j] = v[int((ws[0]-1)/2),j,j]
+			vv = v[:,:,j]
+			b[j,j+1:j+vv.numel()] = vv[fi]
+
+		# paste this into matrix, length(centres) number of times,
+		# add zeros to make square
+		# take upper triangle, do transpose -> raw materials for block is done!
+
+		block = torch.cat([b, torch.zeros_like(b)],dim=1)
+
+		for i in range(v.size(1)):
+
+			extraL = torch.zeros([v.size(1)*2**i, v.size(1)*2**i])
+			block = torch.cat([
+				block,
+				torch.cat([extraL,block[:,:-v.size(1)*2**i]],dim=1),
+				],dim=0)
+
+			if block.size(0) >= block.size(1):
+				break
+
+		# get matrices for determinant algorithm
+		A = block[:v.size(0)*v.size(1),:v.size(0)*v.size(1)]
+		A = A.triu()
+		A += A.t()
+
+		B = block[:v.size(0)*v.size(1), v.size(0)*v.size(1):v.size(0)*v.size(1)*2]
+		C = B.t()
+
+		# length
+		n = round(self.phi[l].view(self.bs,-1).size(1)/A.size(0))
+
+
+		Im_Zm = torch.cat([torch.eye(n), torch.zeros(n,n)])
 
 		T1 = torch.stack([
 			torch.cat([-A, -C]), 
@@ -210,8 +252,14 @@ class pc_conv_network(nn.Module):
 
 		T = torch.chain_matmul([T1,T2,T3])
 
-		T11 = 
+		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1])
 
+		# need to set up weights to be symmetric around centres
+		B1n = torch.matrix_power(B, n)
+
+		logdetM = (-1)**(n*A.size(0)) + torch.logdet(T11) + torch.logdet(B1n)
+
+		return logdetM
 
 
 	def plot(self, i, input_image, plot_vars):
