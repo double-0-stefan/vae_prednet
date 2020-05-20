@@ -25,6 +25,62 @@ from gpuinfo import GPUInfo
 # import torch_xla
 # import torch_xla.core.xla_model as xm
 
+class sym_conv2D(nn.Module):
+	def __init__(self, l):
+		super(sym_conv2D, self).__init__()
+		n = p['chan'][l][-1]
+		for m in range(n):
+			sum([m, n])
+
+		n_w = torch.rand((p['cov_size'][l] +1)/2, p['chan'][l][-1])
+
+
+		# 1 -> 1..32 = 32
+		# 2 -> 2..32 = 31
+		# 32*32
+		# 32+31+30..
+		# symmetric, so x x 1 64
+		#          =    x x 64 1
+
+		# x x x x x
+		# x y y y x
+		# x y z y x 
+	def filter_structure(self):
+
+
+	def forward:
+
+
+
+def init_covariance(self, p): 
+
+
+		# NEW PLAN
+		# relationship
+
+		Precision = []
+
+		# will prob be better with class of Precision CNN that enforces requirements
+
+		for i in range(len(self.phi)):
+
+			if self.p['conv_precision']: 
+
+				Precision.append(
+					Conv2d(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
+
+						# if kernel is odd, centroid is central pixel at current channel for input and output
+
+						kernel_size= self.p['cov_size'][i],
+						stride=1, 
+						padding= (self.p['cov_size'][i]-1)/2
+						dilation=1, groups=1, bias=False, padding_mode='zero')
+					)
+
+		self.Precision = nn.ModuleList(Precision) 
+
+
+
 
 class pc_conv_network(nn.Module):
 	def __init__(self,p):
@@ -139,32 +195,7 @@ class pc_conv_network(nn.Module):
 		if not self.p['vae']:
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-	def init_covariance(self, p): 
-
-
-		# NEW PLAN
-		# relationship
-
-		Precision = []
-
-		# will prob be better with class of Precision CNN that enforces requirements
-
-		for i in range(len(self.phi)):
-
-			if self.p['conv_precision']: 
-
-				Precision.append(
-					Conv2d(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
-
-						# if kernel is odd, centroid is central pixel at current channel for input and output
-
-						kernel_size= self.p['cov_size'][i],
-						stride=1, 
-						padding= (self.p['cov_size'][i]-1)/2
-						dilation=1, groups=1, bias=False, padding_mode='zero')
-					)
-
-		self.Precision = nn.ModuleList(Precision) 
+	
 
 
 	def block_tridiagonal(self,p,l):
