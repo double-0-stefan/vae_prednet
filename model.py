@@ -48,7 +48,7 @@ class sym_conv2D(nn.Module):
 	def filter_structure(self):
 
 
-	def forward:
+	def forward(x):
 
 
 
