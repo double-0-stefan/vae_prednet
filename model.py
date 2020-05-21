@@ -26,61 +26,67 @@ from gpuinfo import GPUInfo
 # import torch_xla.core.xla_model as xm
 
 class sym_conv2D(nn.Module):
-	def __init__(self, l):
+	def __init__(self, 
+		in_channels, out_channels, kernel_size, stride=1, 
+		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros')
+
+
+		self.in_channels = in_channels
+		self.out_channels = out_channels
+		self.kernel_size = kernel_size
+		self.stride = stride
+		self.padding = padding
+		self.dilation = dilation
+		self.groups = groups
+		self.bias = bias
+		self.padding_mode = padding_mode
+
 		super(sym_conv2D, self).__init__()
-		n = p['chan'][l][-1]
-		for m in range(n):
-			sum([m, n])
 
-		n_w = torch.rand((p['cov_size'][l] +1)/2, p['chan'][l][-1])
+		# number of unique weights over channels
+		n_uwc = in_channels
+		for m in range(n_uw):
+			n_uwc = sum([m, n_uwc])
+		
+		w = torch.rand((self.kernel_size +1)/2, n_uwc)
 
+		self.weight_values = nn.Parameter(w)
 
-		# 1 -> 1..32 = 32
-		# 2 -> 2..32 = 31
-		# 32*32
-		# 32+31+30..
-		# symmetric, so x x 1 64
-		#          =    x x 64 1
+		self.generate_filter_structure()
 
-		# x x x x x
-		# x y y y x
-		# x y z y x 
-	def filter_structure(self):
+	def generate_filter_structure(self):
 
+		filter_weights = torch.zeros(self.out_channels,self.in_channels/self.groups,
+			self.kernel_size[0,self.kernel_size[1]])
 
+		m = -1
+		mm = -1
+
+		for i in range(self.out_channels):
+			m += 1
+			for mm in range(m, self.out_channels):
+				mm += 1
+
+				# reversed so stuff outside of 'field' gets overwritten
+				for j in reversed(range(int(self.kernel_size +1)/2)):
+					# left/top side -  first so centre 'cross' gets overwritten
+					filter_weights[i,mm,j,:] = self.weight_values[j, mm]
+					filter_weights[i,mm,:,j] = self.weight_values[j, mm]
+
+					# right/bottom side
+					if j > 0:
+						filter_weights[i,mm,-j,:] = self.weight_values[j, mm]
+						filter_weights[i,mm,:,-j] = self.weight_values[j, mm]
+						
+		self.expanded_weight = filter_weights
 
 	def forward(x):
 
+		return F.conv2d(x, weight=self.filter, bias=self.bias, stride=self.stride,
+			padding=self.padding, dilation=self.dilation, groups=self.groups)
 
 
 
-
-def init_covariance(self, p): 
-
-
-		# NEW PLAN
-		# relationship
-
-		Precision = []
-
-		# will prob be better with class of Precision CNN that enforces requirements
-
-		for i in range(len(self.phi)):
-
-			if self.p['conv_precision']: 
-
-				Precision.append(
-					Conv2d(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
-
-						# if kernel is odd, centroid is central pixel at current channel for input and output
-
-						kernel_size= self.p['cov_size'][i],
-						stride=1, 
-						padding= (self.p['cov_size'][i]-1)/2
-						dilation=1, groups=1, bias=False, padding_mode='zero')
-					)
-
-		self.Precision = nn.ModuleList(Precision) 
 
 
 
@@ -198,7 +204,29 @@ class pc_conv_network(nn.Module):
 		if not self.p['vae']:
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
 
-	
+	def init_covariance(self, p): 
+
+		Precision = []
+
+		# will prob be better with class of Precision CNN that enforces requirements
+
+		for i in range(len(self.phi)):
+
+			if self.p['conv_precision']: 
+
+				Precision.append(
+
+					sym_conv2D(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
+
+						# if kernel is odd, centroid is central pixel at current channel for input and output
+
+						kernel_size= self.p['cov_size'][i],
+						stride=1, 
+						padding= (self.p['cov_size'][i]-1)/2
+						dilation=1, groups=1, bias=False, padding_mode='zero')
+					)
+
+		self.Precision = nn.ModuleList(Precision) 
 
 
 	def block_tridiagonal(self,p,l):
@@ -215,7 +243,7 @@ class pc_conv_network(nn.Module):
 		ps = phi.size(1), phi.size(2), phi.size(3)
 
 		# check order of input/output
-		w = self.Precision[l].weight.permute([2,3,0,1])
+		w = self.Precision[l].expanded_weight.permute([2,3,0,1])
 		ws = w.size() # 5 5 64 64
 		v = w.view(-1,w.size(2),w.size(3))
 		vs = v.size() # 25, 64 64
