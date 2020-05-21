@@ -254,7 +254,7 @@ class pc_conv_network(nn.Module):
 		ps = phi.size(1), phi.size(2), phi.size(3)
 
 
-		print(self.Precision[l].expanded_weight)
+		# print(self.Precision[l].expanded_weight)
 		# check order of input/output
 		w = self.Precision[l].expanded_weight.permute([2,3,0,1])
 		ws = w.size() # 5 5 64 64
@@ -297,6 +297,8 @@ class pc_conv_network(nn.Module):
 
 		print(b[0,:])
 		print(b[1,:])
+
+		# seems good up to here !! sb 21/5/2020
 
 		# paste this into matrix, length(centres) number of times,
 		# add zeros to make square
