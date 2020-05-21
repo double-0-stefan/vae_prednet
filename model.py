@@ -247,6 +247,8 @@ class pc_conv_network(nn.Module):
 		phi = self.phi[l].view(self.bs,self.p['chan'][l][-1],self.dim[l][-1],self.dim[l][-1])
 		ps = phi.size(1), phi.size(2), phi.size(3)
 
+
+		print(self.Precision[l].expanded_weight.permute([2,3,0,1]))
 		# check order of input/output
 		w = self.Precision[l].expanded_weight.permute([2,3,0,1])
 		ws = w.size() # 5 5 64 64
