@@ -26,9 +26,8 @@ from gpuinfo import GPUInfo
 # import torch_xla.core.xla_model as xm
 
 class sym_conv2D(nn.Module):
-	def __init__(self, 
-		in_channels, out_channels, kernel_size, stride=1, 
-		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros')
+	def __init__(self, in_channels, out_channels, kernel_size, stride=1, 
+		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
 
 
 		self.in_channels = in_channels
@@ -77,7 +76,7 @@ class sym_conv2D(nn.Module):
 					if j > 0:
 						filter_weights[i,mm,-j,:] = self.weight_values[j, mm]
 						filter_weights[i,mm,:,-j] = self.weight_values[j, mm]
-						
+
 		self.expanded_weight = filter_weights
 
 	def forward(x):
