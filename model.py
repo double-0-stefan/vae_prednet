@@ -260,7 +260,7 @@ class pc_conv_network(nn.Module):
 		# size of (section of) phi is 25*  64
 		# size of weights is 25*64*64
 		
-		fi = torch.ones_like(v[:,:,j])
+		fi = torch.ones_like(v[:,:,0])
 		fi[int((vs[0]-1)/2),j] = 0
 		fi = fi == 1
 
