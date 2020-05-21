@@ -292,6 +292,7 @@ class pc_conv_network(nn.Module):
 			if block.size(0) >= block.size(1):
 				break
 
+
 		# get matrices for determinant algorithm
 		A = block[:v.size(0)*v.size(1),:v.size(0)*v.size(1)]
 		A = A.triu()
@@ -300,11 +301,12 @@ class pc_conv_network(nn.Module):
 		B = block[:v.size(0)*v.size(1), v.size(0)*v.size(1):v.size(0)*v.size(1)*2]
 		C = B.t()
 
-		# length
+		# lengths
+		m = A.size(0)
 		n = round(self.phi[l].view(self.bs,-1).size(1)/A.size(0))
 
 
-		Im_Zm = torch.cat([torch.eye(n), torch.zeros(n,n)])
+		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)])
 
 		T1 = torch.stack([
 			torch.cat([-A, -C]), 
