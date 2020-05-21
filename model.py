@@ -275,8 +275,8 @@ class pc_conv_network(nn.Module):
 			fi = torch.ones_like(v[:,:,0])
 			fi[int((vs[0]-1)/2),j] = 0
 			fi = fi == 1
-			print(v.numel())
-			print(b.numel())
+			print(v.size())
+			print(b.size())
 			vv = v[:,:,j]
 			other_weights = vv[fi]
 			print(other_weights.numel())
