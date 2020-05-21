@@ -255,7 +255,7 @@ class pc_conv_network(nn.Module):
 
 
 		# TRY ANOTHER WAY
-		b = torch.zeros([v.size(1),v.size(0)*(1+v1.size(1))])
+		b = torch.zeros([v.size(1),v.size(0)*(1+v.size(1))])
 
 		# size of (section of) phi is 25*  64
 		# size of weights is 25*64*64
