@@ -68,8 +68,7 @@ class sym_conv2D(nn.Module):
 				mm += 1
 
 				# reversed so stuff outside of 'field' gets overwritten
-				print(self.kernel_size)
-				for j in reversed(range(int(self.kernel_size +1)/2)):
+				for j in reversed(range(int((self.kernel_size +1)/2))):
 					# left/top side -  first so centre 'cross' gets overwritten
 					filter_weights[i,mm,j,:] = self.weight_values[j, mm]
 					filter_weights[i,mm,:,j] = self.weight_values[j, mm]
