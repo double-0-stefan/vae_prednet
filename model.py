@@ -234,7 +234,7 @@ class pc_conv_network(nn.Module):
 		self.Precision = nn.ModuleList(Precision) 
 
 
-	def block_tridiagonal(self,p,l):
+	def logdet_block_tridiagonal(self, l):
 		'''
 		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
 
@@ -408,6 +408,8 @@ class pc_conv_network(nn.Module):
 		else:
 			PE = self.phi[i] - x
 
+
+
 		# calculate free energy - negative of usual formula so works with loss
 		if self.p['include_precision']:
 			# calculate inverse covariance matrix from cholesky factorisation
@@ -425,18 +427,20 @@ class pc_conv_network(nn.Module):
 			print(self.P_chol[i+1])
 		
 		elif self.p['conv_precision']:
-		# For 3D conv - turn into image-like format and add dummy dimension in channel position
-			phi_3d = self.phi[j].view(self.p['bs'], p['chan'][j][-1],self.p['dim'][j][-1]).unsqueeze(1)
-			PE_coprecision = self.Precision[i](phi_3d).view(self.p['bs'],-1)
 
-			# the covariance matrix is therefore the 3D weights matrix turned into a vector and tiled to make square
-			
 			print(PE_coprecision.size())
 
 			f = 0.5*sum(sum(
-				- torch.logdet(P) # -ve here because more precise = good (nb will need to balance over layers somehow)
-				+ torch.mm(PE, PE_coprecision.t())
+				
+
+				- logdet_block_tridiagonal(i) # -ve here because more precise = good (nb will need to balance over layers somehow)
+				
+
+				+ torch.mm(PE, (self.Precision[i](PE.view(self.phi[i].size())) ).view(-1).t())
+
+
 				))
+
 
 		else:
 			f = 0.5*sum(sum(
