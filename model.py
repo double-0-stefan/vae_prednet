@@ -292,7 +292,7 @@ class pc_conv_network(nn.Module):
 			if block.size(0) >= block.size(1):
 				break
 
-
+		print(block)
 		# get matrices for determinant algorithm
 		A = block[:v.size(0)*v.size(1),:v.size(0)*v.size(1)]
 		A = A.triu()
