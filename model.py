@@ -58,6 +58,8 @@ class sym_conv2D(nn.Module):
 
 	def generate_filter_structure(self):
 
+		# this is not currently working
+
 		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
 			self.kernel_size, self.kernel_size)
 
@@ -74,13 +76,13 @@ class sym_conv2D(nn.Module):
 				# reversed so stuff outside of 'field' gets overwritten
 				for j in reversed(range(int((self.kernel_size +1)/2))):
 					# left/top side -  first so centre 'cross' gets overwritten
-					filter_weights[i,n,j,:] = self.weight_values[j, full +mm]
-					filter_weights[i,n,:,j] = self.weight_values[j, full +mm]
+					filter_weights[i,n,j,:] = self.weight_values[i, full +mm]
+					filter_weights[i,n,:,j] = self.weight_values[i, full +mm]
 
 					# right/bottom side
 					if j > 0:
-						filter_weights[i,n,-j,:] = self.weight_values[j, full +mm]
-						filter_weights[i,n,:,-j] = self.weight_values[j, full +mm]
+						filter_weights[i,n,-j,:] = self.weight_values[i, full +mm]
+						filter_weights[i,n,:,-j] = self.weight_values[i, full +mm]
 			full += mm
 
 		self.expanded_weight = filter_weights
@@ -248,7 +250,7 @@ class pc_conv_network(nn.Module):
 		ps = phi.size(1), phi.size(2), phi.size(3)
 
 
-		print(self.Precision[l].expanded_weight.permute([2,3,0,1]))
+		print(self.Precision[l].expanded_weight)
 		# check order of input/output
 		w = self.Precision[l].expanded_weight.permute([2,3,0,1])
 		ws = w.size() # 5 5 64 64
