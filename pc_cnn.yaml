@@ -2,7 +2,7 @@ exp_name:
     - "pc_cnn_mnist"
 
 conv_precision: 
-    - False
+    - True
 
 bilinear_precision:
     - True
@@ -21,7 +21,7 @@ xla:
 
 # change to maintian input size
 
-conv_filter_size: # len = number of layers
+cov_size: 
     - [5,5]
 
 
