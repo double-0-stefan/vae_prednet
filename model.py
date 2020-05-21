@@ -417,7 +417,7 @@ class pc_conv_network(nn.Module):
 			# for testing purposes:
 			print(i)
 			print(self.P_chol[i+1])
-		else:
+		elif:
 			f = 0.5*sum(sum(
 				torch.mm(PE, PE.t())
 				))
