@@ -275,13 +275,14 @@ class pc_conv_network(nn.Module):
 			fi = torch.ones_like(v[:,:,0])
 			fi[int((vs[0]-1)/2),j] = 0
 			fi = fi == 1
-			print(v.size())
-			print(b.size())
+			# print(v.size())
+			# print(b.size())
 			vv = v[:,:,j]
 			other_weights = vv[fi]
-			print(other_weights.numel())
+			# print(other_weights.numel())
 			b[j, (j+1):j+1+other_weights.numel()] = other_weights
 
+		print(b)
 		# paste this into matrix, length(centres) number of times,
 		# add zeros to make square
 		# take upper triangle, do transpose -> raw materials for block is done!
