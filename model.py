@@ -276,22 +276,24 @@ class pc_conv_network(nn.Module):
 		# tiled matrix with lots of zeros
 		for j in range(vs[1]):
 			# central - leading diag
-			b[j,j] = v[int((ws[0]-1)/2),j,j]
+			
 
 			# all other weights inputting to output layer j
 			# stuff to be added after centre (ie that is never on leading diag) - zero out centre
 			fi = torch.ones_like(v[:,:,0])
 			fi[int((vs[0]-1)/2),j] = 0
-			fi = fi == 1
+			fo = fi == 1
+			fc = fi == 0
 			# print(v.size())
 			# 
 			# print(fi.view(-1))
 			vv = v[:,:,j]
-			other_weights = vv[fi]
+			other_weights = vv[fo]
 			# print(other_weights)
 			# print(vv.size())
 			# print(other_weights.numel())
 			b[j, (j+1):j+1+other_weights.numel()] = other_weights
+			b[j,j] = vv[fc]
 
 		print(b[0,:])
 		print(b[1,:])
