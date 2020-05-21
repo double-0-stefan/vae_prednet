@@ -286,7 +286,8 @@ class pc_conv_network(nn.Module):
 			fi[int((vs[0]-1)/2),j] = 0
 			fi = fi == 1
 			# print(v.size())
-			# print(b.size())
+			# 
+			print(vv.view(-1))
 			vv = v[:,:,j]
 			other_weights = vv[fi]
 			# print(other_weights.numel())
