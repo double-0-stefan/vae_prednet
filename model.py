@@ -267,9 +267,13 @@ class pc_conv_network(nn.Module):
 
 		# tiled matrix with lots of zeros
 		for j in range(vs[1]):
+			# central - leading diag
 			b[j,j] = v[int((ws[0]-1)/2),j,j]
+
+			# others
 			vv = v[:,:,j]
-			b[j, j+1:j+vv.numel()] = vv[fi]
+			other_weights = vv[fi]
+			b[j, j+1:j+other_weights.numel()] = other_weights
 
 		# paste this into matrix, length(centres) number of times,
 		# add zeros to make square
