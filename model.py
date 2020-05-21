@@ -426,7 +426,7 @@ class pc_conv_network(nn.Module):
 		
 		elif self.p['conv_precision']:
 		# For 3D conv - turn into image-like format and add dummy dimension in channel position
-			phi_3d = phi[j].view(self.p['bs'], p['chan'][j][-1],self.p['dim'][j][-1]).unsqueeze(1)
+			phi_3d = self.phi[j].view(self.p['bs'], p['chan'][j][-1],self.p['dim'][j][-1]).unsqueeze(1)
 			PE_coprecision = self.Precision[i](phi_3d).view(self.p['bs'],-1)
 
 			# the covariance matrix is therefore the 3D weights matrix turned into a vector and tiled to make square
