@@ -417,11 +417,7 @@ class pc_conv_network(nn.Module):
 			# for testing purposes:
 			print(i)
 			print(self.P_chol[i+1])
-		elif:
-			f = 0.5*sum(sum(
-				torch.mm(PE, PE.t())
-				))
-
+		
 		elif self.p['conv_precision']:
 		# For 3D conv - turn into image-like format and add dummy dimension in channel position
 			phi_3d = phi[j].view(self.p['bs'], p['chan'][j][-1],self.p['dim'][j][-1]).unsqueeze(1)
@@ -434,6 +430,11 @@ class pc_conv_network(nn.Module):
 			f = 0.5*sum(sum(
 				- torch.logdet(P) # -ve here because more precise = good (nb will need to balance over layers somehow)
 				+ torch.mm(PE, PE_coprecision.t())
+				))
+
+		else:
+			f = 0.5*sum(sum(
+				torch.mm(PE, PE.t())
 				))
 
 
