@@ -76,13 +76,13 @@ class sym_conv2D(nn.Module):
 				# reversed so stuff outside of 'field' gets overwritten
 				for j in reversed(range(int((self.kernel_size +1)/2))):
 					# left/top side -  first so centre 'cross' gets overwritten
-					filter_weights[i,n,j,:] = self.weight_values[i, full +mm]
-					filter_weights[i,n,:,j] = self.weight_values[i, full +mm]
+					filter_weights[i,n,j,:] = self.weight_values[j, full +mm]
+					filter_weights[i,n,:,j] = self.weight_values[j, full +mm]
 
 					# right/bottom side
 					if j > 0:
-						filter_weights[i,n,-j,:] = self.weight_values[i, full +mm]
-						filter_weights[i,n,:,-j] = self.weight_values[i, full +mm]
+						filter_weights[i,n,-j,:] = self.weight_values[j, full +mm]
+						filter_weights[i,n,:,-j] = self.weight_values[j, full +mm]
 			full += mm
 
 		self.expanded_weight = filter_weights
