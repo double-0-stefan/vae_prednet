@@ -50,8 +50,6 @@ class sym_conv2D(nn.Module):
 		
 		w = torch.rand(int((self.kernel_size +1)/2), n_uwc)
 
-		print(n_uwc)
-
 		self.weight_values = nn.Parameter(w)
 
 		self.generate_filter_structure()
@@ -287,9 +285,11 @@ class pc_conv_network(nn.Module):
 			fi = fi == 1
 			# print(v.size())
 			# 
-			print(vv.view(-1))
+			
 			vv = v[:,:,j]
 			other_weights = vv[fi]
+			print(vv.view(-1))
+			print(vv.size())
 			# print(other_weights.numel())
 			b[j, (j+1):j+1+other_weights.numel()] = other_weights
 
