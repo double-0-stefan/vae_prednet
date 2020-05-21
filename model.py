@@ -43,7 +43,7 @@ class sym_conv2D(nn.Module):
 
 		# number of unique weights over channels
 		n_uwc = in_channels
-		for m in range(n_uw):
+		for m in range(in_channels):
 			n_uwc = sum([m, n_uwc])
 		
 		w = torch.rand((self.kernel_size +1)/2, n_uwc)
