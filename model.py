@@ -81,8 +81,8 @@ class sym_conv2D(nn.Module):
 
 					# right/bottom side
 					if j < int((self.kernel_size +1)/2) -1:
-					filter_weights[i,n,-(j+1),:] = self.weight_values[j, full +mm]
-					filter_weights[i,n,:,-(j+1)] = self.weight_values[j, full +mm]
+						filter_weights[i,n,-(j+1),:] = self.weight_values[j, full +mm]
+						filter_weights[i,n,:,-(j+1)] = self.weight_values[j, full +mm]
 			full += mm
 
 		self.expanded_weight = filter_weights
