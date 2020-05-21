@@ -5,7 +5,7 @@ conv_precision:
     - True
 
 bilinear_precision:
-    - True
+    - False
 
 include_precision:
     - False
