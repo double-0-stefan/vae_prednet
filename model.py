@@ -255,7 +255,7 @@ class pc_conv_network(nn.Module):
 
 
 		# TRY ANOTHER WAY
-		b = torch.zeros([v.size(1),v.size(0)*(1+v.size(1))])
+		b = torch.zeros([v.size(1),(1+v.size(0))*(v.size(1))])
 
 		# size of (section of) phi is 25*  64
 		# size of weights is 25*64*64
@@ -280,7 +280,7 @@ class pc_conv_network(nn.Module):
 			vv = v[:,:,j]
 			other_weights = vv[fi]
 			print(other_weights.numel())
-			b[j, (j+1):b.size(1)-(vs[1]-j)] = other_weights
+			b[j, (j+1):j+1+other_weights.numel()] = other_weights
 
 		# paste this into matrix, length(centres) number of times,
 		# add zeros to make square
