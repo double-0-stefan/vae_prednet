@@ -79,10 +79,10 @@ class sym_conv2D(nn.Module):
 					filter_weights[i,n,j,:] = self.weight_values[j, full +mm]
 					filter_weights[i,n,:,j] = self.weight_values[j, full +mm]
 
-					# # right/bottom side
+					# right/bottom side
 					# if j > 0:
-					# 	filter_weights[i,n,-j,:] = self.weight_values[j, full +mm]
-					# 	filter_weights[i,n,:,-j] = self.weight_values[j, full +mm]
+					filter_weights[i,n,-j,:] = self.weight_values[j, full +mm]
+					filter_weights[i,n,:,-j] = self.weight_values[j, full +mm]
 			full += mm
 
 		self.expanded_weight = filter_weights
