@@ -244,7 +244,7 @@ class pc_conv_network(nn.Module):
 		# need to determine pattern of placement of conv weights
 		# in order to calculate log determinant
 
-		phi = self.phi[l].view(self.bs,self.p['chan'][l][-1],self.dim[i][-1],self.dim[i][-1])
+		phi = self.phi[l].view(self.bs,self.p['chan'][l][-1],self.dim[l][-1],self.dim[l][-1])
 		ps = phi.size(1), phi.size(2), phi.size(3)
 
 		# check order of input/output
