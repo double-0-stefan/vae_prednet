@@ -29,7 +29,7 @@ import torch.nn.functional as F
 class sym_conv2D(nn.Module):
 	def __init__(self, in_channels, out_channels, kernel_size, stride=1, 
 		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
-
+		super(sym_conv2D, self).__init__()
 
 		self.in_channels = in_channels
 		self.out_channels = out_channels
@@ -40,8 +40,6 @@ class sym_conv2D(nn.Module):
 		self.groups = groups
 		self.bias = bias
 		self.padding_mode = padding_mode
-
-		super(sym_conv2D, self).__init__()
 
 		# number of unique weights over channels
 		n_uwc = in_channels
@@ -82,7 +80,7 @@ class sym_conv2D(nn.Module):
 
 	def forward(x):
 
-		return F.conv2d(x, weight=self.filter, bias=self.bias, stride=self.stride,
+		return F.conv2d(x, weight=self.expanded_weight, bias=self.bias, stride=self.stride,
 			padding=self.padding, dilation=self.dilation, groups=self.groups)
 
 
