@@ -41,6 +41,8 @@ class sym_conv2D(nn.Module):
 		self.bias = bias
 		self.padding_mode = padding_mode
 
+
+
 		# number of unique weights over channels
 		n_uwc = in_channels
 		for m in range(in_channels):
@@ -66,6 +68,7 @@ class sym_conv2D(nn.Module):
 				mm += 1
 
 				# reversed so stuff outside of 'field' gets overwritten
+				print(self.kernel_size)
 				for j in reversed(range(int(self.kernel_size +1)/2)):
 					# left/top side -  first so centre 'cross' gets overwritten
 					filter_weights[i,mm,j,:] = self.weight_values[j, mm]
