@@ -300,8 +300,10 @@ class pc_conv_network(nn.Module):
 
 		B = block[:v.size(0)*v.size(1), v.size(0)*v.size(1):v.size(0)*v.size(1)*2]
 		print(B)
-		B_inv = torch.inverse(B)
+		
 		C = B.t()
+		print(C)
+		B_inv = torch.inverse(B)
 
 		# lengths
 		m = A.size(0)
