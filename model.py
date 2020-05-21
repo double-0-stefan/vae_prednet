@@ -260,14 +260,16 @@ class pc_conv_network(nn.Module):
 		# size of (section of) phi is 25*  64
 		# size of weights is 25*64*64
 		
+		# stuff to be added after centre (ie that is never on leading diag) - zero out centre
 		fi = torch.ones_like(v[:,:,0])
-		fi[int((vs[0]-1)/2),j] = 0
+		fi[int((vs[0]-1)/2),:] = 0
 		fi = fi == 1
 
+		# tiled matrix with lots of zeros
 		for j in range(vs[1]):
 			b[j,j] = v[int((ws[0]-1)/2),j,j]
 			vv = v[:,:,j]
-			b[j,j+1:j+vv.numel()] = vv[fi]
+			b[j, j+1:j+vv.numel()] = vv[fi]
 
 		# paste this into matrix, length(centres) number of times,
 		# add zeros to make square
