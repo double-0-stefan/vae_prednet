@@ -50,6 +50,8 @@ class sym_conv2D(nn.Module):
 		
 		w = torch.rand(int((self.kernel_size +1)/2), n_uwc)
 
+		print(n_uwc)
+
 		self.weight_values = nn.Parameter(w)
 
 		self.generate_filter_structure()
@@ -64,6 +66,7 @@ class sym_conv2D(nn.Module):
 
 		for i in range(self.out_channels):
 			m += 1
+
 			for mm in range(m, self.out_channels):
 				mm += 1
 
