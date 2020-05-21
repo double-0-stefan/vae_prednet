@@ -55,7 +55,7 @@ class sym_conv2D(nn.Module):
 	def generate_filter_structure(self):
 
 		filter_weights = torch.zeros(self.out_channels,self.in_channels/self.groups,
-			self.kernel_size[0],self.kernel_size[1])
+			self.kernel_size, self.kernel_size)
 
 		m = -1
 		mm = -1
