@@ -294,6 +294,8 @@ class pc_conv_network(nn.Module):
 			b[j, (j+1):j+1+other_weights.numel()] = other_weights
 
 		print(b[0,:])
+		print(b[1,:])
+
 		# paste this into matrix, length(centres) number of times,
 		# add zeros to make square
 		# take upper triangle, do transpose -> raw materials for block is done!
