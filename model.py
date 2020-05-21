@@ -428,7 +428,6 @@ class pc_conv_network(nn.Module):
 		
 		elif self.p['conv_precision']:
 
-			print(PE_coprecision.size())
 
 			f = 0.5*sum(sum(
 				
@@ -440,6 +439,8 @@ class pc_conv_network(nn.Module):
 
 
 				))
+
+			print(f)
 
 
 		else:
