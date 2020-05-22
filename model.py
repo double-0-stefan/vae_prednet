@@ -84,18 +84,18 @@ class sym_conv2D(nn.Module):
 				for n in reversed(range(int((self.kernel_size +1)/2))):
 					# left/top side -  first so centre 'cross' gets overwritten
 					filter_weights[i,j,n,:] = self.weight_values[i][j,n] #[j, full +mm]
-					filter_weights[i,j,:,j] = self.weight_values[i][j,n]#[j, full +mm]
+					filter_weights[i,j,:,n] = self.weight_values[i][j,n]#[j, full +mm]
 
 					filter_weights[j,i,n,:] = self.weight_values[i][j,n]#[j, full +mm]
 					filter_weights[j,i,:,n] = self.weight_values[i][j,n]#[j, full +mm]
 
 					# right/bottom side
 					if j < int((self.kernel_size +1)/2) -1:
-						filter_weights[i,n,-(j+1),:] = self.weight_values[i][j,n]#[j, full +mm]
-						filter_weights[i,n,:,-(j+1)] = self.weight_values[i][j,n]#[j, full +mm]
+						filter_weights[i,j,-(n+1),:] = self.weight_values[i][j,n]#[j, full +mm]
+						filter_weights[i,j,:,-(n+1)] = self.weight_values[i][j,n]#[j, full +mm]
 
-						filter_weights[n,i,-(j+1),:] = self.weight_values[i][j,n]#[j, full +mm]
-						filter_weights[n,i,:,-(j+1)] = self.weight_values[i][j,n]#[j, full +mm]
+						filter_weights[j,i,-(n+1),:] = self.weight_values[i][j,n]#[j, full +mm]
+						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][j,n]#[j, full +mm]
 			# full += mm
 
 
