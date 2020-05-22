@@ -551,14 +551,14 @@ class pc_conv_network(nn.Module):
 		print(i)
 		# update activation parameters
 		if learn == 0:
-			if i < self.nlayers - 1:
+			if i < self.nlayers -1:
 				self.opt_phi[i+1].zero_grad()
-				f.backward()
+				f.backward(retain_graph=True)
 				self.opt_phi[i+1].step()
 			else:
 				f += kl_loss
 				self.opt_z_pc.zero_grad()
-				f.backward()
+				f.backward(retain_graph=True)
 				self.opt_z_pc.step()
 		# update synaptic parameters
 		else:
@@ -566,14 +566,14 @@ class pc_conv_network(nn.Module):
 				self.opt_P[i+1].zero_grad() 
 			if i < self.nlayers - 1:
 				self.opt_ct[i+1].zero_grad()
-				f.backward()
+				f.backward(retain_graph=True)
 				# print(i)
 				# print(f)
 				self.opt_ct[i+1].step()
 			else:
 				f += kl_loss
 				self.opt_lin.zero_grad()
-				f.backward()
+				f.backward(retain_graph=True)
 				# print(i)
 				# print(f)
 				# print(kl_loss)
