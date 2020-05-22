@@ -44,50 +44,93 @@ class sym_conv2D(nn.Module):
 
 
 		# number of unique weights over channels
-		n_uwc = in_channels
-		for m in range(in_channels):
-			n_uwc = sum([m, n_uwc])
-		
-		w = torch.rand(int((self.kernel_size +1)/2), n_uwc)
+		# indices = [0]
+		w = []
+		# n_uwc = in_channels
+		for m in reversed(range(in_channels)):
 
-		self.weight_values = nn.Parameter(w)
+			w.append(torch.rand(int((self.kernel_size +1)/2), m)/1000)
+
+			w[-1][-1,m] = 1.
+
+		# 	n_uwc = sum([m, n_uwc])
+		# 	indices.append(indices[-1]+m)
+		
+		# for i in range(out_channels):
+		# 	for n in range(m, out_channels):
+
+
+		# w = torch.rand(int((self.kernel_size +1)/2), n_uwc)/1000
+
+		# # centre (leading diagonal) large and outside small
+		# w[-1,]
+
+
+		self.weight_values = nn.ParameterList(w)
 
 		self.generate_filter_structure()
 
 	def generate_filter_structure(self):
 
-		# this is not currently working
-
 		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
 			self.kernel_size, self.kernel_size)
 
-		m = -1
-		mm = -1
-		full = -1
-
 		for i in range(self.out_channels):
-			m += 1
-			mm = -1
-			for n in range(m, self.out_channels):
-				mm += 1
+
+			for j in range(m, self.out_channels):
 
 				# reversed so stuff outside of 'field' gets overwritten
-				for j in reversed(range(int((self.kernel_size +1)/2))):
+				for n in reversed(range(int((self.kernel_size +1)/2))):
 					# left/top side -  first so centre 'cross' gets overwritten
-					filter_weights[i,n,j,:] = self.weight_values[j, full +mm]
-					filter_weights[i,n,:,j] = self.weight_values[j, full +mm]
+					filter_weights[i,j,n,:] = self.weight_values[i][j,n] #[j, full +mm]
+					filter_weights[i,j,:,j] = self.weight_values[i][j,n]#[j, full +mm]
 
-					filter_weights[n,i,j,:] = self.weight_values[j, full +mm]
-					filter_weights[n,i,:,j] = self.weight_values[j, full +mm]
+					filter_weights[j,i,n,:] = self.weight_values[i][j,n]#[j, full +mm]
+					filter_weights[j,i,:,n] = self.weight_values[i][j,n]#[j, full +mm]
 
 					# right/bottom side
 					if j < int((self.kernel_size +1)/2) -1:
-						filter_weights[i,n,-(j+1),:] = self.weight_values[j, full +mm]
-						filter_weights[i,n,:,-(j+1)] = self.weight_values[j, full +mm]
+						filter_weights[i,n,-(j+1),:] = self.weight_values[i][j,n]#[j, full +mm]
+						filter_weights[i,n,:,-(j+1)] = self.weight_values[i][j,n]#[j, full +mm]
 
-						filter_weights[n,i,-(j+1),:] = self.weight_values[j, full +mm]
-						filter_weights[n,i,:,-(j+1)] = self.weight_values[j, full +mm]
-			full += mm
+						filter_weights[n,i,-(j+1),:] = self.weight_values[i][j,n]#[j, full +mm]
+						filter_weights[n,i,:,-(j+1)] = self.weight_values[i][j,n]#[j, full +mm]
+			# full += mm
+
+
+
+		# m = -1
+		# mm = -1
+		# full = -1
+
+
+
+		# for i in range(self.out_channels):
+		# 	m += 1
+		# 	mm = -1
+		# 	for n in range(m, self.out_channels):
+		# 		mm += 1
+
+		# 		# reversed so stuff outside of 'field' gets overwritten
+		# 		for j in reversed(range(int((self.kernel_size +1)/2))):
+		# 			# left/top side -  first so centre 'cross' gets overwritten
+		# 			filter_weights[i,n,j,:] = self.weight_values[j, full +mm]
+		# 			filter_weights[i,n,:,j] = self.weight_values[j, full +mm]
+
+		# 			filter_weights[n,i,j,:] = self.weight_values[j, full +mm]
+		# 			filter_weights[n,i,:,j] = self.weight_values[j, full +mm]
+
+		# 			# right/bottom side
+		# 			if j < int((self.kernel_size +1)/2) -1:
+		# 				filter_weights[i,n,-(j+1),:] = self.weight_values[j, full +mm]
+		# 				filter_weights[i,n,:,-(j+1)] = self.weight_values[j, full +mm]
+
+		# 				filter_weights[n,i,-(j+1),:] = self.weight_values[j, full +mm]
+		# 				filter_weights[n,i,:,-(j+1)] = self.weight_values[j, full +mm]
+		# 	full += mm
+
+
+
 
 		self.expanded_weight = filter_weights
 
@@ -249,10 +292,6 @@ class pc_conv_network(nn.Module):
 		# Covariance is between components of phi
 		# need to determine pattern of placement of conv weights
 		# in order to calculate log determinant
-
-		phi = self.phi[l].view(self.bs,self.p['chan'][l][-1],self.dim[l][-1],self.dim[l][-1])
-		ps = phi.size(1), phi.size(2), phi.size(3)
-
 
 		# print(self.Precision[l].expanded_weight)
 		# check order of input/output
@@ -465,18 +504,15 @@ class pc_conv_network(nn.Module):
 		
 		elif self.p['conv_precision']:
 
-
-			f = 0.5*sum(sum(
-				
-
-				- self.logdet_block_tridiagonal(i) # -ve here because more precise = good (nb will need to balance over layers somehow)
-				
-
-				+ torch.mm(PE, (self.Precision[i](PE.view(self.phi[i].size())) ).view(-1).t())
-
-
-				))
-
+			if learn == 1:
+				f = 0.5*sum(sum(
+					- self.logdet_block_tridiagonal(i) # -ve here because more precise = good (nb will need to balance over layers somehow)
+					+ torch.mm(PE, (self.Precision[i](PE.view(self.phi[i].size())) ).view(-1).t())
+					))
+			else:
+				f = 0.5*sum(sum(
+					torch.mm(PE, (self.Precision[i](PE.view(self.phi[i].size())) ).view(-1).t())
+					))
 			print(f)
 
 
