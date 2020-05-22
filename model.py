@@ -261,7 +261,19 @@ class pc_conv_network(nn.Module):
 
 	def init_covariance(self, p): 
 
+
 		Precision = []
+		Precision.append(
+
+			sym_conv2D(in_channels=self.p['imchan'], out_channels=self.p['imchan'], # do this as 2D over all channels
+
+				# if kernel is odd, centroid is central pixel at current channel for input and output
+
+				kernel_size= self.p['cov_size'][0],
+				stride=1, 
+				padding= int((self.p['cov_size'][0]-1)/2),
+				dilation=1, groups=1, bias=None, padding_mode='zero')
+					)
 
 		# will prob be better with class of Precision CNN that enforces requirements
 
@@ -269,9 +281,14 @@ class pc_conv_network(nn.Module):
 
 			if self.p['conv_precision']: 
 
+				# needs to be of channel below - ie after transconv and prediction error generation
+				# bottom is image
+				
+
+
 				Precision.append(
 
-					sym_conv2D(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
+					sym_conv2D(in_channels=self.p['chan'][i][0], out_channels=self.p['chan'][i][0], # do this as 2D over all channels
 
 						# if kernel is odd, centroid is central pixel at current channel for input and output
 
