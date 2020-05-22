@@ -533,6 +533,7 @@ class pc_conv_network(nn.Module):
 					+ torch.mm(PE, (self.Precision[i](PE.view(self.bs, chan, self.dim[i][-1], self.dim[i][-1]))).view(self.p['bs'],-1).t())
 					))
 			else:
+				print(i)
 
 				f = 0.5*sum(sum(
 					torch.mm(PE, (self.Precision[i](PE.view(self.bs, chan, self.dim[i][-1], self.dim[i][-1]))).view(self.p['bs'],-1).t())
