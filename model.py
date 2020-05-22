@@ -290,7 +290,7 @@ class pc_conv_network(nn.Module):
 
 				Precision.append(
 
-					sym_conv2D(in_channels=self.p['chan'][i][0], out_channels=self.p['chan'][i][0], # do this as 2D over all channels
+					sym_conv2D(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
 
 						# if kernel is odd, centroid is central pixel at current channel for input and output
 
