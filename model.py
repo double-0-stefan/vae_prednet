@@ -525,7 +525,7 @@ class pc_conv_network(nn.Module):
 		elif self.p['conv_precision']:
 
 			if i > -1:
-				chan = self.chan[i][0]
+				chan = self.chan[i][-1]
 			else:
 				chan = self.p['imchan']
 			print(self.dim)
