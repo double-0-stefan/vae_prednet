@@ -256,7 +256,7 @@ class pc_conv_network(nn.Module):
 
 		self.phi = nn.ParameterList(phi)
 		# top block
-		self.p['dim'].append(dim_block[0])
+		self.p['dim'].append(dim_block)
 
 		self.dim = self.p['dim']
 		self.conv_trans = nn.ModuleList(self.conv_trans)
