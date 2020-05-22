@@ -548,7 +548,7 @@ class pc_conv_network(nn.Module):
 				torch.mm(PE, PE.t())
 				))
 
-
+		print(i)
 		# update activation parameters
 		if learn == 0:
 			if i < self.nlayers - 1:
