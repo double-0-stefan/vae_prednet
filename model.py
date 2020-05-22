@@ -51,7 +51,7 @@ class sym_conv2D(nn.Module):
 
 			w.append(nn.Parameter(torch.rand(int((self.kernel_size +1)/2), m+1)/1000))
 
-			w[-1][-1,m] = 1.
+			# w[-1][-1,m] = 1.
 
 		# 	n_uwc = sum([m, n_uwc])
 		# 	indices.append(indices[-1]+m)
