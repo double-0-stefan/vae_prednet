@@ -556,9 +556,9 @@ class pc_conv_network(nn.Module):
 				f.backward()
 				self.opt_phi[i+1].step()
 			else:
-				f += kl_loss
+				ff = f+ kl_loss
 				self.opt_z_pc.zero_grad()
-				f.backward()
+				ff.backward()
 				self.opt_z_pc.step()
 		# update synaptic parameters
 		else:
