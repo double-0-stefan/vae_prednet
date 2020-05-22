@@ -520,7 +520,7 @@ class pc_conv_network(nn.Module):
 					)
 				))
 			# for testing purposes:
-			print(i)
+			# print(i)
 			print(self.P_chol[i+1])
 		
 		elif self.p['conv_precision']:
@@ -540,7 +540,7 @@ class pc_conv_network(nn.Module):
 				f = 0.5*sum(sum(
 					torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
 					))
-			print(f)
+			# print(f)
 
 
 		else:
@@ -548,7 +548,7 @@ class pc_conv_network(nn.Module):
 				torch.mm(PE, PE.t())
 				))
 
-		print(i)
+		# print(i)
 		# update activation parameters
 		if learn == 0:
 			if i < self.nlayers -1:
@@ -595,8 +595,8 @@ class pc_conv_network(nn.Module):
 				for l in range(-1, self.nlayers):
 					loss += self.loss(l, learn)
 
-				if i == 0:
-					print(loss)
+				# if i == 0:
+				print(loss)
 				
 			print(loss)
 
