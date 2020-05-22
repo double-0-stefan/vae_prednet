@@ -528,7 +528,7 @@ class pc_conv_network(nn.Module):
 				chan = self.chan[i][0]
 			else:
 				chan = self.p['imchan']
-
+			print(self.dim)
 			if learn == 1:
 				f = 0.5*sum(sum(
 					- self.logdet_block_tridiagonal(i) # -ve here because more precise = good (nb will need to balance over layers somehow)
