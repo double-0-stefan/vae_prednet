@@ -49,9 +49,10 @@ class sym_conv2D(nn.Module):
 		# n_uwc = in_channels
 		for m in reversed(range(in_channels)):
 
-			w.append(nn.Parameter(torch.rand(int((self.kernel_size +1)/2), m+1)/1000))
-
-			# w[-1][-1,m] = 1.
+			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000
+			w[-1][-1,m] = 1.
+			w.append(nn.Parameter(a))
+			
 
 		# 	n_uwc = sum([m, n_uwc])
 		# 	indices.append(indices[-1]+m)
@@ -77,7 +78,7 @@ class sym_conv2D(nn.Module):
 
 		for i in range(self.out_channels):
 
-			for j in range(m, self.out_channels):
+			for j in range(i, self.out_channels):
 
 				# reversed so stuff outside of 'field' gets overwritten
 				for n in reversed(range(int((self.kernel_size +1)/2))):
