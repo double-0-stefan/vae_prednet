@@ -50,7 +50,7 @@ class sym_conv2D(nn.Module):
 		for m in reversed(range(in_channels)):
 
 			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000
-			w[-1][-1,m] = 1.
+			a[-1,m] = 1.
 			w.append(nn.Parameter(a))
 			
 
