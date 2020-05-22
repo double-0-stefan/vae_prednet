@@ -133,7 +133,7 @@ class sym_conv2D(nn.Module):
 
 
 
-		self.expanded_weight = filter_weights
+		self.expanded_weight = filter_weights.cuda()
 
 		self.cuda()
 
