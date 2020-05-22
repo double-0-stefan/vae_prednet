@@ -135,7 +135,7 @@ class sym_conv2D(nn.Module):
 
 		self.expanded_weight = filter_weights
 
-	def forward(x):
+	def forward(self, x):
 
 		return F.conv2d(x, weight=self.expanded_weight, bias=self.bias, stride=self.stride,
 			padding=self.padding, dilation=self.dilation, groups=self.groups)
