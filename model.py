@@ -255,6 +255,9 @@ class pc_conv_network(nn.Module):
 			self.p['dim'].append(dim_block)
 
 		self.phi = nn.ParameterList(phi)
+		# top block
+		self.p['dim'].append(dim_block[0])
+
 		self.dim = self.p['dim']
 		self.conv_trans = nn.ModuleList(self.conv_trans)
 		# top level phi
@@ -286,8 +289,6 @@ class pc_conv_network(nn.Module):
 				# needs to be of channel below - ie after transconv and prediction error generation
 				# bottom is image
 				
-
-
 				Precision.append(
 
 					sym_conv2D(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
