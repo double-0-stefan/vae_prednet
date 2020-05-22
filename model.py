@@ -172,7 +172,7 @@ class pc_conv_network(nn.Module):
 		self.init_covariance(p)
 		self.init_latents(p)
 		self.optimizer = None
-		print(self)
+		# print(self)
 		
 	def init_latents(self, p):
 
