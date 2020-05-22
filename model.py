@@ -278,7 +278,7 @@ class pc_conv_network(nn.Module):
 						kernel_size= self.p['cov_size'][i],
 						stride=1, 
 						padding= (self.p['cov_size'][i]-1)/2,
-						dilation=1, groups=1, bias=False, padding_mode='zero')
+						dilation=1, groups=1, bias=None, padding_mode='zero')
 					)
 
 		self.Precision = nn.ModuleList(Precision) 
