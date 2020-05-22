@@ -66,7 +66,7 @@ class sym_conv2D(nn.Module):
 		# # centre (leading diagonal) large and outside small
 		# w[-1,]
 
-		print(w)
+		# print(w)
 		self.weight_values = nn.ParameterList(w)
 
 		self.generate_filter_structure()
