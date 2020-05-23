@@ -543,9 +543,10 @@ class pc_conv_network(nn.Module):
 
 		
 	def inference(self):
+		loss = 0.
 		for j in range(self.p['iter_outer']):
 			for i in range(self.iter):
-				loss = 0.
+				del loss
 				self.phi.requires_grad_(False)
 				self.z_pc.requires_grad_(False)
 				if self.p['conv_precision']:
