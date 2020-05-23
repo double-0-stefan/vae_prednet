@@ -248,7 +248,8 @@ class pc_conv_network(nn.Module):
 		self.init_conv_trans(p)
 
 		self.imchan = p['imchan']
-		self.init_covariance(p)
+		if self.p['conv_precision']:
+			self.init_covariance(p)
 		self.init_latents(p)
 		self.optimizer = None
 		# print(self)
@@ -437,8 +438,8 @@ class pc_conv_network(nn.Module):
 	def loss(self, i, learn=0):
 
 		loss = 0.
-		f = 0.
-		kl_loss = None
+		del f
+		del kl_loss
 
 		# if top layer - latents:
 		if i == self.nlayers -1:
@@ -505,6 +506,7 @@ class pc_conv_network(nn.Module):
 
 		# print(i)
 		# update activation parameters
+
 		if learn == 0:
 			if i < self.nlayers -1:
 				self.opt_phi[i+1].zero_grad()
