@@ -544,22 +544,26 @@ class pc_conv_network(nn.Module):
 		for j in range(self.p['iter_outer']):
 			for i in range(self.iter):
 				loss = 0.
+				self.phi.requires_grad_(False)
+				self.z_pc.requires_grad_(False)
+				self.Precision.requires_grad_(False)
+				self.lin_down.requires_grad_(False)
+				self.conv_trans.requires_grad_(False)
+
 				
-				if i < 9*self.iter/10:
-					learn = 0
-					self.phi.requires_grad_(True)
-					self.z_pc.requires_grad_(True)
-					self.Precision.requires_grad_(False)
-					self.lin_down.requires_grad_(False)
-					self.conv_trans.requires_grad_(False)
-				else:
-					learn = 1
-					self.phi.requires_grad_(False)
-					self.z_pc.requires_grad_(False)
-					self.Precision.requires_grad_(True)
-					self.lin_down.requires_grad_(True)
-					self.conv_trans.requires_grad_(True)
 				for l in range(-1, self.nlayers):
+					if i < 9*self.iter/10:
+						learn = 0
+						self.phi[l+1].requires_grad_(True)
+						if l = self.nlayers -1:
+							self.z_pc.requires_grad_(True)						
+					else:
+						learn = 1
+						self.Precision[l+1].requires_grad_(True)
+						self.conv_trans[l+1].requires_grad_(True)
+						if l = self.nlayers -1:
+							self.lin_down.requires_grad_(True)
+
 					loss += self.loss(l, learn)
 
 				# if i == 0:
