@@ -261,13 +261,13 @@ class pc_conv_network(nn.Module):
 		p['z_params']	= self.q_dist.nparams
 		self.z_pc = nn.Parameter(torch.rand(self.p['bs'],self.latents*2),requires_grad = True)
 
-		fc1= Linear(self.phi[-1].size(1), self.hidden)
-		fc2 = Linear(self.hidden, int(self.latents*2))
+		# fc1= Linear(self.phi[-1].size(1), self.hidden)
+		# fc2 = Linear(self.hidden, int(self.latents*2))
 
-		lin = []
-		lin.append(fc1)
-		lin.append(fc2)
-		self.lin_up = nn.ModuleList(lin)
+		# lin = []
+		# lin.append(fc1)
+		# lin.append(fc2)
+		# self.lin_up = nn.ModuleList(lin)
 
 		# descending
 		fc1 = Linear(int(self.latents), self.hidden)
@@ -547,8 +547,18 @@ class pc_conv_network(nn.Module):
 				
 				if i < 9*self.iter/10:
 					learn = 0
+					self.phi.requires_grad_(True)
+					self.z_pc.requires_grad_(True)
+					self.Precision.requires_grad_(False)
+					self.lin_down.requires_grad_(False)
+					self.conv_trans.requires_grad_(False)
 				else:
 					learn = 1
+					self.phi.requires_grad_(False)
+					self.z_pc.requires_grad_(False)
+					self.Precision.requires_grad_(True)
+					self.lin_down.requires_grad_(True)
+					self.conv_trans.requires_grad_(True)
 				for l in range(-1, self.nlayers):
 					loss += self.loss(l, learn)
 
