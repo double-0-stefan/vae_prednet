@@ -493,12 +493,12 @@ class pc_conv_network(nn.Module):
 					+ torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
 					))
 			else:
-				P = copy.deepcopy(self.Precision[i+1])#.clone().detach()
+				# P = copy.deepcopy(self.Precision[i+1])#.clone().detach()
 				# P.requires_grad_(False)
 				f = 0.5*sum(sum(
-					torch.mm(PE, (P(PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
+					torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
 					))
-				del P
+				# del P
 
 
 		else:
@@ -513,7 +513,7 @@ class pc_conv_network(nn.Module):
 			if i < self.nlayers -1:
 				self.opt_phi[i+1].zero_grad()
 				# this is slooooow. Why needed here?
-				f.backward()
+				f.backward(retain_graph=True)
 				# f.backward(retain_graph=True)
 				self.opt_phi[i+1].step()
 			else:
