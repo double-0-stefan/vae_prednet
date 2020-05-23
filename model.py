@@ -513,7 +513,7 @@ class pc_conv_network(nn.Module):
 			if i < self.nlayers -1:
 				self.opt_phi[i+1].zero_grad()
 				# this is slooooow. Why needed here?
-				f.backward(retain_graph=True)
+				f.backward()
 				# f.backward(retain_graph=True)
 				self.opt_phi[i+1].step()
 				self.phi[i+1].detach()
@@ -522,6 +522,7 @@ class pc_conv_network(nn.Module):
 				self.opt_z_pc.zero_grad()
 				f.backward(retain_graph=True)
 				self.opt_z_pc.step()
+				self.z_pc.detach()
 		# update synaptic parameters
 		else:
 			if self.p['conv_precision']:
