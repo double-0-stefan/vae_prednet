@@ -41,32 +41,13 @@ class sym_conv2D(nn.Module):
 		self.bias = bias
 		self.padding_mode = padding_mode
 
-
-
-		# number of unique weights over channels
-		# indices = [0]
 		w = []
-		# n_uwc = in_channels
 		for m in reversed(range(in_channels)):
 
 			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000
 			a[-1,m] = 1.
 			w.append(nn.Parameter(a))
 			
-
-		# 	n_uwc = sum([m, n_uwc])
-		# 	indices.append(indices[-1]+m)
-		
-		# for i in range(out_channels):
-		# 	for n in range(m, out_channels):
-
-
-		# w = torch.rand(int((self.kernel_size +1)/2), n_uwc)/1000
-
-		# # centre (leading diagonal) large and outside small
-		# w[-1,]
-
-		# print(w)
 		self.weight_values = nn.ParameterList(w)
 
 		self.generate_filter_structure()
@@ -96,40 +77,135 @@ class sym_conv2D(nn.Module):
 
 						filter_weights[j,i,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
 						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
-			# full += mm
+	
+
+	def logdet_block_tridiagonal(self):
+		# def logdet_block_tridiagonal(self, l):
+		'''
+		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
+
+		Still need to crack placement of weights in large precision atrix
+		'''
+		# Covariance is between components of phi
+		# need to determine pattern of placement of conv weights
+		# in order to calculate log determinant
+
+		# print(self.Precision[l].expanded_weight)
+		# check order of input/output
 
 
 
-		# m = -1
-		# mm = -1
-		# full = -1
+		# sorting not working properly
 
 
+		w = self.Precision[l].expanded_weight.permute([2,3,0,1])
+		ws = w.size() # 5 5 64 64
+		v = w.view(-1,w.size(2),w.size(3))
+		vs = v.size() # 25, 64 64
 
-		# for i in range(self.out_channels):
-		# 	m += 1
-		# 	mm = -1
-		# 	for n in range(m, self.out_channels):
-		# 		mm += 1
 
-		# 		# reversed so stuff outside of 'field' gets overwritten
-		# 		for j in reversed(range(int((self.kernel_size +1)/2))):
-		# 			# left/top side -  first so centre 'cross' gets overwritten
-		# 			filter_weights[i,n,j,:] = self.weight_values[j, full +mm]
-		# 			filter_weights[i,n,:,j] = self.weight_values[j, full +mm]
+		# TRY ANOTHER WAY
+		b = torch.zeros([v.size(1),(1+v.size(0))*(v.size(1))])
 
-		# 			filter_weights[n,i,j,:] = self.weight_values[j, full +mm]
-		# 			filter_weights[n,i,:,j] = self.weight_values[j, full +mm]
+		# size of (section of) phi is 25*  64
+		# size of weights is 25*64*64
+		
+		# stuff to be added after centre (ie that is never on leading diag) - zero out centre
+		# fi = torch.ones_like(v[:,:,0])
+		# fi[int((vs[0]-1)/2),:] = 0
+		# fi = fi == 1
 
-		# 			# right/bottom side
-		# 			if j < int((self.kernel_size +1)/2) -1:
-		# 				filter_weights[i,n,-(j+1),:] = self.weight_values[j, full +mm]
-		# 				filter_weights[i,n,:,-(j+1)] = self.weight_values[j, full +mm]
+		# tiled matrix with lots of zeros
+		for j in range(vs[1]):
+			# central - leading diag
+			
 
-		# 				filter_weights[n,i,-(j+1),:] = self.weight_values[j, full +mm]
-		# 				filter_weights[n,i,:,-(j+1)] = self.weight_values[j, full +mm]
-		# 	full += mm
+			# all other weights inputting to output layer j
+			# stuff to be added after centre (ie that is never on leading diag) - zero out centre
+			fi = torch.ones_like(v[:,:,0])
+			fi[int((vs[0]-1)/2),j] = 0
+			fo = fi == 1
+			fc = fi == 0
+			# print(v.size())
+			# 
+			# print(fi.view(-1))
+			vv = v[:,:,j]
+			other_weights = vv[fo]
+			# print(other_weights)
+			# print(vv.size())
+			# print(other_weights.numel())
+			b[j, (j+1):j+1+other_weights.numel()] = other_weights
+			b[j,j] = vv[fc]
 
+		print(b[0,:])
+		print(b[1,:])
+
+		# seems good up to here !! sb 21/5/2020
+
+		# paste this into matrix, length(centres) number of times,
+		# add zeros to make square
+		# take upper triangle, do transpose -> raw materials for block is done!
+
+		block = torch.cat([b, torch.zeros_like(b)],dim=1)
+
+		for i in range(v.size(1)):
+
+			extraL = torch.zeros([v.size(1)*2**i, v.size(1)*2**i])
+			block = torch.cat([
+				block,
+				torch.cat([extraL,block[:,:-v.size(1)*2**i]],dim=1),
+				],dim=0)
+
+			if block.size(0) >= block.size(1):
+				break
+
+		print(block)
+		# get matrices for determinant algorithm
+		A = block[:v.size(0)*v.size(1),:v.size(0)*v.size(1)]
+		A = A.triu()
+		A += A.t()
+
+		B = block[:v.size(0)*v.size(1), v.size(0)*v.size(1):v.size(0)*v.size(1)*2]
+		print(B)
+		
+		C = B.t()
+		print(C)
+		B_inv = torch.inverse(B)
+
+		# lengths
+		m = A.size(0)
+		n = round(self.phi[l].view(self.bs,-1).size(1)/A.size(0))
+
+
+		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)])
+
+		T1 = torch.stack([
+			torch.cat([-A, -C]), 
+			Im_Zm
+			])
+
+		T2 = torch.matrix_power(
+			torch.stack([
+				torch.cat([	-torch.mm([B_inv,A]), -torch.mm([B_inv,C]) ]),
+				Im_Zm
+				]),
+			length*self.dim[l][-1] -2)
+
+		T3 = torch.stack([
+			torch.cat([-torch.mm([B_inv,A]), -B_inv]), 
+			Im_Zm
+			])
+
+		T = torch.chain_matmul([T1,T2,T3])
+
+		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1])
+
+		# need to set up weights to be symmetric around centres
+		B1n = torch.matrix_power(B, n)
+
+		logdetM = (-1)**(n*A.size(0)) + torch.logdet(T11) + torch.logdet(B1n)
+
+		return logdetM
 
 
 
@@ -141,8 +217,6 @@ class sym_conv2D(nn.Module):
 
 		return F.conv2d(x, weight=self.expanded_weight, bias=self.bias, stride=self.stride,
 			padding=self.padding, dilation=self.dilation, groups=self.groups)
-
-
 
 
 
@@ -304,128 +378,6 @@ class pc_conv_network(nn.Module):
 		self.Precision = nn.ModuleList(Precision) 
 
 
-	def logdet_block_tridiagonal(self, l):
-		'''
-		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
-
-		Still need to crack placement of weights in large precision atrix
-		'''
-		# Covariance is between components of phi
-		# need to determine pattern of placement of conv weights
-		# in order to calculate log determinant
-
-		# print(self.Precision[l].expanded_weight)
-		# check order of input/output
-		w = self.Precision[l].expanded_weight.permute([2,3,0,1])
-		ws = w.size() # 5 5 64 64
-		v = w.view(-1,w.size(2),w.size(3))
-		vs = v.size() # 25, 64 64
-
-
-		# TRY ANOTHER WAY
-		b = torch.zeros([v.size(1),(1+v.size(0))*(v.size(1))])
-
-		# size of (section of) phi is 25*  64
-		# size of weights is 25*64*64
-		
-		# stuff to be added after centre (ie that is never on leading diag) - zero out centre
-		# fi = torch.ones_like(v[:,:,0])
-		# fi[int((vs[0]-1)/2),:] = 0
-		# fi = fi == 1
-
-		# tiled matrix with lots of zeros
-		for j in range(vs[1]):
-			# central - leading diag
-			
-
-			# all other weights inputting to output layer j
-			# stuff to be added after centre (ie that is never on leading diag) - zero out centre
-			fi = torch.ones_like(v[:,:,0])
-			fi[int((vs[0]-1)/2),j] = 0
-			fo = fi == 1
-			fc = fi == 0
-			# print(v.size())
-			# 
-			# print(fi.view(-1))
-			vv = v[:,:,j]
-			other_weights = vv[fo]
-			# print(other_weights)
-			# print(vv.size())
-			# print(other_weights.numel())
-			b[j, (j+1):j+1+other_weights.numel()] = other_weights
-			b[j,j] = vv[fc]
-
-		print(b[0,:])
-		print(b[1,:])
-
-		# seems good up to here !! sb 21/5/2020
-
-		# paste this into matrix, length(centres) number of times,
-		# add zeros to make square
-		# take upper triangle, do transpose -> raw materials for block is done!
-
-		block = torch.cat([b, torch.zeros_like(b)],dim=1)
-
-		for i in range(v.size(1)):
-
-			extraL = torch.zeros([v.size(1)*2**i, v.size(1)*2**i])
-			block = torch.cat([
-				block,
-				torch.cat([extraL,block[:,:-v.size(1)*2**i]],dim=1),
-				],dim=0)
-
-			if block.size(0) >= block.size(1):
-				break
-
-		print(block)
-		# get matrices for determinant algorithm
-		A = block[:v.size(0)*v.size(1),:v.size(0)*v.size(1)]
-		A = A.triu()
-		A += A.t()
-
-		B = block[:v.size(0)*v.size(1), v.size(0)*v.size(1):v.size(0)*v.size(1)*2]
-		print(B)
-		
-		C = B.t()
-		print(C)
-		B_inv = torch.inverse(B)
-
-		# lengths
-		m = A.size(0)
-		n = round(self.phi[l].view(self.bs,-1).size(1)/A.size(0))
-
-
-		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)])
-
-		T1 = torch.stack([
-			torch.cat([-A, -C]), 
-			Im_Zm
-			])
-
-		T2 = torch.matrix_power(
-			torch.stack([
-				torch.cat([	-torch.mm([B_inv,A]), -torch.mm([B_inv,C]) ]),
-				Im_Zm
-				]),
-			length*self.dim[l][-1] -2)
-
-		T3 = torch.stack([
-			torch.cat([-torch.mm([B_inv,A]), -B_inv]), 
-			Im_Zm
-			])
-
-		T = torch.chain_matmul([T1,T2,T3])
-
-		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1])
-
-		# need to set up weights to be symmetric around centres
-		B1n = torch.matrix_power(B, n)
-
-		logdetM = (-1)**(n*A.size(0)) + torch.logdet(T11) + torch.logdet(B1n)
-
-		return logdetM
-
-
 	def plot(self, i, input_image, plot_vars):
 	
 		z, pred = plot_vars
@@ -532,7 +484,7 @@ class pc_conv_network(nn.Module):
 
 			if learn == 1:
 				f = 0.5*sum(sum(
-					- self.logdet_block_tridiagonal(i) # -ve here because more precise = good (nb will need to balance over layers somehow)
+					- self.Precision[i+1].logdet_block_tridiagonal() # -ve here because more precise = good (nb will need to balance over layers somehow)
 					+ torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
 					))
 			else:
@@ -553,6 +505,7 @@ class pc_conv_network(nn.Module):
 		if learn == 0:
 			if i < self.nlayers -1:
 				self.opt_phi[i+1].zero_grad()
+				# this is slooooow. Why needed here?
 				f.backward(retain_graph=True)
 				self.opt_phi[i+1].step()
 			else:
