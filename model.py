@@ -548,7 +548,8 @@ class pc_conv_network(nn.Module):
 				loss = 0.
 				self.phi.requires_grad_(False)
 				self.z_pc.requires_grad_(False)
-				self.Precision.requires_grad_(False)
+				if self.p['conv_precision']:
+					self.Precision.requires_grad_(False)
 				self.lin_down.requires_grad_(False)
 				self.conv_trans.requires_grad_(False)
 
