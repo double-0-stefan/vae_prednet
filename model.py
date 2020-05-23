@@ -52,6 +52,9 @@ class sym_conv2D(nn.Module):
 
 		self.generate_filter_structure()
 
+		self.cuda()
+		
+
 	def generate_filter_structure(self):
 
 		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
@@ -78,6 +81,8 @@ class sym_conv2D(nn.Module):
 						filter_weights[j,i,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
 						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
 	
+		self.expanded_weight = filter_weights.cuda()
+
 
 	def logdet_block_tridiagonal(self):
 		# def logdet_block_tridiagonal(self, l):
@@ -209,9 +214,7 @@ class sym_conv2D(nn.Module):
 
 
 
-		self.expanded_weight = filter_weights.cuda()
-
-		self.cuda()
+		
 
 	def forward(self, x):
 
