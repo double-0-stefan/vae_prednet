@@ -516,6 +516,7 @@ class pc_conv_network(nn.Module):
 				f.backward(retain_graph=True)
 				# f.backward(retain_graph=True)
 				self.opt_phi[i+1].step()
+				self.phi[i+1].detach()
 			else:
 				f += kl_loss
 				self.opt_z_pc.zero_grad()
