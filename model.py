@@ -555,13 +555,13 @@ class pc_conv_network(nn.Module):
 					if i < 9*self.iter/10:
 						learn = 0
 						self.phi[l+1].requires_grad_(True)
-						if l = self.nlayers -1:
+						if l == self.nlayers -1:
 							self.z_pc.requires_grad_(True)						
 					else:
 						learn = 1
 						self.Precision[l+1].requires_grad_(True)
 						self.conv_trans[l+1].requires_grad_(True)
-						if l = self.nlayers -1:
+						if l == self.nlayers -1:
 							self.lin_down.requires_grad_(True)
 
 					loss += self.loss(l, learn)
