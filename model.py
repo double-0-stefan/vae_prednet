@@ -554,7 +554,7 @@ class pc_conv_network(nn.Module):
 				self.lin_down.requires_grad_(False)
 				self.conv_trans.requires_grad_(False)
 
-				
+				loss = 0.
 				for l in range(-1, self.nlayers):
 					if i < 9*self.iter/10:
 						learn = 0
