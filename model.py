@@ -23,6 +23,7 @@ from torch.optim import Adam
 from torch.optim import SGD
 from gpuinfo import GPUInfo
 import torch.nn.functional as F
+import copy
 # import torch_xla
 # import torch_xla.core.xla_model as xm
 
