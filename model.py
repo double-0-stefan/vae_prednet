@@ -437,9 +437,9 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i, learn=0):
 
-		loss = 0.
-		del f
-		del kl_loss
+		# loss = 0.
+		# del f
+		# del kl_loss
 
 		# if top layer - latents:
 		if i == self.nlayers -1:
