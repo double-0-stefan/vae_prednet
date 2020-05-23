@@ -561,7 +561,8 @@ class pc_conv_network(nn.Module):
 					else:
 						learn = 1
 						if l < self.nlayers -1:
-							self.Precision[l+1].requires_grad_(True)
+							if self.p['conv_precision']:
+								self.Precision[l+1].requires_grad_(True)
 							self.conv_trans[l+1].requires_grad_(True)
 						if l == self.nlayers -1:
 							self.lin_down.requires_grad_(True)
