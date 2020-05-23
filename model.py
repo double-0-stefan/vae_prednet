@@ -516,13 +516,13 @@ class pc_conv_network(nn.Module):
 				f.backward()
 				# f.backward(retain_graph=True)
 				self.opt_phi[i+1].step()
-				self.phi[i+1].detach()
+				# self.phi[i+1].detach()
 			else:
 				f += kl_loss
 				self.opt_z_pc.zero_grad()
 				f.backward(retain_graph=True)
 				self.opt_z_pc.step()
-				self.z_pc.detach()
+				# self.z_pc.detach()
 		# update synaptic parameters
 		else:
 			if self.p['conv_precision']:
@@ -544,6 +544,8 @@ class pc_conv_network(nn.Module):
 			if self.p['conv_precision']:
 				self.opt_P[i+1].step()
 		return f
+
+		del PE
 
 		
 	def inference(self):
