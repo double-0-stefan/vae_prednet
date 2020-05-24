@@ -64,7 +64,7 @@ class sym_conv2D(nn.Module):
 		indices = torch.zeros_like(filter_weights)
 
 		for i in range(self.out_channels):
-				indices[i,i,int((self.kernel_size +1)/2)-1,int((self.kernel_size +1)/2)-1] = 1 
+			indices[i,i,int((self.kernel_size +1)/2)-1,int((self.kernel_size +1)/2)-1] = 1 
 			for j in range(i, self.out_channels):
 
 				# reversed so stuff outside of 'field' gets overwritten
