@@ -111,7 +111,7 @@ class sym_conv2D(nn.Module):
 		# as each is independant
 		# but - can fill top tri plus reflect as symmetrical
 		middle = int((self.kernel_size +1)/2)-1
-		# row = torch.tensor([1])
+		row = torch.tensor([1])
 		# matrix = torch.tensor([1])
 		for i in range(len(self.weight_values)):
 	
@@ -119,13 +119,13 @@ class sym_conv2D(nn.Module):
 			for k in range(len(self.weight_values)):
 				if k < len(self.weight_values) - len(self.weight_values[i]):
 					if i == 0 and k == 0:
-						row = self.weight_values[k][-1,i].resize(-1)
+						row[0] = self.weight_values[k][-1,i]#.resize(-1)
 						# row.unsqueeze(-1)
 					else:
 						row = torch.cat([row,self.weight_values[k][-1,i]])
 				else:
 					if i == 0 and k == 0:
-						row = self.weight_values[i][-1,0].resize(-1)
+						row[0] = self.weight_values[i][-1,0]#.resize(-1)
 						# row.unsqueeze(-1)
 					else:
 						row = torch.cat([row,self.weight_values[i][-1,0]])
