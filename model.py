@@ -111,8 +111,8 @@ class sym_conv2D(nn.Module):
 		# as each is independant
 		# but - can fill top tri plus reflect as symmetrical
 		middle = int((self.kernel_size +1)/2)-1
-		row = torch.tensor([])
-		matrix = torch.tensor([])
+		row = torch.tensor([1])
+		matrix = torch.tensor([1])
 		for i in range(len(self.weight_values)):
 	
 			# centres
