@@ -52,7 +52,7 @@ class sym_conv2D(nn.Module):
 		self.weight_values = nn.ParameterList(w)
 
 		self.generate_filter_structure()
-
+		self.generate_cov_matrix()
 		self.cuda()
 		
 
@@ -91,7 +91,7 @@ class sym_conv2D(nn.Module):
 		self.indices = indices
 
 
-	def generate cov_matrix(self):
+	def generate_cov_matrix(self):
 		# def logdet_block_tridiagonal(self, l):
 		'''
 		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
