@@ -61,8 +61,10 @@ class sym_conv2D(nn.Module):
 		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
 			self.kernel_size, self.kernel_size)
 
-		for i in range(self.out_channels):
+		indices = torch.zeros_like(filter_weights)
 
+		for i in range(self.out_channels):
+				indices[i,i,int((self.kernel_size +1)/2)-1,int((self.kernel_size +1)/2)-1] = 1 
 			for j in range(i, self.out_channels):
 
 				# reversed so stuff outside of 'field' gets overwritten
@@ -81,11 +83,15 @@ class sym_conv2D(nn.Module):
 
 						filter_weights[j,i,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
 						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
+
 	
-		self.expanded_weight = filter_weights.cuda()
+		self.filter_weights = filter_weights.cuda()
+
+		indices = indices == 1
+		self.indices = indices
 
 
-	def logdet_block_tridiagonal(self):
+	def generate cov_matrix(self):
 		# def logdet_block_tridiagonal(self, l):
 		'''
 		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
@@ -100,8 +106,42 @@ class sym_conv2D(nn.Module):
 		# check order of input/output
 
 
+		# *******************************************
+		# centres should NOT all be on one line 
+		# as each is independant
+		# but - can fill top tri plus reflect as symmetrical
+		middle = int((self.kernel_size +1)/2)-1
+		row = torch.tensor([])
+		matrix = torch.tensor([])
+		for i in range(len(self.weight_values)):
+	
+			# centres
+			for k in range(len(self.weight_values)):
+				if k < len(self.weight_values) - len(self.weight_values[i]):
+					row = torch.cat(row,self.weight_values[k][-1,i])
+				else:
+					row = torch.cat(row,self.weight_values[i][-1,0])
 
-		# sorting not working properly
+			# add other elements of central and semi-central filters:
+			for k in range(len(self.weight_values)):
+				if k < len(self.weight_values) - len(self.weight_values[i]):
+					# get from rows above:
+					for j in range(1, middle):
+						row = torch.cat(row,
+							self.weight_values[k][-(1+j),i].view(1,-1).expand(8*(j),-1)) # 
+				else:
+					for j in range(1, middle):
+						row = torch.cat(row,
+							self.weight_values[i][-(1+j),k].view(1,-1).expand(8*(j),-1)) # 
+			
+			# need zeros in: centres bit, start of other elements bit (to be replaced with stuff from prev lines)
+			matrix.append(row)
+
+		matrix = torch.stack(matrix)
+
+		print(matrix)
+
+
 
 
 		w = self.Precision[l].expanded_weight.permute([2,3,0,1])
@@ -219,7 +259,7 @@ class sym_conv2D(nn.Module):
 
 	def forward(self, x):
 
-		return F.conv2d(x, weight=self.expanded_weight, bias=self.bias, stride=self.stride,
+		return F.conv2d(x, weight=self.filter_weights, bias=self.bias, stride=self.stride,
 			padding=self.padding, dilation=self.dilation, groups=self.groups)
 
 
@@ -513,7 +553,7 @@ class pc_conv_network(nn.Module):
 			if i < self.nlayers -1:
 				self.opt_phi[i+1].zero_grad()
 				# this is slooooow. Why needed here?
-				f.backward()
+				f.backward(retain_graph=True)
 				# f.backward(retain_graph=True)
 				self.opt_phi[i+1].step()
 				# self.phi[i+1].detach()
@@ -545,7 +585,7 @@ class pc_conv_network(nn.Module):
 				self.opt_P[i+1].step()
 		return f
 
-		del PE
+		# del PE
 
 		
 	def inference(self):
