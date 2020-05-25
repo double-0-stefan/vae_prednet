@@ -119,14 +119,15 @@ class sym_conv2D(nn.Module):
 			for k in range(len(self.weight_values)):
 				if k < len(self.weight_values) - len(self.weight_values[i]):
 					if i == 0 and k == 0:
-						row = [self.weight_values[k][-1,i]]#.resize(-1)
+						row = self.weight_values[k][-1,i]#.resize(-1)
 
 						row.unsqueeze(-1)
+						row.unsqueeze(0)
 					else:
 						row = torch.cat([row,self.weight_values[k][-1,i]])
 				else:
 					if i == 0 and k == 0:
-						row = [self.weight_values[i][-1,0]]#.resize(-1)
+						row = self.weight_values[i][-1,0]#.resize(-1)
 						row.unsqueeze(-1)
 						# row.unsqueeze(-1)
 					else:
