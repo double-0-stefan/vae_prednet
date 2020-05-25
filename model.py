@@ -120,7 +120,7 @@ class sym_conv2D(nn.Module):
 				if k < len(self.weight_values) - len(self.weight_values[i]):
 					if i == 0 and k == 0:
 						row = self.weight_values[k][-1,i]#.resize(-1)
-						row.view(1)
+						# row.view(1)
 						# row.unsqueeze(-1)
 						# row.unsqueeze(0)
 						# row.unsqueeze(1)
@@ -129,7 +129,7 @@ class sym_conv2D(nn.Module):
 				else:
 					if i == 0 and k == 0:
 						row = self.weight_values[i][-1,0]#.resize(-1)
-						row.view(1)
+						# row.view(1)
 						# row.unsqueeze(-1)
 					else:
 						row = torch.cat([row,self.weight_values[i][-1,0]])
@@ -138,7 +138,7 @@ class sym_conv2D(nn.Module):
 			# add other elements of central and semi-central filters:
 			for k in range(len(self.weight_values)):
 				print(k)
-				print(row)
+				print(row.size())
 				print(i)
 
 				if k < len(self.weight_values) - len(self.weight_values[i]):
