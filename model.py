@@ -123,12 +123,15 @@ class sym_conv2D(nn.Module):
 
 						row.unsqueeze(-1)
 						row.unsqueeze(0)
+						row.unsqueeze(1)
 					else:
 						row = torch.cat([row,self.weight_values[k][-1,i]])
 				else:
 					if i == 0 and k == 0:
 						row = self.weight_values[i][-1,0]#.resize(-1)
 						row.unsqueeze(-1)
+						row.unsqueeze(0)
+						row.unsqueeze(1)
 						# row.unsqueeze(-1)
 					else:
 						row = torch.cat([row,self.weight_values[i][-1,0]])
