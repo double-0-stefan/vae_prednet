@@ -134,7 +134,7 @@ class sym_conv2D(nn.Module):
 			# add other elements of central and semi-central filters:
 			for k in range(len(self.weight_values)):
 				print(k)
-				
+				print(row)
 				print(i)
 
 				if k < len(self.weight_values) - len(self.weight_values[i]):
