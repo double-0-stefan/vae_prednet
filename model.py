@@ -136,7 +136,7 @@ class sym_conv2D(nn.Module):
 				print(k)
 				print(-(1+j))
 				print(i)
-				print(8*j)
+
 				if k < len(self.weight_values) - len(self.weight_values[i]):
 					# get from rows above:
 					for j in range(1, middle):
@@ -145,6 +145,7 @@ class sym_conv2D(nn.Module):
 				else:
 					for j in range(1, middle):
 						print(j)
+						print(8*j)
 						row = torch.cat([row,
 							self.weight_values[i][-(1+j),k].view(1,-1).expand(8*j,-1)]) # 
 			
