@@ -134,7 +134,7 @@ class sym_conv2D(nn.Module):
 					else:
 						row = torch.cat([row,self.weight_values[i][-1,0]])
 			# print(i)
-			# print(row.size())
+			print(row.size())
 			# add other elements of central and semi-central filters:
 			for k in range(len(self.weight_values)):
 				if k < len(self.weight_values) - len(self.weight_values[i]):
