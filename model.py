@@ -129,19 +129,19 @@ class sym_conv2D(nn.Module):
 						# row.unsqueeze(-1)
 					else:
 						row = torch.cat([row,self.weight_values[i][-1,0]])
-			print(i)
-			print(row.size())
+			# print(i)
+			# print(row.size())
 			# add other elements of central and semi-central filters:
 			for k in range(len(self.weight_values)):
 				if k < len(self.weight_values) - len(self.weight_values[i]):
 					# get from rows above:
 					for j in range(1, middle):
 						row = torch.cat([row,
-							self.weight_values[k][-(1+j),i].view(1,-1).expand(8*(j),-1)]) # 
+							self.weight_values[k][-(1+j),i].view(1,-1).expand(int(8*(j)),-1)]) # 
 				else:
 					for j in range(1, middle):
 						row = torch.cat([row,
-							self.weight_values[i][-(1+j),k].view(1,-1).expand(8*(j),-1)]) # 
+							self.weight_values[i][-(1+j),k].view(1,-1).expand(int(8*(j)),-1)]) # 
 			
 			# need zeros in: centres bit, start of other elements bit (to be replaced with stuff from prev lines)
 			matrix.append(row)
