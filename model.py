@@ -113,8 +113,9 @@ class sym_conv2D(nn.Module):
 		middle = int((self.kernel_size +1)/2)-1
 		row = torch.rand(1,1)
 		matrix = []
+		print(middle)
 
-		print(len(self.weight_values))
+		print(len(self.weight_values)) # firt one is only length one!
 
 		for i in range(len(self.weight_values)):
 	
