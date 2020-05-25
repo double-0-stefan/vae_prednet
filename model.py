@@ -113,6 +113,9 @@ class sym_conv2D(nn.Module):
 		middle = int((self.kernel_size +1)/2)-1
 		row = torch.rand(1,1)
 		matrix = []
+
+		print(len(self.weight_values))
+
 		for i in range(len(self.weight_values)):
 	
 			# centres
