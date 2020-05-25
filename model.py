@@ -110,7 +110,7 @@ class sym_conv2D(nn.Module):
 		# centres should NOT all be on one line 
 		# as each is independant
 		# but - can fill top tri plus reflect as symmetrical
-		middle = int((self.kernel_size +1)/2)-1
+		middle = int((self.kernel_size +1)/2)
 		row = torch.rand(1,1)
 		matrix = []
 		print(middle)
