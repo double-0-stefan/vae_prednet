@@ -42,6 +42,13 @@ class sym_conv2D(nn.Module):
 		self.bias = bias
 		self.padding_mode = padding_mode
 
+		
+		self.generate_weight_values()
+		self.generate_filter_structure()
+		self.generate_cov_matrix()
+		self.cuda()
+
+	def generate_weight_values(self):
 		w = []
 		for m in reversed(range(in_channels)):
 
@@ -50,10 +57,6 @@ class sym_conv2D(nn.Module):
 			w.append(nn.Parameter(a))
 			
 		self.weight_values = nn.ParameterList(w)
-
-		self.generate_filter_structure()
-		self.generate_cov_matrix()
-		self.cuda()
 		
 
 	def generate_filter_structure(self):
@@ -113,10 +116,6 @@ class sym_conv2D(nn.Module):
 		middle = int((self.kernel_size +1)/2)
 		row = torch.rand(1,1)
 		matrix = []
-		print(middle)
-
-		print(len(self.weight_values)) # firt one is only length one!
-
 		for i in range(len(self.weight_values)):
 	
 			# centres
@@ -124,21 +123,16 @@ class sym_conv2D(nn.Module):
 				if k < len(self.weight_values) - len(self.weight_values[i]):
 					if i == 0 and k == 0:
 						row[0,0] = self.weight_values[k][-1,i]#.resize(-1)
-						# row.view(1)
-						# row.unsqueeze(-1)
-						# row.unsqueeze(0)
-						# row.unsqueeze(1)
+
 					else:
 						row = torch.cat([row,self.weight_values[k][-1,i]])
 				else:
 					if i == 0 and k == 0:
 						row[0,0] = self.weight_values[i][-1,0]#.resize(-1)
-						# row.view(1)
-						# row.unsqueeze(-1)
+
 					else:
 						row = torch.cat([row,self.weight_values[i][-1,0]])
-			# print(i)
-			print(row.size())
+
 			# add other elements of central and semi-central filters:
 			for k in range(len(self.weight_values)):
 				if k < len(self.weight_values) - len(self.weight_values[i]):
@@ -167,6 +161,10 @@ class sym_conv2D(nn.Module):
 
 		
 
+
+		# the above covers one pixel over channels - need to repeat for number of pixels in image
+
+		# old version:
 
 
 
