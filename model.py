@@ -112,7 +112,7 @@ class sym_conv2D(nn.Module):
 		# but - can fill top tri plus reflect as symmetrical
 		middle = int((self.kernel_size +1)/2)-1
 		row = torch.rand(1,1)
-		# matrix = torch.tensor([1,1])
+		matrix = []
 		for i in range(len(self.weight_values)):
 	
 			# centres
@@ -158,10 +158,10 @@ class sym_conv2D(nn.Module):
 			
 			# need zeros in: centres bit, start of other elements bit (to be replaced with stuff from prev lines)
 			matrix.append(row)
-
+		print(matrix)
 		matrix = torch.stack(matrix)
 
-		print(matrix)
+		
 
 
 
