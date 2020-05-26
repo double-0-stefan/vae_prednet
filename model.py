@@ -42,15 +42,14 @@ class sym_conv2D(nn.Module):
 		self.bias = bias
 		self.padding_mode = padding_mode
 
-		
 		self.generate_weight_values()
 		self.generate_filter_structure()
-		self.generate_cov_matrix()
+		# self.generate_cov_matrix()
 		self.cuda()
 
 	def generate_weight_values(self):
 		w = []
-		for m in reversed(range(in_channels)):
+		for m in reversed(range(self.in_channels)):
 
 			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000
 			a[-1,m] = 1.0
@@ -116,6 +115,19 @@ class sym_conv2D(nn.Module):
 		middle = int((self.kernel_size +1)/2)
 		row = torch.rand(1,1)
 		matrix = []
+
+		filter_matrix = torch.tensor([self.out_channels, self.in_channels *self.kernel_size**2])
+
+		filter_matrix_L_shape = torch.tensor([
+			self.in_channels *self.kernel_size**2,
+			self.in_channels *self.kernel_size**2])
+
+		for i in range(self.out_channels):
+			filter_matrix[i] = self.weight_values[i][-1,i]
+
+
+
+
 		for i in range(len(self.weight_values)):
 	
 			# centres
@@ -125,13 +137,23 @@ class sym_conv2D(nn.Module):
 						row[0,0] = self.weight_values[k][-1,i]#.resize(-1)
 
 					else:
-						row = torch.cat([row,self.weight_values[k][-1,i]])
+						row = torch.cat([row,self.weight_values[k][-1,i]]) #switch order?
 				else:
 					if i == 0 and k == 0:
 						row[0,0] = self.weight_values[i][-1,0]#.resize(-1)
 
 					else:
 						row = torch.cat([row,self.weight_values[i][-1,0]])
+
+			# Repeating the filter over **pixels**:
+			# tile matrix with (n +1)/2 vectorised rows
+			# repeated elements start off with the earliest (in the order of the row)
+			# but by nth column/row have repeats of everything except central
+			# works absolutely fine for filter 'square rings' as these are all even numbers of weights
+			# put 'inner' rings first as these will have less extensive edge effects anyway
+			# hence 4*j rather than 8*j
+
+			# but in gereral it will be matrix of filters repeated over pixels
 
 			# add other elements of central and semi-central filters:
 			for k in range(len(self.weight_values)):
@@ -140,27 +162,37 @@ class sym_conv2D(nn.Module):
 					for j in range(1, middle):
 						if row.size() ==  torch.Size([]):
 							row = torch.stack([row,
-								self.weight_values[k][-(1+j),i].view(1,-1).expand(8*j,-1)]) # 
+								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
 						else:
 							row = torch.cat([row,
-								self.weight_values[k][-(1+j),i].view(1,-1).expand(8*j,-1)]) # 
+								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
 				else:
 					for j in range(1, middle):
 						if row.size() ==  torch.Size([]):
 							row = torch.stack([row,
-								self.weight_values[i][-(1+j),k].view(1,-1).expand(8*j,-1)]) # 
+								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
 			
 						else:
 							row = torch.cat([row,
-								self.weight_values[i][-(1+j),k].view(1,-1).expand(8*j,-1)]) # 
+								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
 			
 			# need zeros in: centres bit, start of other elements bit (to be replaced with stuff from prev lines)
 			matrix.append(row)
 		print(matrix)
 		matrix = torch.stack(matrix)
 
-		
 
+
+				
+		# xxxx
+		# xxxxx
+		# xxxxx
+		# xxxxxxx
+		#  xx
+#          x 
+		# can fairly easily adjust for corners/edges
+		# only explicitly do [left/up] ie half of filter in row - will help take care of eges, others et added 
+		# in by doing transpose. Or half +1??
 
 		# the above covers one pixel over channels - need to repeat for number of pixels in image
 
