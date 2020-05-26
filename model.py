@@ -122,6 +122,9 @@ class sym_conv2D(nn.Module):
 			self.in_channels *self.kernel_size**2,
 			self.in_channels *self.kernel_size**2])
 
+		centre_block = torch.tensor([self.out_channels, self.out_channels])
+		rhs 	     = torch.tensor([self.out_channels, 4*self.out_channels*(middle-1)])
+
 		for i in range(self.out_channels):
 			for j in range(self.out_channels):
 				if j < len(self.weight_values) - len(self.weight_values[i]):
