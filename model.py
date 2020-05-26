@@ -44,7 +44,7 @@ class sym_conv2D(nn.Module):
 
 		self.generate_weight_values()
 		self.generate_filter_structure()
-		# self.generate_cov_matrix()
+		self.generate_cov_matrix()
 		self.cuda()
 
 	def generate_weight_values(self):
