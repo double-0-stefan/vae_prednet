@@ -133,11 +133,9 @@ class sym_conv2D(nn.Module):
 			for k in range(1, middle):
 				for j in range(self.out_channels):
 					if j < len(self.weight_values) - len(self.weight_values[i]):
-						rhs[i,4*k*self.out_channels + 4*j : 4*k*self.out_channels + 4*j +3] 
-						= self.weight_values[j][-(1+k),i]
+						rhs[i,4*k*self.out_channels + 4*j : 4*k*self.out_channels + 4*j +3] = self.weight_values[j][-(1+k),i]
 					else:
-						rhs[i,4*k*self.out_channels + 4*j : 4*k*self.out_channels + 4*j +3] 
-						= self.weight_values[i][-(1+k),j]
+						rhs[i,4*k*self.out_channels + 4*j : 4*k*self.out_channels + 4*j +3] = self.weight_values[i][-(1+k),j]
 				
 		lhs = reversed(rhs)
 		print(centre_block)
