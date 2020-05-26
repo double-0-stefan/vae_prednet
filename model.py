@@ -123,63 +123,107 @@ class sym_conv2D(nn.Module):
 			self.in_channels *self.kernel_size**2])
 
 		for i in range(self.out_channels):
-			filter_matrix[i] = self.weight_values[i][-1,i]
+			for j in range(self.out_channels):
+					centre_block[i,j] = self.weight_values[j][-1,i]	
+				else:
+					centre_block[i,j] = self.weight_values[i][-1,j]
+					
+
+			for k in range(1, middle):
+				for j in range(self.out_channels):
+					if j < len(self.weight_values) - len(self.weight_values[i]):
+						rhs[i,4*k*self.out_channels + 4*j : 4*k*self.out_channels + 4*j +3] 
+						= self.weight_values[j][-(1+k),i]
+					else:
+						rhs[i,4*k*self.out_channels + 4*j : 4*k*self.out_channels + 4*j +3] 
+						= self.weight_values[i][-(1+k),j]
+				
+		lhs = reversed(rhs)
+		print(centre_block)
+		print(rhs)
+
+				
+
+# 			for k in range(len(self.weight_values)):
+# 				if k < len(self.weight_values) - len(self.weight_values[i]):
+# 					# get from rows above:
+# 					for j in range(1, middle):
+# 						if row.size() ==  torch.Size([]):
+# 							row = torch.stack([row,
+# 								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
+# 						else:
+# 							row = torch.cat([row,
+# 								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
+# 				else:
+# 					for j in range(1, middle):
+# 						if row.size() ==  torch.Size([]):
+# 							row = torch.stack([row,
+# 								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
+			
+# 						else:
+# 							row = torch.cat([row,
+# 								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
+						
+# 				filter_matrix[i,i] = self.weight_values[i][-1,i]
+
+# #  new idea: centre block in middle, symetric half an half of rest of filter around
+# # will actually give correct matrix!
+# # first few blocks lose bits on lhs, last few on rhs
 
 
 
-
-		for i in range(len(self.weight_values)):
+# 		for i in range(len(self.weight_values)):
 	
-			# centres
-			for k in range(len(self.weight_values)):
-				if k < len(self.weight_values) - len(self.weight_values[i]):
-					if i == 0 and k == 0:
-						row[0,0] = self.weight_values[k][-1,i]#.resize(-1)
+# 			# centres
+# 			for k in range(len(self.weight_values)):
+# 				if k < len(self.weight_values) - len(self.weight_values[i]):
+# 					if i == 0 and k == 0:
+# 						row[0,0] = self.weight_values[k][-1,i]#.resize(-1)
 
-					else:
-						row = torch.cat([row,self.weight_values[k][-1,i]]) #switch order?
-				else:
-					if i == 0 and k == 0:
-						row[0,0] = self.weight_values[i][-1,0]#.resize(-1)
+# 					else:
+# 						row = torch.cat([row,self.weight_values[k][-1,i]]) #switch order?
+# 				else:
+# 					if i == 0 and k == 0:
+# 						row[0,0] = self.weight_values[i][-1,0]#.resize(-1)
 
-					else:
-						row = torch.cat([row,self.weight_values[i][-1,0]])
+# 					else:
+# 						row = torch.cat([row,self.weight_values[i][-1,0]])
 
-			# Repeating the filter over **pixels**:
-			# tile matrix with (n +1)/2 vectorised rows
-			# repeated elements start off with the earliest (in the order of the row)
-			# but by nth column/row have repeats of everything except central
-			# works absolutely fine for filter 'square rings' as these are all even numbers of weights
-			# put 'inner' rings first as these will have less extensive edge effects anyway
-			# hence 4*j rather than 8*j
+# 			# Repeating the filter over **pixels**:
+# 			# tile matrix with (n +1)/2 vectorised rows
+# 			# repeated elements start off with the earliest (in the order of the row)
+# 			# but by nth column/row have repeats of everything except central
+# 			# works absolutely fine for filter 'square rings' as these are all even numbers of weights
+# 			# put 'inner' rings first as these will have less extensive edge effects anyway
+# 			# hence 4*j rather than 8*j
 
-			# but in gereral it will be matrix of filters repeated over pixels
+# 			# but in gereral it will be matrix of filters repeated over pixels
 
-			# add other elements of central and semi-central filters:
-			for k in range(len(self.weight_values)):
-				if k < len(self.weight_values) - len(self.weight_values[i]):
-					# get from rows above:
-					for j in range(1, middle):
-						if row.size() ==  torch.Size([]):
-							row = torch.stack([row,
-								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
-						else:
-							row = torch.cat([row,
-								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
-				else:
-					for j in range(1, middle):
-						if row.size() ==  torch.Size([]):
-							row = torch.stack([row,
-								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
+# 			# add other elements of central and semi-central filters:
+# 			for k in range(len(self.weight_values)):
+# 				if k < len(self.weight_values) - len(self.weight_values[i]):
+# 					# get from rows above:
+# 					for j in range(1, middle):
+# 						if row.size() ==  torch.Size([]):
+# 							row = torch.stack([row,
+# 								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
+# 						else:
+# 							row = torch.cat([row,
+# 								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
+# 				else:
+# 					for j in range(1, middle):
+# 						if row.size() ==  torch.Size([]):
+# 							row = torch.stack([row,
+# 								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
 			
-						else:
-							row = torch.cat([row,
-								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
+# 						else:
+# 							row = torch.cat([row,
+# 								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
 			
-			# need zeros in: centres bit, start of other elements bit (to be replaced with stuff from prev lines)
-			matrix.append(row)
-		print(matrix)
-		matrix = torch.stack(matrix)
+# 			# need zeros in: centres bit, start of other elements bit (to be replaced with stuff from prev lines)
+# 			matrix.append(row)
+# 		print(matrix)
+# 		matrix = torch.stack(matrix)
 
 
 
