@@ -134,7 +134,7 @@ class sym_conv2D(nn.Module):
 
 		
 		print(temp)
-		temp += temp.t(0,1)
+		temp += torch.transpose(temp, 0,1)
 		print(temp)
 
 		rhs = []
