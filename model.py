@@ -244,7 +244,7 @@ class sym_conv2D(nn.Module):
 
 		# old version:
 
-
+	def determinant(self):
 
 		w = self.Precision[l].expanded_weight.permute([2,3,0,1])
 		ws = w.size() # 5 5 64 64
