@@ -131,8 +131,11 @@ class sym_conv2D(nn.Module):
 			for j in range(self.weight_values[i].size(1)):
 				for k in range(middle -1):
 					temp[j,i,k] = self.weight_values[i][k,j]
+		print(temp)
 
-		temp = torch.flip(temp,1)
+		temp = torch.flip(temp,[1,2])
+		print(temp)
+
 		for k in range(temp.size(2)):
 			temp[:,:,k] += torch.transpose(torch.triu(temp[:,:,k],1), 0,1)
 
@@ -159,7 +162,7 @@ class sym_conv2D(nn.Module):
 					rhs[i, kount+1 : kount+ 4*k ] = temp[j, i, k]
 					kount += kount+ 4*k 
 
-					
+
 
 				# jj = -1 # dummy index for j
 				# for j in range(self.out_channels):
