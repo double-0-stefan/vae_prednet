@@ -145,12 +145,51 @@ class sym_conv2D(nn.Module):
 					# kount += 1
 					rhs[i, kount+1 : kount+1+ 4*k ] = temp[j, i, k-1]
 					kount += 4*k +1
-
+		# rotate 180 degrees to obtain lhs
 		lhs = torch.rot90(rhs, k=-2, dims=[0,1])
+
 		print(centre_block.size())
 		print(centre_block)
 		print(rhs.size())
 		print(rhs)
+
+
+		# Make (square) pre-cov matrix from which A,B,C will be taken #
+		length = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) # twice the size of whole thing minus size centre
+		height = centre_block.size(1) + 2*rhs.size(1)
+
+		pre_cov = torch.zeros(length, height)
+
+		A_length = centre_block.size(1) + rhs.size(1) 
+
+		# A = torch.zeros(A_length, A_length)
+		# B = torch.zeros_like(A)
+		# C = torch.zeros_like(A)
+
+		for i in range(int(length/centre_block.size(0))): # ie number of tilings
+			start_centre = i*height
+			end_centre = i*height +height-1
+			pre_cov[start_centre:end_centre, start_centre:end_centre] = centre_block
+
+			#RHS
+			if i < int(length/centre_block.size(0)) -1
+				if end_centre +rhs.size(1)  < length:
+					pre_cov[end_centre+1 : end_centre +rhs.size(1), start_centre:end_centre] = rhs
+				else:
+					pre_cov[end_centre+1 : end_centre+end_rhs, start_centre:end_centre] = rhs[:-end_centre]
+
+			# LHS
+			if i > 0:
+				if (start_centre -1) - rhs.size(0) > 0:
+					pre_cov[start_centre-rhs.size(0):start_centre] = lhs
+				else:
+					pre_cov[:start_centre, start_centre:end_centre] = lhs[-start_centre:]
+
+		print(pre_cov)
+
+
+
+
 
 				
 
