@@ -130,7 +130,7 @@ class sym_conv2D(nn.Module):
 		for i in range(self.out_channels):
 			for j in range(self.weight_values[i].size(1)):
 				for k in range(middle -1):
-					temp[j,i,k] = self.weight_values[i][k,j]
+					temp[j,-(i+1),k] = self.weight_values[i][k,j]
 
 		print(temp.size())
 		print(temp[:,:,0])
