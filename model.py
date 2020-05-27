@@ -143,8 +143,8 @@ class sym_conv2D(nn.Module):
 				for j in range(self.out_channels):
 
 					# kount += 1
-					rhs[i, kount+1 : kount+1+ 4*k ] = temp[j, i, k-1]
-					kount += 4*k
+					rhs[i, kount+1 : kount+ 4*k ] = temp[j, i, k-1]
+					kount += 4*k 
 		# rotate 180 degrees to obtain lhs
 		lhs = torch.rot90(rhs, k=-2, dims=[0,1])
 
