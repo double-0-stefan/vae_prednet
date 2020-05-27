@@ -133,7 +133,7 @@ class sym_conv2D(nn.Module):
 					temp[j,i,k] = self.weight_values[i][k,j]
 		print(temp)
 
-		temp = torch.flip(temp,[1,2])
+		temp = torch.rot90(temp, k=-1, dims=[0,1])
 		print(temp)
 
 		for k in range(temp.size(2)):
