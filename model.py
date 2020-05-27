@@ -125,6 +125,7 @@ class sym_conv2D(nn.Module):
 		centre_block = torch.zeros([self.out_channels, self.out_channels])
 		# rhs 	     = torch.zeros([self.out_channels, 4*self.out_channels*(middle-1)])
 
+		temp = torch.zeros([self.out_channels,self.out_channels,middle-1])
 		# make temp matrix of weights
 		for i in range(self.out_channels):
 			for j in range(len(self.weight_values[i])):
