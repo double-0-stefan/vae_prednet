@@ -130,47 +130,47 @@ class sym_conv2D(nn.Module):
 		for i in range(self.out_channels):
 			for j in range(self.weight_values[i].size(1)):
 				for k in range(middle -1):
-					temp[j,-(i+1),k] = self.weight_values[i][k,j]
+					temp[j,i,k] = self.weight_values[i][k,j]
 
-		print(temp.size())
-		print(temp[0,:,0])
-		print(temp[-1,:,1])
-		# td = torch.diagflat(temp)
-		for i in range(temp.size(2)):
-			temp[:,:,i] += torch.transpose(torch.triu(temp[:,:,i],1), 0,1)
-		print(temp[:,:,0])
-		print(temp[:,:,1])
+		temp = torch.flip(temp,1)
+		for k in range(temp.size(2)):
+			temp[:,:,k] += torch.transpose(torch.triu(temp[:,:,k],1), 0,1)
 
-		rhs = []
-		print(self.weight_values)
+		print(temp)
+
+		kount = 0
 		for i in range(self.out_channels):
-			jj = -1 # dummy index for j
 			for j in range(self.out_channels):
-				# centre is always self.weigh_values[i][0,-1]
-				# and is always the same for all i
+				for k in range(1, middle):
+					kount += kount+ 4*k 
+
+		rhs = torch.zeros([self.out_channels, kount])
+
+		for i in range(self.out_channels):
+			for j in range(self.out_channels):
+
 				centre_block[i,j] = self.weight_values[j][-1,0]	
-
-
-				# print(self.weight_values[j].size())
-				# if j < self.out_channels - len(self.weight_values[i]) -1:
-				# 	centre_block[i,j] = self.weight_values[j][-1,i]	
-				# else:
-				# 	jj += 1
-				# 	centre_block[i,j] = self.weight_values[i][-1,jj]
-					
 			
+			kount = -1
 			for k in range(1, middle):
-
-				jj = -1 # dummy index for j
 				for j in range(self.out_channels):
 
-					if j < self.out_channels - len(self.weight_values[i]) -1:
-						rhs.append(self.weight_values[j][-(1+k),i].view(1,-1).expand(4*k,-1))
+					# kount += 1
+					rhs[i, kount+1 : kount+ 4*k ] = temp[j, i, k]
+					kount += kount+ 4*k 
+
+					
+
+				# jj = -1 # dummy index for j
+				# for j in range(self.out_channels):
+
+				# 	if j < self.out_channels - len(self.weight_values[i]) -1:
+				# 		rhs.append(self.weight_values[j][-(1+k),i].view(1,-1).expand(4*k,-1))
 				
-						# rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4*k] = self.weight_values[j][-(1+k),i]#.view(1,-1).expand(4*k,-1)
-					else:
-						jj += 1
-						rhs.append(self.weight_values[i][-(1+k),jj].view(1,-1).expand(4*k,-1))
+				# 		# rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4*k] = self.weight_values[j][-(1+k),i]#.view(1,-1).expand(4*k,-1)
+				# 	else:
+				# 		jj += 1
+				# 		rhs.append(self.weight_values[i][-(1+k),jj].view(1,-1).expand(4*k,-1))
 				
 						# rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4*k] = self.weight_values[i][-(1+k),jj]#.view(1,-1).expand(4*k,-1)
 				
