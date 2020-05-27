@@ -129,7 +129,7 @@ class sym_conv2D(nn.Module):
 		for i in range(self.out_channels):
 			jj = -1 # dummy index for j
 			for j in range(self.out_channels):
-				if j+1 < len(self.weight_values) - len(self.weight_values[i]):
+				if j < len(self.weight_values) - len(self.weight_values[i]) -1:
 					centre_block[i,j] = self.weight_values[j][-1,i]	
 				else:
 					jj += 1
@@ -139,7 +139,7 @@ class sym_conv2D(nn.Module):
 			for k in range(1, middle):
 				jj = -1 # dummy index for j
 				for j in range(self.out_channels):
-					if j+1 < len(self.weight_values) - len(self.weight_values[i]):
+					if j < len(self.out_channels) - len(self.weight_values[i]) -1:
 						rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4] = self.weight_values[j][-(1+k),i]#.view(1,-1).expand(4*k,-1)
 					else:
 						jj += 1
