@@ -139,7 +139,6 @@ class sym_conv2D(nn.Module):
 		for i in range(self.out_channels):
 			# for j in range(self.out_channels):  # not needed as only for one value of i per line
 			for k in range(1, middle):
-				print(k)
 				kount += 4*k 
 		
 		rhs = torch.zeros([self.out_channels, kount])
@@ -148,7 +147,6 @@ class sym_conv2D(nn.Module):
 		# fill matrices with weights
 		for i in range(self.out_channels):
 			for j in range(self.out_channels):
-				print(self.weight_values[j][-1,0]	)
 				centre_block[i,j] = self.weight_values[j][-1,0]	
 			
 			kount = -1
