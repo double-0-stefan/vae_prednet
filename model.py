@@ -199,7 +199,7 @@ class sym_conv2D(nn.Module):
 				if (start_centre -1) - rhs.size(0) > 0:
 					if centre_block.size(1) == 1:
 						pre_cov[start_centre-rhs.size(0):start_centre,start_centre] = lhs
-					else
+					else:
 						pre_cov[start_centre-rhs.size(0):start_centre,start_centre:end_centre] = lhs
 				else:
 					if centre_block.size(1) == 1:
