@@ -183,8 +183,6 @@ class sym_conv2D(nn.Module):
 			#RHS
 			if i < int(length/centre_block.size(0)) -1:
 				if end_centre +rhs.size(1)  < length:
-					print(start_centre)
-					print(end_centre)
 					if centre_block.size(1) == 1:
 						pre_cov[end_centre+1 : end_centre +1+rhs.size(1), start_centre] = rhs
 					else:
@@ -192,7 +190,7 @@ class sym_conv2D(nn.Module):
 						pre_cov[end_centre+1 : end_centre +1+rhs.size(1), start_centre:end_centre] = rhs
 				else:
 					if centre_block.size(1) == 1:
-						pre_cov[end_centre+1:, start_centre:end_centre] = rhs[:-end_centre,:]
+						pre_cov[end_centre+1:, start_centre] = rhs[:-end_centre]
 					else:
 						pre_cov[end_centre+1:, start_centre:end_centre] = rhs[:-end_centre,:]
 
@@ -201,7 +199,7 @@ class sym_conv2D(nn.Module):
 				if (start_centre -1) - rhs.size(0) > 0:
 					pre_cov[start_centre-rhs.size(0):start_centre] = lhs[:]
 				else:
-					pre_cov[:start_centre, start_centre:end_centre] = lhs[-start_centre:]
+					pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:]
 
 		print(pre_cov)
 
