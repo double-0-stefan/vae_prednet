@@ -150,6 +150,7 @@ class sym_conv2D(nn.Module):
 
 		print(centre_block.size())
 		print(centre_block)
+
 		print(rhs.size())
 		print(rhs)
 
@@ -169,9 +170,9 @@ class sym_conv2D(nn.Module):
 		# C = torch.zeros_like(A)
 		print(centre_block.size(1))
 		if centre_block.size(1) == 1:
-			rhs.unsqueeze(1)
-			lhs.unsqueeze(1)
-			
+			rhs.squeeze()
+			lhs.squeeze()
+
 
 
 		for i in range(int(length/centre_block.size(0))): # ie number of tilings
