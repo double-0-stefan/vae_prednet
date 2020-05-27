@@ -176,7 +176,7 @@ class sym_conv2D(nn.Module):
 
 
 		for i in range(int(length/centre_block.size(0))): # ie number of tilings
-		print(i)
+			print(i)
 			start_centre = i*centre_block.size(1)
 			end_centre = i*centre_block.size(1) +centre_block.size(1)
 			pre_cov[start_centre:end_centre, start_centre:end_centre] = centre_block
