@@ -135,7 +135,9 @@ class sym_conv2D(nn.Module):
 		print(temp.size())
 		print(temp[:,:,0])
 		print(temp[:,:,1])
-		temp += torch.tril(torch.transpose(temp, 0,1), -1)
+		td = torch.diagflat(temp)
+		temp += torch.transpose(temp, 0,1)
+		torch.diagonal(temp,0) = td
 		print(temp[:,:,0])
 		print(temp[:,:,1])
 
