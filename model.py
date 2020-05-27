@@ -175,7 +175,7 @@ class sym_conv2D(nn.Module):
 
 
 
-		for i in range(int(length/centre_block.size(1))): # ie number of tilings
+		for i in range(int(height/centre_block.size(1))): # ie number of tilings
 			print(i)
 			start_centre = i*centre_block.size(1)
 			end_centre = i*centre_block.size(1) +centre_block.size(1)
