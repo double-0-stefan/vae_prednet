@@ -132,9 +132,10 @@ class sym_conv2D(nn.Module):
 				for k in range(middle -1):
 					temp[i,j,k] = self.weight_values[i][k,j]
 
-		temp += temp.t()
+		
 		print(temp)
-
+		temp += temp.t(0,1)
+		print(temp)
 
 		rhs = []
 		print(self.weight_values)
