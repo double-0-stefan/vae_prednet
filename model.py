@@ -125,8 +125,9 @@ class sym_conv2D(nn.Module):
 		centre_block = torch.zeros([self.out_channels, self.out_channels])
 		rhs 	     = torch.zeros([self.out_channels, 4*self.out_channels*(middle-1)])
 
-		jj = -1 # dummy index
+		
 		for i in range(self.out_channels):
+			jj = -1 # dummy index for j
 			for j in range(self.out_channels):
 				if j < len(self.weight_values) - len(self.weight_values[i]):
 					centre_block[i,j] = self.weight_values[j][-1,i]	
@@ -134,13 +135,14 @@ class sym_conv2D(nn.Module):
 					jj += 1
 					centre_block[i,j] = self.weight_values[i][-1,jj]
 					
-
+			jj = -1 # dummy index for j
 			for k in range(1, middle):
 				for j in range(self.out_channels):
 					if j < len(self.weight_values) - len(self.weight_values[i]):
 						rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4] = self.weight_values[j][-(1+k),i]#.view(1,-1).expand(4*k,-1)
 					else:
-						rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4] = self.weight_values[i][-(1+k),j]#.view(1,-1).expand(4*k,-1)
+						jj += 1
+						rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4] = self.weight_values[i][-(1+k),jj]#.view(1,-1).expand(4*k,-1)
 				
 		lhs = reversed(rhs)
 		print(centre_block)
