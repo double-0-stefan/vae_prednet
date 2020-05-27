@@ -128,13 +128,18 @@ class sym_conv2D(nn.Module):
 		print(self.weight_values)
 		for i in range(self.out_channels):
 			jj = -1 # dummy index for j
-			for j in range(self.out_channels):	
-				print(self.weight_values[j].size())
-				if j < self.out_channels - len(self.weight_values[i]) -1:
-					centre_block[i,j] = self.weight_values[j][-1,i]	
-				else:
-					jj += 1
-					centre_block[i,j] = self.weight_values[i][-1,jj]
+			for j in range(self.out_channels):
+				# centre is always self.weigh_values[i][0,-1]
+				# and is always the same for all i
+				centre_block[i,j] = self.weight_values[j][-1,0]	
+
+
+				# print(self.weight_values[j].size())
+				# if j < self.out_channels - len(self.weight_values[i]) -1:
+				# 	centre_block[i,j] = self.weight_values[j][-1,i]	
+				# else:
+				# 	jj += 1
+				# 	centre_block[i,j] = self.weight_values[i][-1,jj]
 					
 			
 			for k in range(1, middle):
