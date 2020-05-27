@@ -128,7 +128,7 @@ class sym_conv2D(nn.Module):
 		temp = torch.zeros([self.out_channels,self.out_channels,middle-1])
 		# make temp matrix of weights
 		for i in range(self.out_channels):
-			for j in range(self.weight_values[i]).size(1):
+			for j in range(self.weight_values[i].size(1)):
 				for k in range(middle -1):
 					temp[i,j,k] = self.weight_values[i][k,j]
 
