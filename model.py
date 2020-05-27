@@ -169,8 +169,8 @@ class sym_conv2D(nn.Module):
 		# C = torch.zeros_like(A)
 
 		for i in range(int(length/centre_block.size(0))): # ie number of tilings
-			start_centre = i*height
-			end_centre = i*height +height-1
+			start_centre = i*centre_block.size(1)
+			end_centre = i*centre_block.size(1) +centre_block.size(1)-1
 			pre_cov[start_centre:end_centre, start_centre:end_centre] = centre_block
 
 			#RHS
