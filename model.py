@@ -133,8 +133,8 @@ class sym_conv2D(nn.Module):
 					temp[j,-(i+1),k] = self.weight_values[i][k,j]
 
 		print(temp.size())
-		print(temp[:,:,0])
-		print(temp[:,:,1])
+		print(temp[0,:,0])
+		print(temp[-1,:,1])
 		# td = torch.diagflat(temp)
 		temp += torch.transpose(torch.triu(temp,1), 0,1)
 		print(temp[:,:,0])
