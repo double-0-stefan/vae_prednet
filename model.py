@@ -96,18 +96,7 @@ class sym_conv2D(nn.Module):
 
 		Still need to crack placement of weights in large precision atrix
 		'''
-		# Covariance is between components of phi
-		# need to determine pattern of placement of conv weights
-		# in order to calculate log determinant
 
-		# print(self.Precision[l].expanded_weight)
-		# check order of input/output
-
-
-		# *******************************************
-		# centres should NOT all be on one line 
-		# as each is independant
-		# but - can fill top tri plus reflect as symmetrical
 		middle = int((self.kernel_size +1)/2)
 		row = torch.rand(1,1)
 		matrix = []
@@ -157,22 +146,7 @@ class sym_conv2D(nn.Module):
 					rhs[i, kount+1 : kount+1+ 4*k ] = temp[j, i, k-1]
 					kount += 4*k +1
 
-
-
-				# jj = -1 # dummy index for j
-				# for j in range(self.out_channels):
-
-				# 	if j < self.out_channels - len(self.weight_values[i]) -1:
-				# 		rhs.append(self.weight_values[j][-(1+k),i].view(1,-1).expand(4*k,-1))
-				
-				# 		# rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4*k] = self.weight_values[j][-(1+k),i]#.view(1,-1).expand(4*k,-1)
-				# 	else:
-				# 		jj += 1
-				# 		rhs.append(self.weight_values[i][-(1+k),jj].view(1,-1).expand(4*k,-1))
-				
-						# rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4*k] = self.weight_values[i][-(1+k),jj]#.view(1,-1).expand(4*k,-1)
-				
-		# lhs = reversed(rhs)
+		lhs = torch.rot90(rhs, k=-2, dims=[0,1])
 		print(centre_block.size())
 		print(centre_block)
 		print(rhs.size())
