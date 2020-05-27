@@ -132,10 +132,10 @@ class sym_conv2D(nn.Module):
 				for k in range(middle -1):
 					temp[i,j,k] = self.weight_values[i][k,j]
 
-		
-		print(temp)
-		temp += torch.transpose(temp, 0,1)
-		print(temp)
+		print(temp.size())
+		print(temp[:,:,0])
+		# temp += torch.transpose(temp, 0,1)
+		# print(temp)
 
 		rhs = []
 		print(self.weight_values)
