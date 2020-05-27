@@ -170,20 +170,20 @@ class sym_conv2D(nn.Module):
 
 		for i in range(int(length/centre_block.size(0))): # ie number of tilings
 			start_centre = i*centre_block.size(1)
-			end_centre = i*centre_block.size(1) +centre_block.size(1)-1
+			end_centre = i*centre_block.size(1) +centre_block.size(1)
 			pre_cov[start_centre:end_centre, start_centre:end_centre] = centre_block
 
 			#RHS
 			if i < int(length/centre_block.size(0)) -1:
 				if end_centre +rhs.size(1)  < length:
-					pre_cov[end_centre+1 : end_centre +rhs.size(1), start_centre:end_centre] = rhs
+					pre_cov[end_centre+1 : end_centre +rhs.size(1), start_centre:end_centre] = rhs[:]
 				else:
 					pre_cov[end_centre+1 : end_centre+end_rhs, start_centre:end_centre] = rhs[:-end_centre]
 
 			# LHS
 			if i > 0:
 				if (start_centre -1) - rhs.size(0) > 0:
-					pre_cov[start_centre-rhs.size(0):start_centre] = lhs
+					pre_cov[start_centre-rhs.size(0):start_centre] = lhs[:]
 				else:
 					pre_cov[:start_centre, start_centre:end_centre] = lhs[-start_centre:]
 
