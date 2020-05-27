@@ -123,8 +123,8 @@ class sym_conv2D(nn.Module):
 			self.in_channels *self.kernel_size**2])
 
 		centre_block = torch.zeros([self.out_channels, self.out_channels])
-		rhs 	     = torch.zeros([self.out_channels, 4*self.out_channels*(middle-1)])
-
+		# rhs 	     = torch.zeros([self.out_channels, 4*self.out_channels*(middle-1)])
+		rhs = []
 		print(self.weight_values)
 		for i in range(self.out_channels):
 			jj = -1 # dummy index for j
@@ -143,15 +143,21 @@ class sym_conv2D(nn.Module):
 					
 			
 			for k in range(1, middle):
+
 				jj = -1 # dummy index for j
 				for j in range(self.out_channels):
+
 					if j < self.out_channels - len(self.weight_values[i]) -1:
-						rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4] = self.weight_values[j][-(1+k),i]#.view(1,-1).expand(4*k,-1)
+						rhs.append(self.weight_values[j][-(1+k),i].view(1,-1).expand(4*k,-1))
+				
+						# rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4*k] = self.weight_values[j][-(1+k),i]#.view(1,-1).expand(4*k,-1)
 					else:
 						jj += 1
-						rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4] = self.weight_values[i][-(1+k),jj]#.view(1,-1).expand(4*k,-1)
+						rhs.append(self.weight_values[i][-(1+k),jj].view(1,-1).expand(4*k,-1))
 				
-		lhs = reversed(rhs)
+						# rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4*k] = self.weight_values[i][-(1+k),jj]#.view(1,-1).expand(4*k,-1)
+				
+		# lhs = reversed(rhs)
 		print(centre_block)
 		print(rhs)
 
