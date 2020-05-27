@@ -52,7 +52,7 @@ class sym_conv2D(nn.Module):
 		for m in reversed(range(self.in_channels)):
 
 			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000
-			a[-1,m] = 1.0
+			a[-1,0] = 1.0
 			w.append(nn.Parameter(a))
 			
 		self.weight_values = nn.ParameterList(w)
@@ -66,7 +66,7 @@ class sym_conv2D(nn.Module):
 		indices = torch.zeros_like(filter_weights)
 
 		for i in range(self.out_channels):
-			indices[i,i,int((self.kernel_size +1)/2)-1,int((self.kernel_size +1)/2)-1] = 1 
+
 			for j in range(i, self.out_channels):
 
 				# reversed so stuff outside of 'field' gets overwritten
@@ -86,11 +86,7 @@ class sym_conv2D(nn.Module):
 						filter_weights[j,i,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
 						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
 
-	
 		self.filter_weights = filter_weights.cuda()
-
-		indices = indices == 1
-		self.indices = indices
 
 
 	def generate_cov_matrix(self):
@@ -122,39 +118,37 @@ class sym_conv2D(nn.Module):
 			self.in_channels *self.kernel_size**2,
 			self.in_channels *self.kernel_size**2])
 
-		centre_block = torch.zeros([self.out_channels, self.out_channels])
+		
 		# rhs 	     = torch.zeros([self.out_channels, 4*self.out_channels*(middle-1)])
 
-		temp = torch.zeros([self.out_channels,self.out_channels,middle-1])
 		# make temp matrix of weights
+		temp = torch.zeros([self.out_channels,self.out_channels,middle-1])
+		
 		for i in range(self.out_channels):
 			for j in range(self.weight_values[i].size(1)):
 				for k in range(middle -1):
 					temp[j,i,k] = self.weight_values[i][k,j]
-		print(temp)
 
 		temp = torch.rot90(temp, k=-1, dims=[0,1])
-		print(temp)
-
 		for k in range(temp.size(2)):
 			temp[:,:,k] += torch.transpose(torch.triu(temp[:,:,k],1), 0,1)
 
-		print(temp)
-
-
+		
+		# work out size of rhs matrix
 		kount = 0
 		for i in range(self.out_channels):
 			# for j in range(self.out_channels):  # not needed as only for one value of i per line
 			for k in range(1, middle):
 				print(k)
 				kount += 4*k 
-		print(kount)
-		print(self.out_channels)
+		
 		rhs = torch.zeros([self.out_channels, kount])
+		centre_block = torch.zeros([self.out_channels, self.out_channels])
 
+		# fill matrices with weights
 		for i in range(self.out_channels):
 			for j in range(self.out_channels):
-
+				print(self.weight_values[j][-1,0]	)
 				centre_block[i,j] = self.weight_values[j][-1,0]	
 			
 			kount = -1
@@ -163,7 +157,7 @@ class sym_conv2D(nn.Module):
 
 					# kount += 1
 					rhs[i, kount+1 : kount+ 4*k ] = temp[j, i, k-1]
-					kount += kount+ 4*k 
+					kount += 4*k 
 
 
 
@@ -181,7 +175,9 @@ class sym_conv2D(nn.Module):
 						# rhs[i,4*k*self.out_channels + 4*k*j : 4*k*self.out_channels + 4*k*j +4*k] = self.weight_values[i][-(1+k),jj]#.view(1,-1).expand(4*k,-1)
 				
 		# lhs = reversed(rhs)
+		print(centre_block.size())
 		print(centre_block)
+		print(rhs.size())
 		print(rhs)
 
 				
