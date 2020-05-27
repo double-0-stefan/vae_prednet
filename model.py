@@ -207,6 +207,7 @@ class sym_conv2D(nn.Module):
 						print(start_centre)
 						print(lhs)
 						pre_cov[:start_centre, start_centre] = lhs[:,-start_centre:]
+						print(pre_cov:,start_centre)
 					else:
 						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:]
 		print(pre_cov)
