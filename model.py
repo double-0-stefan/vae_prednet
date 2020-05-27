@@ -157,7 +157,7 @@ class sym_conv2D(nn.Module):
 
 		# Make (square) pre-cov matrix from which A,B,C will be taken #
 		length = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) # twice the size of whole thing minus size centre
-		height = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) 
+		height = centre_block.size(1) + 2*rhs.size(1) #+ 2*rhs.size(1) 
 
 		pre_cov = torch.zeros(length, height)
 
@@ -175,7 +175,7 @@ class sym_conv2D(nn.Module):
 
 
 
-		for i in range(int(length/centre_block.size(0))): # ie number of tilings
+		for i in range(int(length/centre_block.size(1))): # ie number of tilings
 			print(i)
 			start_centre = i*centre_block.size(1)
 			end_centre = i*centre_block.size(1) +centre_block.size(1)
