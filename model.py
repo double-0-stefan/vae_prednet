@@ -141,12 +141,15 @@ class sym_conv2D(nn.Module):
 
 		print(temp)
 
+
 		kount = 0
 		for i in range(self.out_channels):
 			# for j in range(self.out_channels):  # not needed as only for one value of i per line
 			for k in range(1, middle):
+				print(k)
 				kount += kount+ 4*k 
 		print(kount)
+		print(self.out_channels)
 		rhs = torch.zeros([self.out_channels, kount])
 
 		for i in range(self.out_channels):
