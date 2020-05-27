@@ -144,7 +144,7 @@ class sym_conv2D(nn.Module):
 
 					# kount += 1
 					rhs[i, kount+1 : kount+1+ 4*k ] = temp[j, i, k-1]
-					kount += 4*k +1
+					kount += 4*k
 		# rotate 180 degrees to obtain lhs
 		lhs = torch.rot90(rhs, k=-2, dims=[0,1])
 
@@ -159,6 +159,8 @@ class sym_conv2D(nn.Module):
 		height = centre_block.size(1) + 2*rhs.size(1)
 
 		pre_cov = torch.zeros(length, height)
+
+		print(pre_cov.size())
 
 		A_length = centre_block.size(1) + rhs.size(1) 
 
