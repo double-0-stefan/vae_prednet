@@ -185,6 +185,7 @@ class sym_conv2D(nn.Module):
 
 		# size of A 
 		print(end_centre +rhs.size(1))
+		print(s)
 
 
 		self.B = pre_cov[:s, 1+s:].cuda() # upper triangle
