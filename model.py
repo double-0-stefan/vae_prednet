@@ -378,7 +378,7 @@ class pc_conv_network(nn.Module):
 				stride=1, 
 				padding= int((self.p['cov_size'][0]-1)/2),
 				dilation=1, groups=1, bias=None, padding_mode='zero')
-					).cuda()
+					)
 
 		# will prob be better with class of Precision CNN that enforces requirements
 
@@ -399,7 +399,7 @@ class pc_conv_network(nn.Module):
 						stride=1, 
 						padding= int((self.p['cov_size'][i]-1)/2),
 						dilation=1, groups=1, bias=None, padding_mode='zero')
-					).cuda()
+					)
 
 		self.Precision = nn.ModuleList(Precision).cuda()
 
