@@ -227,7 +227,7 @@ class sym_conv2D(nn.Module):
 
 		T2 = torch.matrix_power(
 			torch.stack([
-				torch.cat([	-torch.mm([B_inv,A]), -torch.mm([B_inv,C]) ]),
+				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
 				Im_Zm
 				]),
 			length*self.dim[l][-1] -2)
