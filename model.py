@@ -466,10 +466,6 @@ class pc_conv_network(nn.Module):
 
 	def loss(self, i, learn=0):
 
-		# loss = 0.
-		# del f
-		# del kl_loss
-
 		# if top layer - latents:
 		if i == self.nlayers -1:
 			# get kl_loss
@@ -517,7 +513,7 @@ class pc_conv_network(nn.Module):
 
 			if learn == 1:
 				f = 0.5*sum(sum(
-					- self.Precision[i+1].log_det(l) # -ve here because more precise = good (nb will need to balance over layers somehow)
+					- self.Precision[i+1].log_det(i+1) # -ve here because more precise = good (nb will need to balance over layers somehow)
 					+ torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
 					))
 			else:
