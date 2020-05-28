@@ -90,17 +90,9 @@ class sym_conv2D(nn.Module):
 
 
 	def generate_cov_matrix(self):
-		# def logdet_block_tridiagonal(self, l):
-		'''
-
-		Still need to crack placement of weights in large precision atrix
-		'''
 
 		middle = int((self.kernel_size +1)/2)
-		row = torch.rand(1,1)
 			
-		# rhs 	     = torch.zeros([self.out_channels, 4*self.out_channels*(middle-1)])
-
 		# make temp matrix of weights
 		temp = torch.zeros([self.out_channels,self.out_channels,middle-1]).cuda()
 		
@@ -142,7 +134,7 @@ class sym_conv2D(nn.Module):
 		# Make (square) pre-cov matrix from which A,B,C will be taken #
 		length = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) # twice the size of whole thing minus size centre
 		height = length#centre_block.size(1) + 2*rhs.size(1) #+ 2*rhs.size(1) 
-		pre_cov = torch.zeros(length, height)
+		pre_cov = torch.zeros(length, height).cuda()
 
 		if centre_block.size(1) == 1:
 			rhs.squeeze()
@@ -203,7 +195,7 @@ class sym_conv2D(nn.Module):
 		# is this always singular (lead diag is zero)
 		# could use try..
 		# B_inv = torch.inverse(self.B)
-		B_inv = torch.pinverse(self.B)
+		B_inv = torch.pinverse(B)
 
 
 		# lengths
