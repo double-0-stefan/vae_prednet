@@ -197,7 +197,7 @@ class sym_conv2D(nn.Module):
 		self.C = pre_cov[1+s:, :s] # lower triangle
 
 
-	def determinant(self, phi_length):
+	def log_det(self, phi_length):
 		'''
 		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
 		https://www.sciencedirect.com/science/article/pii/S0024379508003200?via%3Dihub
@@ -517,7 +517,7 @@ class pc_conv_network(nn.Module):
 
 			if learn == 1:
 				f = 0.5*sum(sum(
-					- self.Precision[i+1].logdet_block_tridiagonal() # -ve here because more precise = good (nb will need to balance over layers somehow)
+					- self.Precision[i+1].log_det(l) # -ve here because more precise = good (nb will need to balance over layers somehow)
 					+ torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
 					))
 			else:
