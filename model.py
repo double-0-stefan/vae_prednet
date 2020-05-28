@@ -157,7 +157,7 @@ class sym_conv2D(nn.Module):
 
 		# Make (square) pre-cov matrix from which A,B,C will be taken #
 		length = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) # twice the size of whole thing minus size centre
-		height = centre_block.size(1) + 2*rhs.size(1) #+ 2*rhs.size(1) 
+		height = length#centre_block.size(1) + 2*rhs.size(1) #+ 2*rhs.size(1) 
 
 		pre_cov = torch.zeros(length, height)
 
@@ -212,7 +212,7 @@ class sym_conv2D(nn.Module):
 					else:
 						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:]
 		print(pre_cov[:,1])
-		print(pre_cov)
+		print(pre_cov[:,-1])
 
 
 
