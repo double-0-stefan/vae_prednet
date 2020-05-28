@@ -154,8 +154,6 @@ class sym_conv2D(nn.Module):
 
 		pre_cov = torch.zeros(length, height)
 
-		print(pre_cov.size())
-
 		A_length = centre_block.size(1) + rhs.size(1) 
 
 		# A = torch.zeros(A_length, A_length)
@@ -165,8 +163,6 @@ class sym_conv2D(nn.Module):
 			rhs.squeeze()
 			lhs.squeeze()
 
-		print(rhs)
-		print(lhs)
 
 		for i in range(int(height/centre_block.size(1))): # ie number of tilings
 			print(i)
@@ -180,8 +176,6 @@ class sym_conv2D(nn.Module):
 					if centre_block.size(1) == 1:
 						pre_cov[end_centre : end_centre +rhs.size(1), start_centre] = rhs
 					else:
-						print(rhs.size())
-						print(pre_cov[end_centre : end_centre +rhs.size(1), start_centre:end_centre].size())
 						pre_cov[end_centre : end_centre +rhs.size(1), start_centre:end_centre] = rhs.t()
 				else:
 
