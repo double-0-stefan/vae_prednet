@@ -178,18 +178,14 @@ class sym_conv2D(nn.Module):
 
 		# Make A, B and C matrices for determinant method
 		print(pre_cov.size())
-		s = pre_cov.size()
-		s = int(s[0]/2)
+
+		s = centre_block.size(1) + rhs.size(1)
+		print(s)
 		self.A = pre_cov[:s, :s].cuda()
-
-
-		# size of A 
-		
-		print(pre_cov)
-
 
 		self.B = pre_cov[:s, 1+s:].cuda() # upper triangle
 		self.C = pre_cov[1+s:, :s].cuda() # lower triangle
+		print(self.A)
 		print(self.B)
 		print(self.C)
 
