@@ -191,9 +191,10 @@ class sym_conv2D(nn.Module):
 
 		# Make A, B and C matrices for determinant method
 		s = pre_cov.size()
-		self.A = pre_cov[:s[0]/2, :s[0]/2]
-		self.B = pre_cov[:s[0]/2, 1+s[0]/2:] # upper triangle
-		self.C = pre_cov[1+s[0]/2:, :s[0]/2] # lower triangle
+		s = int(s[0]/2)
+		self.A = pre_cov[:s, :s]
+		self.B = pre_cov[:s, 1+s:] # upper triangle
+		self.C = pre_cov[1+s:, :s] # lower triangle
 
 
 	def determinant(self, phi_length):
@@ -242,7 +243,7 @@ class sym_conv2D(nn.Module):
 		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
 #
 		return logdetM
-		
+
 
 	def forward(self, x):
 
