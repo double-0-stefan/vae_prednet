@@ -98,19 +98,11 @@ class sym_conv2D(nn.Module):
 
 		middle = int((self.kernel_size +1)/2)
 		row = torch.rand(1,1)
-		matrix = []
-
-		filter_matrix = torch.tensor([self.out_channels, self.in_channels *self.kernel_size**2])
-
-		filter_matrix_L_shape = torch.tensor([
-			self.in_channels *self.kernel_size**2,
-			self.in_channels *self.kernel_size**2])
-
-		
+			
 		# rhs 	     = torch.zeros([self.out_channels, 4*self.out_channels*(middle-1)])
 
 		# make temp matrix of weights
-		temp = torch.zeros([self.out_channels,self.out_channels,middle-1])
+		temp = torch.zeros([self.out_channels,self.out_channels,middle-1]).cuda()
 		
 		for i in range(self.out_channels):
 			for j in range(self.weight_values[i].size(1)):
@@ -129,8 +121,8 @@ class sym_conv2D(nn.Module):
 			for k in range(1, middle):
 				kount += 4*k 
 		
-		rhs = torch.zeros([self.out_channels, kount])
-		centre_block = torch.zeros([self.out_channels, self.out_channels])
+		rhs = torch.zeros([self.out_channels, kount]).cuda()
+		centre_block = torch.zeros([self.out_channels, self.out_channels]).cuda()
 
 		# fill matrices with weights
 		for i in range(self.out_channels):
@@ -226,8 +218,6 @@ class sym_conv2D(nn.Module):
 			Im_Zm
 			], 1)
 
-		print(torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]).size())
-
 		T2 = torch.matrix_power(
 			torch.cat([
 				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
@@ -238,7 +228,6 @@ class sym_conv2D(nn.Module):
 			torch.cat([-torch.mm(B_inv,A), -B_inv]), 
 			Im_Zm
 			], 1).cuda()
-
 
 
 		T = torch.chain_matmul(T1,T2,T3).cuda()
