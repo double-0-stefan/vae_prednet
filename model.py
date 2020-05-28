@@ -204,7 +204,7 @@ class sym_conv2D(nn.Module):
 		# is this always singular (lead diag is zero)
 		# could use try..
 		# B_inv = torch.inverse(self.B)
-		B_inv = torch.pinverse(B)
+		B_inv = torch.inverse(B)
 
 
 		# lengths
