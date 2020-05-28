@@ -181,10 +181,14 @@ class sym_conv2D(nn.Module):
 		s = int(s[0]/2)
 		self.A = pre_cov[:s, :s].cuda()
 		print(self.A)
-		
+
+
+		# size of A 
+
 		self.B = pre_cov[:s, 1+s:].cuda() # upper triangle
 		self.C = pre_cov[1+s:, :s].cuda() # lower triangle
 		print(self.B)
+		print(self.C)
 
 	def log_det(self, phi_length):
 		'''
