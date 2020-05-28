@@ -229,8 +229,7 @@ class sym_conv2D(nn.Module):
 			torch.stack([
 				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
 				Im_Zm
-				]),
-			length*self.dim[l][-1] -2)
+				]), n)
 
 		T3 = torch.stack([
 			torch.cat([-torch.mm([B_inv,A]), -B_inv]), 
