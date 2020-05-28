@@ -207,7 +207,6 @@ class sym_conv2D(nn.Module):
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)]).cuda()
 
-		print(Im_Zm.size())
 		T1 = torch.cat([
 			torch.cat([-A, -C]), 
 			Im_Zm
@@ -234,8 +233,10 @@ class sym_conv2D(nn.Module):
 
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
 		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
+		print(torch.logdet(T11))
+		print(torch.logdet(B1n))
 #
-		return logdetM.cuda()
+		return logdetM
 
 
 	def forward(self, x):
