@@ -218,7 +218,7 @@ class sym_conv2D(nn.Module):
 		m = A.size(0)
 		n = int(round(phi_length/m))
 
-		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)])
+		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)]).cuda()
 
 		print(Im_Zm.size())
 		T1 = torch.cat([
@@ -232,21 +232,21 @@ class sym_conv2D(nn.Module):
 			torch.cat([
 				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
 				Im_Zm
-				],1), n)
+				],1), n).cuda()
 
 		T3 = torch.cat([
 			torch.cat([-torch.mm(B_inv,A), -B_inv]), 
 			Im_Zm
-			], 1)
+			], 1).cuda()
 
 
 
-		T = torch.chain_matmul(T1,T2,T3)
+		T = torch.chain_matmul(T1,T2,T3).cuda()
 
-		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1])
+		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
 
 		# need to set up weights to be symmetric around centres
-		B1n = torch.matrix_power(B, n)
+		B1n = torch.matrix_power(B, n).cuda()
 
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
 		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
