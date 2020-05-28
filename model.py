@@ -226,6 +226,8 @@ class sym_conv2D(nn.Module):
 
 		T = torch.chain_matmul(T1,T2,T3).cuda()
 
+		print(T)
+
 		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
 
 		# need to set up weights to be symmetric around centres
@@ -235,6 +237,8 @@ class sym_conv2D(nn.Module):
 		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
 		print(torch.logdet(T11))
 		print(torch.logdet(B1n))
+
+
 #
 		return logdetM
 
