@@ -239,7 +239,7 @@ class sym_conv2D(nn.Module):
 			Im_Zm
 			], 1)
 
-		T = torch.chain_matmul([T1,T2,T3])
+		T = torch.chain_matmul(T1,T2,T3)
 
 		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1])
 
