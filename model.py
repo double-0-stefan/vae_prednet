@@ -207,7 +207,9 @@ class sym_conv2D(nn.Module):
 		A = self.A
 		B = self.B
 		C = self.C
-		B_inv = torch.inverse(self.B)
+		# B_inv = torch.inverse(self.B)
+		B_inv = torch.pinv(self.B)
+
 
 		# lengths
 		m = A.size(0)
