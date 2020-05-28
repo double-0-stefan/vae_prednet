@@ -207,6 +207,9 @@ class sym_conv2D(nn.Module):
 		A = self.A
 		B = self.B
 		C = self.C
+
+		# is this always singular (lead diag is zero)
+		# could use try..
 		# B_inv = torch.inverse(self.B)
 		B_inv = torch.pinv(self.B)
 
@@ -514,6 +517,7 @@ class pc_conv_network(nn.Module):
 				chan = self.p['imchan']
 
 			if learn == 1:
+				print(self.Precision[i+1].log_det(i+1))
 				f = 0.5*sum(sum(
 					- self.Precision[i+1].log_det(i+1) # -ve here because more precise = good (nb will need to balance over layers somehow)
 					+ torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
