@@ -183,8 +183,8 @@ class sym_conv2D(nn.Module):
 		print(s)
 		self.A = pre_cov[:s, :s].cuda()
 
-		self.B = pre_cov[:s, 1+s:].cuda() # upper triangle
-		self.C = pre_cov[1+s:, :s].cuda() # lower triangle
+		self.B = pre_cov[:s, s:].cuda() # upper triangle
+		self.C = pre_cov[s:, :s].cuda() # lower triangle
 		print(self.A)
 		print(self.B)
 		print(self.C)
