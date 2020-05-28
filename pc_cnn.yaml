@@ -78,7 +78,7 @@ iter_outer:
     - 1
 
 iter:
-    - 50
+    - 5
 
 bs:
     - 200
