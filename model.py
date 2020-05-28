@@ -183,13 +183,14 @@ class sym_conv2D(nn.Module):
 		print(s)
 		self.A = pre_cov[:s, :s].cuda()
 
-		self.B = pre_cov[:s, s:].cuda() # upper triangle
-		self.C = pre_cov[s:, :s].cuda() # lower triangle
+		self.B = pre_cov[:s, s:s+s].cuda() # upper triangle
+		self.C = pre_cov[s:s+s, :s].cuda() # lower triangle
 		print(self.A)
 		print(self.B)
 		print(self.C)
 
 	def log_det(self, phi_length):
+		# where phi_length is non-batch elements in phi
 		'''
 		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
 		https://www.sciencedirect.com/science/article/pii/S0024379508003200?via%3Dihub
