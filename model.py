@@ -30,6 +30,7 @@ import copy
 class sym_conv2D(nn.Module):
 	def __init__(self, in_channels, out_channels, kernel_size, stride=1, 
 		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
+		self.cuda()
 		super(sym_conv2D, self).__init__()
 
 		self.in_channels = in_channels
@@ -41,6 +42,8 @@ class sym_conv2D(nn.Module):
 		self.groups = groups
 		self.bias = bias
 		self.padding_mode = padding_mode
+
+
 
 		self.generate_weight_values()
 		self.generate_filter_structure()
@@ -176,9 +179,9 @@ class sym_conv2D(nn.Module):
 		# Make A, B and C matrices for determinant method
 		s = pre_cov.size()
 		s = int(s[0]/2)
-		self.A = pre_cov[:s, :s]
-		self.B = pre_cov[:s, 1+s:] # upper triangle
-		self.C = pre_cov[1+s:, :s] # lower triangle
+		self.A = pre_cov[:s, :s].cuda()
+		self.B = pre_cov[:s, 1+s:].cuda() # upper triangle
+		self.C = pre_cov[1+s:, :s].cuda() # lower triangle
 
 
 	def log_det(self, phi_length):
