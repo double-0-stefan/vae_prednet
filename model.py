@@ -92,7 +92,6 @@ class sym_conv2D(nn.Module):
 	def generate_cov_matrix(self):
 		# def logdet_block_tridiagonal(self, l):
 		'''
-		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
 
 		Still need to crack placement of weights in large precision atrix
 		'''
@@ -151,18 +150,11 @@ class sym_conv2D(nn.Module):
 		# Make (square) pre-cov matrix from which A,B,C will be taken #
 		length = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) # twice the size of whole thing minus size centre
 		height = length#centre_block.size(1) + 2*rhs.size(1) #+ 2*rhs.size(1) 
-
 		pre_cov = torch.zeros(length, height)
 
-		A_length = centre_block.size(1) + rhs.size(1) 
-
-		# A = torch.zeros(A_length, A_length)
-		# B = torch.zeros_like(A)
-		# C = torch.zeros_like(A)
 		if centre_block.size(1) == 1:
 			rhs.squeeze()
 			lhs.squeeze()
-
 
 		for i in range(int(height/centre_block.size(1))): # ie number of tilings
 			start_centre = i*centre_block.size(1)
@@ -196,194 +188,29 @@ class sym_conv2D(nn.Module):
 						pre_cov[:start_centre, start_centre] = lhs[:,-start_centre:]
 					else:
 						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:].t()
-		print(pre_cov[:,0])
-		print(pre_cov[:,-1])
 
-		print(pre_cov.size())
-
-
-
-
-				
-
-# 			for k in range(len(self.weight_values)):
-# 				if k < len(self.weight_values) - len(self.weight_values[i]):
-# 					# get from rows above:
-# 					for j in range(1, middle):
-# 						if row.size() ==  torch.Size([]):
-# 							row = torch.stack([row,
-# 								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
-# 						else:
-# 							row = torch.cat([row,
-# 								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
-# 				else:
-# 					for j in range(1, middle):
-# 						if row.size() ==  torch.Size([]):
-# 							row = torch.stack([row,
-# 								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
-			
-# 						else:
-# 							row = torch.cat([row,
-# 								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
-						
-# 				filter_matrix[i,i] = self.weight_values[i][-1,i]
-
-# #  new idea: centre block in middle, symetric half an half of rest of filter around
-# # will actually give correct matrix!
-# # first few blocks lose bits on lhs, last few on rhs
+		# Make A, B and C matrices for determinant method
+		s = pre_cov.size()
+		self.A = pre_cov[:s[0]/2, :s[0]/2]
+		self.B = pre_cov[:s[0]/2, 1+s[0]/2:] # upper triangle
+		self.C = pre_cov[1+s[0]/2:, :s[0]/2] # lower triangle
 
 
-
-# 		for i in range(len(self.weight_values)):
-	
-# 			# centres
-# 			for k in range(len(self.weight_values)):
-# 				if k < len(self.weight_values) - len(self.weight_values[i]):
-# 					if i == 0 and k == 0:
-# 						row[0,0] = self.weight_values[k][-1,i]#.resize(-1)
-
-# 					else:
-# 						row = torch.cat([row,self.weight_values[k][-1,i]]) #switch order?
-# 				else:
-# 					if i == 0 and k == 0:
-# 						row[0,0] = self.weight_values[i][-1,0]#.resize(-1)
-
-# 					else:
-# 						row = torch.cat([row,self.weight_values[i][-1,0]])
-
-# 			# Repeating the filter over **pixels**:
-# 			# tile matrix with (n +1)/2 vectorised rows
-# 			# repeated elements start off with the earliest (in the order of the row)
-# 			# but by nth column/row have repeats of everything except central
-# 			# works absolutely fine for filter 'square rings' as these are all even numbers of weights
-# 			# put 'inner' rings first as these will have less extensive edge effects anyway
-# 			# hence 4*j rather than 8*j
-
-# 			# but in gereral it will be matrix of filters repeated over pixels
-
-# 			# add other elements of central and semi-central filters:
-# 			for k in range(len(self.weight_values)):
-# 				if k < len(self.weight_values) - len(self.weight_values[i]):
-# 					# get from rows above:
-# 					for j in range(1, middle):
-# 						if row.size() ==  torch.Size([]):
-# 							row = torch.stack([row,
-# 								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
-# 						else:
-# 							row = torch.cat([row,
-# 								self.weight_values[k][-(1+j),i].view(1,-1).expand(4*j,-1)]) # 
-# 				else:
-# 					for j in range(1, middle):
-# 						if row.size() ==  torch.Size([]):
-# 							row = torch.stack([row,
-# 								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
-			
-# 						else:
-# 							row = torch.cat([row,
-# 								self.weight_values[i][-(1+j),k].view(1,-1).expand(4*j,-1)]) # 
-			
-# 			# need zeros in: centres bit, start of other elements bit (to be replaced with stuff from prev lines)
-# 			matrix.append(row)
-# 		print(matrix)
-# 		matrix = torch.stack(matrix)
-
-
-
-				
-		# xxxx
-		# xxxxx
-		# xxxxx
-		# xxxxxxx
-		#  xx
-#          x 
-		# can fairly easily adjust for corners/edges
-		# only explicitly do [left/up] ie half of filter in row - will help take care of eges, others et added 
-		# in by doing transpose. Or half +1??
-
-		# the above covers one pixel over channels - need to repeat for number of pixels in image
-
-		# old version:
-
-	def determinant(self):
-
-		w = self.Precision[l].expanded_weight.permute([2,3,0,1])
-		ws = w.size() # 5 5 64 64
-		v = w.view(-1,w.size(2),w.size(3))
-		vs = v.size() # 25, 64 64
-
-
-		# TRY ANOTHER WAY
-		b = torch.zeros([v.size(1),(1+v.size(0))*(v.size(1))])
-
-		# size of (section of) phi is 25*  64
-		# size of weights is 25*64*64
-		
-		# stuff to be added after centre (ie that is never on leading diag) - zero out centre
-		# fi = torch.ones_like(v[:,:,0])
-		# fi[int((vs[0]-1)/2),:] = 0
-		# fi = fi == 1
-
-		# tiled matrix with lots of zeros
-		for j in range(vs[1]):
-			# central - leading diag
-			
-
-			# all other weights inputting to output layer j
-			# stuff to be added after centre (ie that is never on leading diag) - zero out centre
-			fi = torch.ones_like(v[:,:,0])
-			fi[int((vs[0]-1)/2),j] = 0
-			fo = fi == 1
-			fc = fi == 0
-			# print(v.size())
-			# 
-			# print(fi.view(-1))
-			vv = v[:,:,j]
-			other_weights = vv[fo]
-			# print(other_weights)
-			# print(vv.size())
-			# print(other_weights.numel())
-			b[j, (j+1):j+1+other_weights.numel()] = other_weights
-			b[j,j] = vv[fc]
-
-		print(b[0,:])
-		print(b[1,:])
-
-		# seems good up to here !! sb 21/5/2020
-
-		# paste this into matrix, length(centres) number of times,
-		# add zeros to make square
-		# take upper triangle, do transpose -> raw materials for block is done!
-
-		block = torch.cat([b, torch.zeros_like(b)],dim=1)
-
-		for i in range(v.size(1)):
-
-			extraL = torch.zeros([v.size(1)*2**i, v.size(1)*2**i])
-			block = torch.cat([
-				block,
-				torch.cat([extraL,block[:,:-v.size(1)*2**i]],dim=1),
-				],dim=0)
-
-			if block.size(0) >= block.size(1):
-				break
-
-		print(block)
-		# get matrices for determinant algorithm
-		A = block[:v.size(0)*v.size(1),:v.size(0)*v.size(1)]
-		A = A.triu()
-		A += A.t()
-
-		B = block[:v.size(0)*v.size(1), v.size(0)*v.size(1):v.size(0)*v.size(1)*2]
-		print(B)
-		
-		C = B.t()
-		print(C)
-		B_inv = torch.inverse(B)
+	def determinant(self, phi_length):
+		'''
+		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
+		https://www.sciencedirect.com/science/article/pii/S0024379508003200?via%3Dihub
+		or
+		https://arxiv.org/abs/0712.0681
+		'''
+		A = self.A
+		B = self.B
+		C = self.C
+		B_inv = torch.inverse(self.B)
 
 		# lengths
 		m = A.size(0)
-		n = round(self.phi[l].view(self.bs,-1).size(1)/A.size(0))
-
+		n = int(round(phi_length/m))
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)])
 
@@ -411,12 +238,10 @@ class sym_conv2D(nn.Module):
 		# need to set up weights to be symmetric around centres
 		B1n = torch.matrix_power(B, n)
 
-		logdetM = (-1)**(n*A.size(0)) + torch.logdet(T11) + torch.logdet(B1n)
-
+		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
+		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
+#
 		return logdetM
-
-
-
 		
 
 	def forward(self, x):
