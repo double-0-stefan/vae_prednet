@@ -32,7 +32,7 @@ class sym_conv2D(nn.Module):
 		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
 		
 		super(sym_conv2D, self).__init__()
-		self.cuda()
+		self.cuda()	
 		self.in_channels = in_channels
 		self.out_channels = out_channels
 		self.kernel_size = kernel_size
@@ -235,7 +235,7 @@ class sym_conv2D(nn.Module):
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
 		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
 #
-		return logdetM
+		return logdetM.cuda()
 
 
 	def forward(self, x):
@@ -378,7 +378,7 @@ class pc_conv_network(nn.Module):
 				stride=1, 
 				padding= int((self.p['cov_size'][0]-1)/2),
 				dilation=1, groups=1, bias=None, padding_mode='zero')
-					)
+					).cuda()
 
 		# will prob be better with class of Precision CNN that enforces requirements
 
@@ -399,9 +399,9 @@ class pc_conv_network(nn.Module):
 						stride=1, 
 						padding= int((self.p['cov_size'][i]-1)/2),
 						dilation=1, groups=1, bias=None, padding_mode='zero')
-					)
+					).cuda()
 
-		self.Precision = nn.ModuleList(Precision) 
+		self.Precision = nn.ModuleList(Precision).cuda()
 
 
 	def plot(self, i, input_image, plot_vars):
