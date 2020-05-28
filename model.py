@@ -192,6 +192,7 @@ class sym_conv2D(nn.Module):
 					if centre_block.size(1) == 1:
 						print(length)
 						print(end_centre)
+						print(rhs.size())
 						print(rhs[:,:-(length-end_centre)].size())
 						pre_cov[end_centre:, start_centre] = rhs[:,:-(length-end_centre)]
 					else:
