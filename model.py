@@ -173,7 +173,8 @@ class sym_conv2D(nn.Module):
 			rhs.squeeze()
 			lhs.squeeze()
 
-
+		print(rhs)
+		print(lhs)
 
 		for i in range(int(height/centre_block.size(1))): # ie number of tilings
 			print(i)
