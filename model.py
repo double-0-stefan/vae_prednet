@@ -177,6 +177,7 @@ class sym_conv2D(nn.Module):
 						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:].t()
 
 		# Make A, B and C matrices for determinant method
+		print(pre_cov.size())
 		s = pre_cov.size()
 		s = int(s[0]/2)
 		self.A = pre_cov[:s, :s].cuda()
