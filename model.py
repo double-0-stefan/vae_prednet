@@ -220,6 +220,7 @@ class sym_conv2D(nn.Module):
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)])
 
+		print(Im_Zm.size())
 		T1 = torch.stack([
 			torch.cat([-A, -C]), 
 			Im_Zm
