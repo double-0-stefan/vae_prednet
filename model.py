@@ -148,13 +148,6 @@ class sym_conv2D(nn.Module):
 		# rotate 180 degrees to obtain lhs
 		lhs = torch.rot90(rhs, k=-2, dims=[0,1])
 
-		print(centre_block.size())
-		print(centre_block)
-
-		print(rhs.size())
-		print(rhs)
-
-
 		# Make (square) pre-cov matrix from which A,B,C will be taken #
 		length = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) # twice the size of whole thing minus size centre
 		height = length#centre_block.size(1) + 2*rhs.size(1) #+ 2*rhs.size(1) 
@@ -168,7 +161,6 @@ class sym_conv2D(nn.Module):
 		# A = torch.zeros(A_length, A_length)
 		# B = torch.zeros_like(A)
 		# C = torch.zeros_like(A)
-		print(centre_block.size(1))
 		if centre_block.size(1) == 1:
 			rhs.squeeze()
 			lhs.squeeze()
@@ -192,11 +184,6 @@ class sym_conv2D(nn.Module):
 				else:
 
 					if centre_block.size(1) == 1:
-
-						print(length)
-						print(end_centre)
-						print(rhs.size())
-						print(rhs[:,:-(length-end_centre)].size())
 						pre_cov[end_centre:, start_centre] = rhs[:,:(length-end_centre)]
 					else:
 						pre_cov[end_centre:, start_centre:end_centre] = rhs[:,:(length-end_centre)]
@@ -207,18 +194,14 @@ class sym_conv2D(nn.Module):
 
 					if centre_block.size(1) == 1:
 						pre_cov[start_centre-rhs.size(1):start_centre, start_centre] = lhs
-						print(pre_cov[:,start_centre])
 					else:
 						pre_cov[start_centre-rhs.size(1):start_centre,start_centre:end_centre] = lhs
 				else:
 					if centre_block.size(1) == 1:
-						print(start_centre)
-						print(lhs)
 						pre_cov[:start_centre, start_centre] = lhs[:,-start_centre:]
-						print(pre_cov[:,start_centre])
 					else:
 						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:]
-		print(pre_cov[:,1])
+		print(pre_cov[:,0])
 		print(pre_cov[:,-1])
 
 
