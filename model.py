@@ -177,17 +177,17 @@ class sym_conv2D(nn.Module):
 						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:].t()
 
 		# Make A, B and C matrices for determinant method
-		print(pre_cov.size())
+		# print(pre_cov.size())
 
 		s = centre_block.size(1) + rhs.size(1)
-		print(s)
+		# print(s)
 		self.A = pre_cov[:s, :s].cuda()
 
 		self.B = pre_cov[:s, s:s+s].cuda() # upper triangle
 		self.C = pre_cov[s:s+s, :s].cuda() # lower triangle
-		print(self.A)
-		print(self.B)
-		print(self.C)
+		# print(self.A)
+		# print(self.B)
+		# print(self.C)
 
 	def log_det(self, phi_length):
 		# where phi_length is non-batch elements in phi
