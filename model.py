@@ -393,31 +393,42 @@ class sym_conv2D(nn.Module):
 
 		
 
+		# T11 is upper left block of size m × m of the transfer matrix
 
 
-		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
+		T11 = T[:m,:m]
+
+		# T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
 
 		B1n = torch.matrix_power(B, n).cuda()
+		# could alternatively do power of det
+		# or n * logdet!
 
-
+		logdetB1n = n * torch.logdet(B)
+		print('logdetB1n')
+		print(logdetB1n)
 		# Use spm_logdet approach to find log determinants
 		# For non-positive definite cases, the determinant is considered to be the
 		# product of the positive singular values
 
 		ldT = torch.logdet(T11)
 		if torch.isnan(ldT) or torch.isinf(ldT):
+			print('bad ldT')
 			u, s, v = torch.svd(T11)
 			ldT = sum(torch.log(torch.diag(s)))
 
 		ldB = torch.logdet(B1n)
 		if torch.isnan(ldT) or torch.isinf(ldB):
+			print('bad ldB')
 			u, s, v = torch.svd(B1n)
 			ldB = sum(torch.log(torch.diag(s)))
 
 
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
 		logdetM =  ldT + ldB
+		print('ldT')
 		print(ldT)
+		print('ldB')
 		print(ldB)
 
 		return logdetM
