@@ -264,6 +264,9 @@ class sym_conv2D(nn.Module):
 		# matrix product: det(AB) = detA.detB
 
 		##########################################
+		# spm_logdet implementation:
+		# For non-positive definite cases, the determinant is considered to be the
+		# product of the positive singular values
 
 
 		B_inv = torch.inverse(B)
@@ -316,16 +319,34 @@ class sym_conv2D(nn.Module):
 		# print(T)
 		# print(T)
 
+		
+
+
+
 		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
 
-		# need to set up weights to be symmetric around centres
 		B1n = torch.matrix_power(B, n).cuda()
-		# det of this will always be zero
+
+
+		# Use spm_logdet approach to find log determinants
+		# For non-positive definite cases, the determinant is considered to be the
+		# product of the positive singular values
+
+		ldT = torch.logdet(T11)
+		if torch.isnan(ldT) or torch.isinf(ldT):
+			u, s, v = torch.svd(T11)
+			ldT = sum(torch.log(torch.diag(s)))
+
+		ldB = torch.logdet(B1n)
+		if torch.isnan(ldT) or torch.isinf(ldB):
+			u, s, v = torch.svd(B1n)
+			ldB = sum(torch.log(torch.diag(s)))
+
 
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
-		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
-		print(torch.logdet(T11))
-		print(torch.logdet(B1n))
+		logdetM =  ldT + ldB
+		print(ldT)
+		print(ldB)
 
 		return logdetM
 
