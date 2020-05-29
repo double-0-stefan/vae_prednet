@@ -281,14 +281,14 @@ class sym_conv2D(nn.Module):
 		# print(m*n)
 
 
-		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)]).cuda()
+		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)], 1)
 
 		print(Im_Zm)
 		
 		T1 = torch.cat([
 			torch.cat([-A, -C]), 
 			Im_Zm
-			], 1)
+			], 0)
 		# print(T1)
 
 		# if off-diagonal elements are too small (or, presumably, too large), this becomes nan
@@ -297,7 +297,7 @@ class sym_conv2D(nn.Module):
 			torch.cat([
 				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
 				Im_Zm
-				],1), n).cuda()
+				],0), n).cuda()
 		# print(T2)
 		# print(torch.mm(B_inv,A))
 		# print(torch.mm(B_inv,C))
@@ -307,7 +307,7 @@ class sym_conv2D(nn.Module):
 		T3 = torch.cat([
 			torch.cat([-torch.mm(B_inv,A), -B_inv]), 
 			Im_Zm
-			], 1).cuda()
+			], 0).cuda()
 		# print(T3)
 
 		T = torch.chain_matmul(T1,T2,T3).cuda()
