@@ -55,7 +55,7 @@ class sym_conv2D(nn.Module):
 		for m in reversed(range(self.in_channels)):
 
 			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000
-			a[-1,0] = exp(1.0)
+			a[-1,0] = torch.exp(1.0)
 			w.append(nn.Parameter(a))
 			
 		self.weight_values = nn.ParameterList(w)
