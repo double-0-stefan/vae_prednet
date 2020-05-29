@@ -50,6 +50,27 @@ class sym_conv2D(nn.Module):
 		self.generate_cov_matrix()
 		self.cuda()
 
+	def add_jitter(mat, jitter_val=1e-6):
+	    """
+	    From gpytorch
+
+	    Adds "jitter" to the diagonal of a matrix.
+	    This ensures that a matrix that *should* be positive definite *is* positive definate.
+
+	    Args:
+	        - mat (matrix nxn) - Positive definite matrxi
+
+	    Returns: (matrix nxn)
+	    """
+	    if hasattr(mat, "add_jitter"):
+	        return mat.add_jitter(jitter_val)
+	    else:
+	        diag = torch.eye(mat.size(-1), dtype=mat.dtype, device=mat.device).mul_(jitter_val)
+	        if mat.ndimension() == 3:
+	            return mat + diag.unsqueeze(0).expand(mat.size(0), mat.size(1), mat.size(2))
+	        else:
+	            return mat + diag
+
 	def generate_weight_values(self):
 		w = []
 		for m in reversed(range(self.in_channels)):
@@ -179,7 +200,7 @@ class sym_conv2D(nn.Module):
 		# Make A, B and C matrices for determinant method
 		# print(pre_cov.size())
 
-		s = centre_block.size(1) + int(rhs.size(1)/2)
+		s = centre_block.size(1) rhs.size(1)
 		# print(s)
 		# smaller matrix to ensure invertable - makes it odd? s-2??
 
@@ -212,8 +233,12 @@ class sym_conv2D(nn.Module):
 		# is this always singular (lead diag is zero)
 		# could use try..
 		# B_inv = torch.inverse(self.B)
-		B_inv = torch.pinverse(B)
-
+		try:
+			B_inv = torch.inverse(B)
+		except:
+			self.add_jitter(B,1e-6)
+			B_inv = torch.inverse(B)
+		
 
 		# lengths
 		m = A.size(0)
