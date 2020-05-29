@@ -271,7 +271,7 @@ class sym_conv2D(nn.Module):
 
 		B_inv = torch.inverse(B)
 
-		print(B_inv)
+		# print(B_inv)
 		# except RuntimeError:
 		# 	self.add_jitter(B,1e-6)
 		# 	B_inv = torch.inverse(B)
@@ -288,7 +288,7 @@ class sym_conv2D(nn.Module):
 
 		self.register_buffer('Im_Zm', Im_Zm)
 
-		print(Im_Zm.size())
+		# print(Im_Zm.size())
 		
 		T1 = torch.cat([
 			torch.cat([-A, -C], 1), 
