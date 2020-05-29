@@ -450,7 +450,6 @@ class sym_conv2D(nn.Module):
 		print(ldT)
 		print('ldB')
 		print(ldB)
-		print('  ')
 
 		return logdetM
 
