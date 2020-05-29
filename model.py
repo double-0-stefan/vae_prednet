@@ -180,18 +180,18 @@ class sym_conv2D(nn.Module):
 		# print(pre_cov.size())
 
 		s = centre_block.size(1) + rhs.size(1)
-		print(s)
+		# print(s)
 		# smaller matrix to ensure invertable - makes it odd? s-2??
 
-		self.A = pre_cov[:s-2, :s-2].cuda()
+		self.A = pre_cov[:s-1, :s-1].cuda()
 
-		self.B = pre_cov[:s-2, s-2:s-2+s-2].cuda() # upper triangle
-		self.C = pre_cov[s-2:s-2+s-2, :s-2].cuda() # lower triangle
+		self.B = pre_cov[:s-1, s-1:s-1+s-1].cuda() # upper triangle
+		self.C = pre_cov[s-1:s-2+s-1, :s-1].cuda() # lower triangle
 		# print(self.A)
 		# print(self.B)
 		# print(self.C)
 
-		print(self.B)
+		# print(self.B)
 
 	def log_det(self, phi_length):
 		# where phi_length is non-batch elements in phi
@@ -215,7 +215,10 @@ class sym_conv2D(nn.Module):
 
 		# lengths
 		m = A.size(0)
+
 		n = int(round(phi_length/m))
+		print(m*n)
+
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)]).cuda()
 
@@ -248,7 +251,7 @@ class sym_conv2D(nn.Module):
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
 		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
 		print(torch.logdet(T11))
-		print(torch.logdet(B1n)) # currently zero - need to jitter leading diag?
+		print(torch.logdet(B1n))
 
 
 #
