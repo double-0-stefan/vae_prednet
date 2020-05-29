@@ -75,8 +75,8 @@ class sym_conv2D(nn.Module):
 		w = []
 		for m in reversed(range(self.in_channels)):
 
-			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000
-			a[-1,0] = 0.5 #torch.exp(torch.tensor(1.0))
+			a = torch.rand(int((self.kernel_size +1)/2), m+1) # get explosion if too small/large?
+			a[-1,0] += 0.5 #torch.exp(torch.tensor(1.0))
 			w.append(nn.Parameter(a))
 			
 		self.weight_values = nn.ParameterList(w)
@@ -298,7 +298,7 @@ class sym_conv2D(nn.Module):
 		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
 
 		# need to set up weights to be symmetric around centres
-		# B1n = torch.matrix_power(B, n).cuda()
+		B1n = torch.matrix_power(B, n).cuda()
 		# det of this will always be zero
 
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
