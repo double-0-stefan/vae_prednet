@@ -75,7 +75,7 @@ class sym_conv2D(nn.Module):
 		w = []
 		for m in reversed(range(self.in_channels)):
 
-			a = torch.zeros(int((self.kernel_size +1)/2), m+1)/1000
+			a = torch.randn(int((self.kernel_size +1)/2), m+1)/1000
 			a[-1,0] = 1.0 #torch.exp(torch.tensor(1.0))
 			w.append(nn.Parameter(a))
 			
@@ -233,8 +233,8 @@ class sym_conv2D(nn.Module):
 		# is this always singular (lead diag is zero)
 		# could use try..
 		# B_inv = torch.inverse(self.B)
-		try:
-			B_inv = torch.inverse(B)
+		
+		B_inv = torch.inverse(B)
 		except RuntimeError:
 			self.add_jitter(B,1e-6)
 			B_inv = torch.inverse(B)
