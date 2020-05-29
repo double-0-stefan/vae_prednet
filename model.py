@@ -391,12 +391,20 @@ class sym_conv2D(nn.Module):
 		# print(T)
 		# print(T)
 
+		# ldT1 = torch.logdet(T1)
+		# ldT2 = torch.logdet(T2)
+		# ldT3 = torch.logdet(T3)
+
+		# print(ldT1)
+		# print(ldT2)
+		# print(ldT3)
 		
 
 		# T11 is upper left block of size m × m of the transfer matrix
 
 
 		T11 = T[:m,:m]
+		print(T11)
 
 		# T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
 
