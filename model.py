@@ -441,9 +441,10 @@ class sym_conv2D(nn.Module):
 			print('bad ldT')
 			print(T11)
 			u, s, v = torch.svd(T11)
-			print(s)
+			
 			s = torch.diag(s)
-
+			print(s.size())
+			print(s[s>tol or s < 1/tol])
 			ldT = sum(torch.log(s[s>tol or s < 1/tol]))
 
 
