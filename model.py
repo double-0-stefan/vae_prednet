@@ -440,6 +440,7 @@ class sym_conv2D(nn.Module):
 			print('bad ldT')
 			print(T11)
 			u, s, v = torch.svd(T11)
+			print(s)
 			ldT = sum(torch.log(torch.diag(s)))
 
 
@@ -722,7 +723,7 @@ class pc_conv_network(nn.Module):
 				chan = self.p['imchan']
 
 			if learn == 1:
-				print(-self.p['bs'] * self.Precision[i+1].log_det(PE.view(self.p['bs'], -1).size(1)))
+				# print(-self.p['bs'] * self.Precision[i+1].log_det(PE.view(self.p['bs'], -1).size(1)))
 				f = 0.5*sum(sum(
 					- self.p['bs'] * self.Precision[i+1].log_det(PE.view(self.p['bs'], -1).size(1)) # -ve here because more precise = good (nb will need to balance over layers somehow)
 					+ torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
