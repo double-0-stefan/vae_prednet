@@ -116,7 +116,7 @@ class sym_conv2D(nn.Module):
 
 		filter_weights #= filter_weights.cuda()
 
-		self.register_buffer('filter_weights', self.filter_weights)
+		self.register_buffer('filter_weights', filter_weights)
 
 	def generate_cov_matrix(self):
 
