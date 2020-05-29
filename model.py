@@ -435,7 +435,7 @@ class sym_conv2D(nn.Module):
 		# 	u, s, v = torch.svd(B1n)
 		# 	ldB = sum(torch.log(torch.diag(s)))
 
-		tol = torch.tensor(1e-16)
+		tol = torch.tensor(1e-32)
 		ldT = torch.logdet(T11)
 		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
 			print('bad ldT')
@@ -447,7 +447,7 @@ class sym_conv2D(nn.Module):
 			s = s[s>tol]
 			s = s[s<1/tol]
 			# print(s[s>tol or s < 1/tol].size())
-			print(s.size())
+			print(s.size()) # can become zero
 			ldT = sum(torch.log(s))#[s>tol or s < 1/tol]))
 
 
