@@ -411,17 +411,19 @@ class sym_conv2D(nn.Module):
 		# For non-positive definite cases, the determinant is considered to be the
 		# product of the positive singular values
 
+		ldB = torch.logdet(B1n)
+		if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
+			print('bad ldB')
+			u, s, v = torch.svd(B1n)
+			ldB = sum(torch.log(torch.diag(s)))
+
 		ldT = torch.logdet(T11)
-		if torch.isnan(ldT) or torch.isinf(ldT):
+		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
 			print('bad ldT')
 			u, s, v = torch.svd(T11)
 			ldT = sum(torch.log(torch.diag(s)))
 
-		ldB = torch.logdet(B1n)
-		if torch.isnan(ldT) or torch.isinf(ldB):
-			print('bad ldB')
-			u, s, v = torch.svd(B1n)
-			ldB = sum(torch.log(torch.diag(s)))
+
 
 
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
