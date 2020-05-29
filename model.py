@@ -202,7 +202,7 @@ class sym_conv2D(nn.Module):
 
 		s = centre_block.size(1) +rhs.size(1) -1
 		# print(s)
-		# smaller matrix to ensure invertable - makes it odd? s-2??
+		# smaller matrix to ensure invertable 
 
 		self.A = pre_cov[:s, :s].cuda()
 
@@ -249,7 +249,11 @@ class sym_conv2D(nn.Module):
 		# A triangular matrix is invertible if and only if no diagonal entries are zero.
 		# so have to have elements on leading diagonal: s < pre_cov/2
 
+
+		# matrix product: det(AB) = detA.detB
+
 		##########################################
+
 
 		B_inv = torch.inverse(B)
 		# except RuntimeError:
@@ -271,17 +275,18 @@ class sym_conv2D(nn.Module):
 			torch.cat([-A, -C]), 
 			Im_Zm
 			], 1)
-		print(T1)
+		# print(T1)
 
-		# this is nan currently:
+		# if off-diagonal elements are too small (or, presumably, too large), this becomes nan
+		# can use product-determinant rule if this becomes problematic
 		T2 = torch.matrix_power(
 			torch.cat([
 				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
 				Im_Zm
 				],1), n).cuda()
-		print(T2)
-		print(torch.mm(B_inv,A))
-		print(torch.mm(B_inv,C))
+		# print(T2)
+		# print(torch.mm(B_inv,A))
+		# print(torch.mm(B_inv,C))
 
 
 
@@ -289,10 +294,10 @@ class sym_conv2D(nn.Module):
 			torch.cat([-torch.mm(B_inv,A), -B_inv]), 
 			Im_Zm
 			], 1).cuda()
-		print(T3)
+		# print(T3)
 
 		T = torch.chain_matmul(T1,T2,T3).cuda()
-		print(T)
+		# print(T)
 		# print(T)
 
 		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
@@ -306,15 +311,13 @@ class sym_conv2D(nn.Module):
 		print(torch.logdet(T11))
 		print(torch.logdet(B1n))
 
-
-#
-		return logdetM
+		return logdetM.cuda()
 
 
 	def forward(self, x):
 
 		return F.conv2d(x, weight=self.filter_weights, bias=self.bias, stride=self.stride,
-			padding=self.padding, dilation=self.dilation, groups=self.groups)
+			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda()
 
 
 
