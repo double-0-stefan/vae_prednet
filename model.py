@@ -88,7 +88,7 @@ class sym_conv2D(nn.Module):
 
 
 		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
-			self.kernel_size, self.kernel_size).to(device)
+			self.kernel_size, self.kernel_size)
 
 		for i in range(self.out_channels):
 
