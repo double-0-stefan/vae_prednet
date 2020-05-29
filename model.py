@@ -52,7 +52,7 @@ class sym_conv2D(nn.Module):
 
 	def add_jitter(self, mat, jitter_val=1e-6):
 	    """
-	    From gpytorch
+	    Adapted from gpytorch
 
 	    Adds "jitter" to the diagonal of a matrix.
 	    This ensures that a matrix that *should* be positive definite *is* positive definate.
@@ -235,7 +235,7 @@ class sym_conv2D(nn.Module):
 		# B_inv = torch.inverse(self.B)
 		try:
 			B_inv = torch.inverse(B)
-		except:
+		except RuntimeError:
 			self.add_jitter(B,1e-6)
 			B_inv = torch.inverse(B)
 		
