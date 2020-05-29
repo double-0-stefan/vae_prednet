@@ -114,7 +114,7 @@ class sym_conv2D(nn.Module):
 						filter_weights[j,i,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
 						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
 
-		self.filter_weights = filter_weights.cuda()
+		filter_weights #= filter_weights.cuda()
 
 		self.register_buffer('filter_weights', self.filter_weights)
 
