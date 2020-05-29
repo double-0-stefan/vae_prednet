@@ -88,7 +88,7 @@ class sym_conv2D(nn.Module):
 
 		device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-		slef.register_buffer('filter_weights', torch.zeros(self.out_channels,int(self.in_channels/self.groups),
+		self.register_buffer('filter_weights', torch.zeros(self.out_channels,int(self.in_channels/self.groups),
 			self.kernel_size, self.kernel_size).to(device))
 
 		# filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
