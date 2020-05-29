@@ -204,10 +204,10 @@ class sym_conv2D(nn.Module):
 		# print(s)
 		# smaller matrix to ensure invertable - makes it odd? s-2??
 
-		self.A = pre_cov[:s-1, :s-1].cuda()
+		self.A = pre_cov[:s, :s].cuda()
 
-		self.B = pre_cov[:s-1, s-1:s-1+s-1].cuda() # upper triangle
-		self.C = pre_cov[s-1:s-1+s-1, :s-1].cuda() # lower triangle
+		self.B = pre_cov[:s, s:s+s].cuda() # upper triangle
+		self.C = pre_cov[s:s-s, :s].cuda() # lower triangle
 		# print(self.A)
 		# print(self.B)
 		# print(self.C)
@@ -272,12 +272,18 @@ class sym_conv2D(nn.Module):
 			Im_Zm
 			], 1)
 		print(T1)
+
+		# this is nan currently:
 		T2 = torch.matrix_power(
 			torch.cat([
 				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
 				Im_Zm
 				],1), n).cuda()
 		print(T2)
+		print(torch.mm(B_inv,A))
+		print(orch.mm(B_inv,C))
+
+
 
 		T3 = torch.cat([
 			torch.cat([-torch.mm(B_inv,A), -B_inv]), 
