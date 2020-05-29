@@ -192,7 +192,7 @@ class sym_conv2D(nn.Module):
 		middle = int((self.kernel_size +1)/2)
 			
 		# make temp matrix of weights
-		temp = torch.zeros([self.out_channels,self.out_channels,middle-1]).cuda()
+		temp = torch.zeros([self.out_channels,self.out_channels,middle-1]).to('cuda')
 		
 		for i in range(self.out_channels):
 			for j in range(self.weight_values[i].size(1)):
@@ -211,8 +211,8 @@ class sym_conv2D(nn.Module):
 			for k in range(1, middle):
 				kount += 4*k 
 		
-		rhs = torch.zeros([self.out_channels, kount]).cuda()
-		centre_block = torch.zeros([self.out_channels, self.out_channels]).cuda()
+		rhs = torch.zeros([self.out_channels, kount]).to('cuda')
+		centre_block = torch.zeros([self.out_channels, self.out_channels]).to('cuda')
 
 		# fill matrices with weights
 		for i in range(self.out_channels):
@@ -228,11 +228,12 @@ class sym_conv2D(nn.Module):
 					kount += 4*k 
 		# rotate 180 degrees to obtain lhs
 		lhs = torch.rot90(rhs, k=-2, dims=[0,1])
+		lhs.to('cuda')
 
 		# Make (square) pre-cov matrix from which A,B,C will be taken #
 		length = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) # twice the size of whole thing minus size centre
 		height = length#centre_block.size(1) + 2*rhs.size(1) #+ 2*rhs.size(1) 
-		pre_cov = torch.zeros(length, height).cuda()
+		pre_cov = torch.zeros(length, height).to('cuda')
 
 		if centre_block.size(1) == 1:
 			rhs.squeeze()
@@ -278,12 +279,12 @@ class sym_conv2D(nn.Module):
 		# print(s)
 		# smaller matrix to ensure invertable 
 
-		A = pre_cov[:s, :s].cuda()
+		A = pre_cov[:s, :s].to('cuda')
 
 		
 
-		B = pre_cov[:s, s:s+s].cuda() # upper triangle
-		C = pre_cov[s:s+s, :s].cuda() # lower triangle
+		B = pre_cov[:s, s:s+s].to('cuda')# upper triangle
+		C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
 		# print(self.A)
 		# print(self.B)
 		# print(self.C)
