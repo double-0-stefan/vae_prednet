@@ -34,7 +34,7 @@ class sym_conv2D(nn.Module):
 		device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		
 		super(sym_conv2D, self).__init__()
-		self.cuda()	
+		self.to(device)	
 		self.in_channels = in_channels
 		self.out_channels = out_channels
 		self.kernel_size = kernel_size
@@ -50,7 +50,7 @@ class sym_conv2D(nn.Module):
 		self.generate_weight_values()
 		self.generate_filter_structure()
 		self.generate_cov_matrix()
-		self.cuda()
+		self.to(device)	
 
 	def add_jitter(self, mat, jitter_val=1e-6):
 	    """
@@ -327,8 +327,6 @@ class sym_conv2D(nn.Module):
 
 	def forward(self, x):
 
-		print(F.conv2d(x, weight=self.filter_weights, bias=self.bias, stride=self.stride,
-			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda())
 
 		return F.conv2d(x, weight=self.filter_weights, bias=self.bias, stride=self.stride,
 			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda()
