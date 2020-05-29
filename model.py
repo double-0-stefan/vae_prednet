@@ -372,7 +372,7 @@ class sym_conv2D(nn.Module):
 		# can use product-determinant rule if this becomes problematic
 
 		# this rapidly becomes VAST
-		T2 = torch.matrix_power(torch.cuda.DoubleTensor(
+		T2 = torch.matrix_power(torch.double(
 			torch.cat([
 				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ], 1),
 				self.Im_Zm
@@ -391,7 +391,7 @@ class sym_conv2D(nn.Module):
 		print(T2)
 		print(T3)
 
-		T = torch.chain_matmul(torch.cuda.DoubleTensor(T1),T2,torch.cuda.DoubleTensor(T3)).cuda()
+		T = torch.chain_matmul(torch.double(T1),T2,torch.double(T3)).cuda()
 		# print(T)
 		# print(T)
 
