@@ -385,7 +385,9 @@ class sym_conv2D(nn.Module):
 			torch.cat([-torch.mm(B_inv,A), -B_inv], 1), 
 			self.Im_Zm
 			], 0).cuda()
-		# print(T3)
+		print(T1)
+		print(T2)
+		print(T3)
 
 		T = torch.chain_matmul(T1,T2,T3).cuda()
 		# print(T)
