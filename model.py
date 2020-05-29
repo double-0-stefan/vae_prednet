@@ -391,7 +391,7 @@ class sym_conv2D(nn.Module):
 		print(T2)
 		print(T3)
 
-		T = torch.chain_matmul(T1.type(torch.cuda.DoubleTensor),T2,T3.type(torch.cuda.DoubleTensor).cuda()
+		T = torch.chain_matmul(T1.type(torch.cuda.DoubleTensor),T2,T3.type(torch.cuda.DoubleTensor)).cuda()
 		# print(T)
 		# print(T)
 
