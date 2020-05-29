@@ -435,6 +435,7 @@ class sym_conv2D(nn.Module):
 		# 	u, s, v = torch.svd(B1n)
 		# 	ldB = sum(torch.log(torch.diag(s)))
 
+		tol = torch.tensor(1e-16)
 		ldT = torch.logdet(T11)
 		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
 			print('bad ldT')
