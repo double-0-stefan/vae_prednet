@@ -180,13 +180,13 @@ class sym_conv2D(nn.Module):
 		# print(pre_cov.size())
 
 		s = centre_block.size(1) + rhs.size(1)
-		# print(s)
-		# smaller matrix to ensure invertable
+		print(s)
+		# smaller matrix to ensure invertable - makes it odd? s-2??
 
-		self.A = pre_cov[:s-1, :s-1].cuda()
+		self.A = pre_cov[:s-2, :s-2].cuda()
 
-		self.B = pre_cov[:s-1, s-1:s-1+s-1].cuda() # upper triangle
-		self.C = pre_cov[s-1:s-1+s-1, :s-1].cuda() # lower triangle
+		self.B = pre_cov[:s-2, s-2:s-2+s-2].cuda() # upper triangle
+		self.C = pre_cov[s-2:s-2+s-2, :s-2].cuda() # lower triangle
 		# print(self.A)
 		# print(self.B)
 		# print(self.C)
@@ -238,7 +238,7 @@ class sym_conv2D(nn.Module):
 
 		T = torch.chain_matmul(T1,T2,T3).cuda()
 
-		print(T)
+		# print(T)
 
 		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
 
@@ -248,7 +248,7 @@ class sym_conv2D(nn.Module):
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
 		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
 		print(torch.logdet(T11))
-		print(torch.logdet(B1n))
+		print(torch.logdet(B1n)) # currently zero - need to jitter leading diag?
 
 
 #
