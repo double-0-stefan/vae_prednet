@@ -209,19 +209,21 @@ class sym_conv2D(nn.Module):
 		# print(s)
 		# smaller matrix to ensure invertable 
 
-		# self.A = pre_cov[:s, :s].cuda()
+		A = pre_cov[:s, :s].cuda()
 
-		self.register_buffer('A', pre_cov[:s, :s])
+		
 
-		self.register_buffer('B', pre_cov[:s, s:s+s])
-
-		self.register_buffer('C', pre_cov[s:s+s, :s])
-
-		# self.B = pre_cov[:s, s:s+s].cuda() # upper triangle
-		# self.C = pre_cov[s:s+s, :s].cuda() # lower triangle
+		B = pre_cov[:s, s:s+s].cuda() # upper triangle
+		C = pre_cov[s:s+s, :s].cuda() # lower triangle
 		# print(self.A)
 		# print(self.B)
 		# print(self.C)
+
+		self.register_buffer('A', A)
+
+		self.register_buffer('B', B)
+
+		self.register_buffer('C', C)
 
 		# print(self.B)
 
