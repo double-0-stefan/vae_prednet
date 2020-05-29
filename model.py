@@ -285,10 +285,10 @@ class sym_conv2D(nn.Module):
 
 		self.register_buffer('Im_Zm', Im_Zm)
 
-		print(Im_Zm)
+		print(Im_Zm.size())
 		
 		T1 = torch.cat([
-			torch.cat([-A, -C]), 
+			torch.cat([-A, -C], 1), 
 			self.Im_Zm
 			], 0)
 		# print(T1)
@@ -297,7 +297,7 @@ class sym_conv2D(nn.Module):
 		# can use product-determinant rule if this becomes problematic
 		T2 = torch.matrix_power(
 			torch.cat([
-				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
+				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ], 1),
 				self.Im_Zm
 				],0), n).cuda()
 		# print(T2)
@@ -307,7 +307,7 @@ class sym_conv2D(nn.Module):
 
 
 		T3 = torch.cat([
-			torch.cat([-torch.mm(B_inv,A), -B_inv]), 
+			torch.cat([-torch.mm(B_inv,A), -B_inv], 1), 
 			self.Im_Zm
 			], 0).cuda()
 		# print(T3)
