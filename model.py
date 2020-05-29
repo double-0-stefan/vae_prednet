@@ -86,9 +86,6 @@ class sym_conv2D(nn.Module):
 
 	def generate_filter_structure(self):
 
-		device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-
 
 		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
 			self.kernel_size, self.kernel_size).to(device)
@@ -225,7 +222,8 @@ class sym_conv2D(nn.Module):
 
 		self.register_buffer('C', C)
 
-		# print(self.B)
+
+		print(self.B)
 
 	def log_det(self, phi_length):
 		# where phi_length is non-batch elements in phi
@@ -328,6 +326,9 @@ class sym_conv2D(nn.Module):
 
 
 	def forward(self, x):
+
+		print(F.conv2d(x, weight=self.filter_weights, bias=self.bias, stride=self.stride,
+			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda())
 
 		return F.conv2d(x, weight=self.filter_weights, bias=self.bias, stride=self.stride,
 			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda()
