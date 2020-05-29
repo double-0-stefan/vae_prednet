@@ -55,7 +55,7 @@ class sym_conv2D(nn.Module):
 		for m in reversed(range(self.in_channels)):
 
 			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000
-			a[-1,0] = 1.0
+			a[-1,0] = exp(1.0)
 			w.append(nn.Parameter(a))
 			
 		self.weight_values = nn.ParameterList(w)
@@ -217,7 +217,7 @@ class sym_conv2D(nn.Module):
 		m = A.size(0)
 
 		n = int(round(phi_length/m))
-		print(m*n)
+		# print(m*n)
 
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)]).cuda()
