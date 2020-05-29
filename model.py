@@ -223,7 +223,7 @@ class sym_conv2D(nn.Module):
 		self.register_buffer('C', C)
 
 
-		print(self.B)
+		# print(self.B)
 
 	def log_det(self, phi_length):
 		# where phi_length is non-batch elements in phi
@@ -239,7 +239,7 @@ class sym_conv2D(nn.Module):
 		B = self.B
 		C = self.C
 
-		print(B)
+		# print(B)
 
 		# is this always singular (lead diag is zero)
 		# could use try..
@@ -267,6 +267,8 @@ class sym_conv2D(nn.Module):
 
 
 		B_inv = torch.inverse(B)
+
+		print(B_inv)
 		# except RuntimeError:
 		# 	self.add_jitter(B,1e-6)
 		# 	B_inv = torch.inverse(B)
@@ -281,6 +283,7 @@ class sym_conv2D(nn.Module):
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)]).cuda()
 
+		print(Im_Zm)
 		
 		T1 = torch.cat([
 			torch.cat([-A, -C]), 
