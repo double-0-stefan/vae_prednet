@@ -281,13 +281,15 @@ class sym_conv2D(nn.Module):
 		# print(m*n)
 
 
-		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)], 1)
+		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)], 1).cuda()
+
+		self.register_buffer('Im_Zm', Im_Zm)
 
 		print(Im_Zm)
 		
 		T1 = torch.cat([
 			torch.cat([-A, -C]), 
-			Im_Zm
+			self.Im_Zm
 			], 0)
 		# print(T1)
 
@@ -296,7 +298,7 @@ class sym_conv2D(nn.Module):
 		T2 = torch.matrix_power(
 			torch.cat([
 				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
-				Im_Zm
+				self.Im_Zm
 				],0), n).cuda()
 		# print(T2)
 		# print(torch.mm(B_inv,A))
@@ -306,7 +308,7 @@ class sym_conv2D(nn.Module):
 
 		T3 = torch.cat([
 			torch.cat([-torch.mm(B_inv,A), -B_inv]), 
-			Im_Zm
+			self.Im_Zm
 			], 0).cuda()
 		# print(T3)
 
