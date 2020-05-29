@@ -444,7 +444,7 @@ class sym_conv2D(nn.Module):
 			print(s)
 			s = torch.diag(s)
 
-			ldT = sum(torch.log(s[s>tol and s < 1/tol]))
+			ldT = sum(torch.log(s[s>tol or s < 1/tol]))
 
 
 
