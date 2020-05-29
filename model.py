@@ -181,10 +181,12 @@ class sym_conv2D(nn.Module):
 
 		s = centre_block.size(1) + rhs.size(1)
 		# print(s)
-		self.A = pre_cov[:s, :s].cuda()
+		# smaller matrix to ensure invertable
 
-		self.B = pre_cov[:s, s:s+s].cuda() # upper triangle
-		self.C = pre_cov[s:s+s, :s].cuda() # lower triangle
+		self.A = pre_cov[:s-1, :s-1].cuda()
+
+		self.B = pre_cov[:s-1, s-1:s-1+s-1].cuda() # upper triangle
+		self.C = pre_cov[s-1:s-1+s-1, :s-1].cuda() # lower triangle
 		# print(self.A)
 		# print(self.B)
 		# print(self.C)
@@ -196,6 +198,8 @@ class sym_conv2D(nn.Module):
 		https://www.sciencedirect.com/science/article/pii/S0024379508003200?via%3Dihub
 		or
 		https://arxiv.org/abs/0712.0681
+
+		# B and C must be non-singular
 		'''
 		A = self.A
 		B = self.B
@@ -204,7 +208,7 @@ class sym_conv2D(nn.Module):
 		# is this always singular (lead diag is zero)
 		# could use try..
 		# B_inv = torch.inverse(self.B)
-		B_inv = torch.inverse(B)
+		B_inv = torch.pinverse(B)
 
 
 		# lengths
