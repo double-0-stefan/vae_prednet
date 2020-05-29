@@ -207,6 +207,8 @@ class sym_conv2D(nn.Module):
 		B = self.B
 		C = self.C
 
+		print(A.size())
+
 		# is this always singular (lead diag is zero)
 		# could use try..
 		# B_inv = torch.inverse(self.B)
