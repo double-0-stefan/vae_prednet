@@ -406,12 +406,12 @@ class sym_conv2D(nn.Module):
 
 		ldT = torch.logdet(T11)
 		if torch.isnan(ldT) or torch.isinf(ldT):
-			u, s, v = torch.svd(T11)
+			u, s, v = customsvd(T11)
 			ldT = sum(torch.log(torch.diag(s)))
 
 		ldB = torch.logdet(B1n)
 		if torch.isnan(ldT) or torch.isinf(ldB):
-			u, s, v = torch.svd(B1n)
+			u, s, v = customsvd(B1n)
 			ldB = sum(torch.log(torch.diag(s)))
 
 
