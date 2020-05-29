@@ -281,7 +281,7 @@ class sym_conv2D(nn.Module):
 				],1), n).cuda()
 		print(T2)
 		print(torch.mm(B_inv,A))
-		print(orch.mm(B_inv,C))
+		print(torch.mm(B_inv,C))
 
 
 
