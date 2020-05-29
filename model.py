@@ -389,6 +389,9 @@ class sym_conv2D(nn.Module):
 			], 0).cuda()
 		print(T1)
 		print(T2)
+		print('B_inv')
+		print(B_inv)
+
 		print(T3)
 
 		T = torch.chain_matmul(T1.type(torch.cuda.DoubleTensor),T2,T3.type(torch.cuda.DoubleTensor)).cuda()
@@ -412,23 +415,23 @@ class sym_conv2D(nn.Module):
 
 		# T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
 
-		B1n = torch.matrix_power(B, n).cuda()
+		# B1n = torch.matrix_power(B, n).cuda()
 		# could alternatively do power of det
 		# or n * logdet!
 
 		# This and other method look really similar
-		logdetB1n = n * torch.logdet(B)
-		print('logdetB1n')
-		print(logdetB1n)
+		ldB = n * torch.logdet(B)
+		# print('logdetB1n')
+		# print(logdetB1n)
 		# Use spm_logdet approach to find log determinants
 		# For non-positive definite cases, the determinant is considered to be the
 		# product of the positive singular values
 
-		ldB = torch.logdet(B1n)
-		if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
-			print('bad ldB')
-			u, s, v = torch.svd(B1n)
-			ldB = sum(torch.log(torch.diag(s)))
+		# ldB = torch.logdet(B1n)
+		# if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
+		# 	print('bad ldB')
+		# 	u, s, v = torch.svd(B1n)
+		# 	ldB = sum(torch.log(torch.diag(s)))
 
 		ldT = torch.logdet(T11)
 		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
