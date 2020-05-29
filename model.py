@@ -88,11 +88,10 @@ class sym_conv2D(nn.Module):
 
 		device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-		self.register_buffer('filter_weights', torch.zeros(self.out_channels,int(self.in_channels/self.groups),
-			self.kernel_size, self.kernel_size).to(device))
 
-		# filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
-		# 	self.kernel_size, self.kernel_size).to(device)
+
+		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
+			self.kernel_size, self.kernel_size).to(device)
 
 		for i in range(self.out_channels):
 
@@ -117,6 +116,7 @@ class sym_conv2D(nn.Module):
 
 		self.filter_weights = filter_weights.cuda()
 
+		self.register_buffer('filter_weights', self.filter_weights)
 
 	def generate_cov_matrix(self):
 
