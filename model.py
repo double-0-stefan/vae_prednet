@@ -50,7 +50,7 @@ class sym_conv2D(nn.Module):
 		self.generate_cov_matrix()
 		self.cuda()
 
-	def add_jitter(mat, jitter_val=1e-6):
+	def add_jitter(self, mat, jitter_val=1e-6):
 	    """
 	    From gpytorch
 
