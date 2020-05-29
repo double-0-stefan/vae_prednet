@@ -450,12 +450,12 @@ class sym_conv2D(nn.Module):
 		print(ldT)
 		print('ldB')
 		print(ldB)
+		print('  ')
 
 		return logdetM
 
 
 	def forward(self, x):
-
 
 		return F.conv2d(x, weight=self.filter_weights, bias=self.bias, stride=self.stride,
 			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda()
