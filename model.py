@@ -30,6 +30,8 @@ import copy
 class sym_conv2D(nn.Module):
 	def __init__(self, in_channels, out_channels, kernel_size, stride=1, 
 		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
+
+		device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		
 		super(sym_conv2D, self).__init__()
 		self.cuda()	
@@ -76,7 +78,7 @@ class sym_conv2D(nn.Module):
 		for m in reversed(range(self.in_channels)):
 
 			a = torch.rand(int((self.kernel_size +1)/2), m+1) # get explosion if too small/large?
-			a[-1,0] += 0.5 #torch.exp(torch.tensor(1.0))
+			a[-1,0] += 1 #torch.exp(torch.tensor(1.0))
 			w.append(nn.Parameter(a))
 			
 		self.weight_values = nn.ParameterList(w)
@@ -84,10 +86,13 @@ class sym_conv2D(nn.Module):
 
 	def generate_filter_structure(self):
 
-		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
-			self.kernel_size, self.kernel_size)
+		device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-		indices = torch.zeros_like(filter_weights)
+		slef.register_buffer('filter_weights', torch.zeros(self.out_channels,int(self.in_channels/self.groups),
+			self.kernel_size, self.kernel_size).to(device))
+
+		# filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
+		# 	self.kernel_size, self.kernel_size).to(device)
 
 		for i in range(self.out_channels):
 
