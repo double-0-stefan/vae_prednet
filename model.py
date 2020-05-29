@@ -191,6 +191,8 @@ class sym_conv2D(nn.Module):
 		# print(self.B)
 		# print(self.C)
 
+		print(self.B)
+
 	def log_det(self, phi_length):
 		# where phi_length is non-batch elements in phi
 		'''
