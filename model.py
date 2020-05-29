@@ -235,9 +235,9 @@ class sym_conv2D(nn.Module):
 		# B_inv = torch.inverse(self.B)
 		
 		B_inv = torch.inverse(B)
-		except RuntimeError:
-			self.add_jitter(B,1e-6)
-			B_inv = torch.inverse(B)
+		# except RuntimeError:
+		# 	self.add_jitter(B,1e-6)
+		# 	B_inv = torch.inverse(B)
 		
 
 		# lengths
