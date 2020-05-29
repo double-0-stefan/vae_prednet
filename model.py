@@ -75,8 +75,8 @@ class sym_conv2D(nn.Module):
 		w = []
 		for m in reversed(range(self.in_channels)):
 
-			a = torch.randn(int((self.kernel_size +1)/2), m+1)/1000
-			a[-1,0] = 1.0 #torch.exp(torch.tensor(1.0))
+			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000
+			a[-1,0] = 0.5 #torch.exp(torch.tensor(1.0))
 			w.append(nn.Parameter(a))
 			
 		self.weight_values = nn.ParameterList(w)
@@ -204,10 +204,10 @@ class sym_conv2D(nn.Module):
 		# print(s)
 		# smaller matrix to ensure invertable - makes it odd? s-2??
 
-		self.A = pre_cov[:s, :s].cuda()
+		self.A = pre_cov[:s-1, :s-1].cuda()
 
-		self.B = pre_cov[:s, s:s+s].cuda() # upper triangle
-		self.C = pre_cov[s:s+s, :s].cuda() # lower triangle
+		self.B = pre_cov[:s-1, s-1:s-1+s-1].cuda() # upper triangle
+		self.C = pre_cov[s-1:s-1+s-1, :s-1].cuda() # lower triangle
 		# print(self.A)
 		# print(self.B)
 		# print(self.C)
@@ -233,7 +233,24 @@ class sym_conv2D(nn.Module):
 		# is this always singular (lead diag is zero)
 		# could use try..
 		# B_inv = torch.inverse(self.B)
+
+
+		############# Maths notes ##############
 		
+		# dealing with log of -ve det:
+		# from PyTorch docs logdet:
+		# Result is -inf if input has zero log determinant, 
+		# and is nan if input has negative determinant.
+
+		# triangular matrices:
+		# determinant equals the product of the diagonal entries
+		# so if s is half length of pre_cov, det B1n will always be zero
+
+		# A triangular matrix is invertible if and only if no diagonal entries are zero.
+		# so have to have elements on leading diagonal: s < pre_cov/2
+
+		##########################################
+
 		B_inv = torch.inverse(B)
 		# except RuntimeError:
 		# 	self.add_jitter(B,1e-6)
@@ -249,31 +266,34 @@ class sym_conv2D(nn.Module):
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)]).cuda()
 
+		
 		T1 = torch.cat([
 			torch.cat([-A, -C]), 
 			Im_Zm
 			], 1)
-
+		print(T1)
 		T2 = torch.matrix_power(
 			torch.cat([
 				torch.cat([	-torch.mm(B_inv,A), -torch.mm(B_inv,C) ]),
 				Im_Zm
 				],1), n).cuda()
+		print(T2)
 
 		T3 = torch.cat([
 			torch.cat([-torch.mm(B_inv,A), -B_inv]), 
 			Im_Zm
 			], 1).cuda()
-
+		print(T3)
 
 		T = torch.chain_matmul(T1,T2,T3).cuda()
-
+		print(T)
 		# print(T)
 
 		T11 = torch.rot90(torch.triu(torch.rot90(T,1,[1,0])), 1, [0,1]).cuda()
 
 		# need to set up weights to be symmetric around centres
-		B1n = torch.matrix_power(B, n).cuda()
+		# B1n = torch.matrix_power(B, n).cuda()
+		# det of this will always be zero
 
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
 		logdetM =  torch.logdet(T11) + torch.logdet(B1n)
