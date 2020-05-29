@@ -200,7 +200,7 @@ class sym_conv2D(nn.Module):
 		# Make A, B and C matrices for determinant method
 		# print(pre_cov.size())
 
-		s = centre_block.size(1) rhs.size(1)
+		s = centre_block.size(1) +rhs.size(1)
 		# print(s)
 		# smaller matrix to ensure invertable - makes it odd? s-2??
 
