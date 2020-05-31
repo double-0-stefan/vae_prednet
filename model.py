@@ -343,9 +343,10 @@ class sym_conv2D(nn.Module):
 		# For non-positive definite cases, the determinant is considered to be the
 		# product of the positive singular values
 
-
-		B_inv = torch.inverse(B)
-
+		try:
+			B_inv = torch.inverse(B)
+		except:
+			B_inv = torch.inverse(self.add_jitter(B))
 		# print(B_inv)
 		# except RuntimeError:
 		# 	self.add_jitter(B,1e-6)
