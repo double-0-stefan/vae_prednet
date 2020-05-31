@@ -399,7 +399,7 @@ class sym_conv2D(nn.Module):
 
 		T2 = torch.matrix_power(T2a, n).cuda()
 		# print(T2a)
-		print(T2)
+		# print(T2)
 		# print(torch.mm(B_inv,A))
 		# print(torch.mm(B_inv,C))
 		segments=1
@@ -407,7 +407,7 @@ class sym_conv2D(nn.Module):
 		while torch.isnan(T2[0,0]):
 			i+=1
 			T2 = torch.matrix_power(T2a, int(n/2**i)).cuda()
-			print(T2)
+			# print(T2)
 			segments = int(2**i)
 
 
@@ -628,6 +628,18 @@ class pc_conv_network(nn.Module):
 						padding= int((self.p['cov_size'][i]-1)/2),
 						dilation=1, groups=1, bias=None, padding_mode='zero')
 					)
+			# if self['vae']:
+			# 	Precision.append(
+
+			# 		sym_conv2D(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
+
+			# 			# if kernel is odd, centroid is central pixel at current channel for input and output
+
+			# 			kernel_size= self.p['cov_size'][i],
+			# 			stride=1, 
+			# 			padding= int((self.p['cov_size'][i]-1)/2),
+			# 			dilation=1, groups=1, bias=None, padding_mode='zero')
+			# 		)
 
 		self.Precision = nn.ModuleList(Precision).cuda()
 
