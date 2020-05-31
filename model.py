@@ -777,7 +777,7 @@ class pc_conv_network(nn.Module):
 			for obj in gc.get_objects():
 				try:
 					if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
-						print(type(obj), obj.size())
+						print(type(obj), obj.size(), obj.name(), obj.device())
 				except:
 					pass
 			if self.p['conv_precision']:
