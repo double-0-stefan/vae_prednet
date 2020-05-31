@@ -27,7 +27,7 @@ import copy
 import gc
 # import torch_xla
 # import torch_xla.core.xla_model as xm
-
+torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 # from https://github.com/pytorch/pytorch/issues/28293
 def compute_grad_V(U, S, V, grad_V):
@@ -297,10 +297,10 @@ class sym_conv2D(nn.Module):
 
 		self.register_buffer('C', C)
 
-		print(lhs)
-		print(rhs)
-		print(centre_block)
-		print(pre_cov)
+		# print(lhs)
+		# print(rhs)
+		# print(centre_block)
+		# print(pre_cov)
 
 		# print(self.B)
 
@@ -351,7 +351,7 @@ class sym_conv2D(nn.Module):
 			B_inv = torch.inverse(B)
 		except:
 			B_inv = torch.inverse(self.add_jitter(B))
-		print(B_inv)
+		# print(B_inv)
 		# except RuntimeError:
 		# 	self.add_jitter(B,1e-6)
 		# 	B_inv = torch.inverse(B)
