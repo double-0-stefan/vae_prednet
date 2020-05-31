@@ -123,6 +123,7 @@ class sym_conv2D(nn.Module):
 		self.generate_weight_values()
 		self.generate_filter_structure()
 		self.generate_cov_matrix()
+		self.logdet()
 		self.to(device)	
 
 	def add_jitter(self, mat, jitter_val=1e-6):
@@ -299,7 +300,7 @@ class sym_conv2D(nn.Module):
 
 		# print(self.B)
 
-	def log_det(self, phi_length):
+	def log_det(self, phi_length=int(self.A.size(0)*4)):
 		# where phi_length is non-batch elements in phi
 		'''
 		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
@@ -699,7 +700,7 @@ class pc_conv_network(nn.Module):
 		
 		# calculate PE
 		if i == -1:
-			print(x)
+			# print(x)
 			PE = self.images - x
 			# PE.cuda()
 			# do image prediction if required
@@ -774,12 +775,7 @@ class pc_conv_network(nn.Module):
 				# self.z_pc.detach()
 		# update synaptic parameters
 		else:
-			for obj in gc.get_objects():
-				try:
-					if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
-						print(type(obj), obj.size(), obj.name(), obj.device())
-				except:
-					pass
+			
 			if self.p['conv_precision']:
 				self.opt_P[i+1].zero_grad() 
 			if i < self.nlayers - 1:
