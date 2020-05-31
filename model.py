@@ -300,7 +300,7 @@ class sym_conv2D(nn.Module):
 
 		# print(self.B)
 
-	def log_det(self, phi_length=int(self.A.size(0)*4)):
+	def log_det(self, phi_length=0):
 		# where phi_length is non-batch elements in phi
 		'''
 		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
@@ -355,7 +355,11 @@ class sym_conv2D(nn.Module):
 		# lengths
 		m = A.size(0)
 
-		n = int(round(phi_length/m))
+		if phi_length > 0:
+
+			n = int(round(phi_length/m))
+		else:
+			n=4
 		# print(m*n)
 
 
