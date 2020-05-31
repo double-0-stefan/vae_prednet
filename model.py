@@ -351,7 +351,7 @@ class sym_conv2D(nn.Module):
 			B_inv = torch.inverse(B)
 		except:
 			B_inv = torch.inverse(self.add_jitter(B))
-		print(B_inv)
+		# print(B_inv)
 		# except RuntimeError:
 		# 	self.add_jitter(B,1e-6)
 		# 	B_inv = torch.inverse(B)
@@ -365,7 +365,7 @@ class sym_conv2D(nn.Module):
 			n = int(round(phi_length/m))
 		else:
 			n=4
-		# print(m*n)
+		print(n)
 
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)], 1).cuda()
@@ -390,7 +390,7 @@ class sym_conv2D(nn.Module):
 					-torch.mm(B_inv,A), -torch.mm(B_inv,C) ], 1), self.Im_Zm
 				],0).type(torch.cuda.DoubleTensor)
 		T2 = torch.matrix_power(T2a, n).cuda()
-		print(T2a)
+		# print(T2a)
 		print(T2)
 		# print(torch.mm(B_inv,A))
 		# print(torch.mm(B_inv,C))
