@@ -389,12 +389,24 @@ class sym_conv2D(nn.Module):
 				torch.cat([
 					-torch.mm(B_inv,A), -torch.mm(B_inv,C) ], 1), self.Im_Zm
 				],0).type(torch.cuda.DoubleTensor)
+
+
+
+		######### iterate through blocks if n > x ###############
+		######### use legdet all = ld a + ld b etc
+		# if torch.isnan(T2):
+
+
 		T2 = torch.matrix_power(T2a, n).cuda()
 		# print(T2a)
 		print(T2)
 		# print(torch.mm(B_inv,A))
 		# print(torch.mm(B_inv,C))
-
+		i=0
+		while torch.isnan(T2):
+			i+=1
+			T2 = torch.matrix_power(T2a, n/2**i).cuda()
+			print(T2)
 
 
 		T3 = torch.cat([
