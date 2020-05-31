@@ -24,6 +24,7 @@ from torch.optim import SGD
 # from gpuinfo import GPUInfo
 import torch.nn.functional as F
 import copy
+import gc
 # import torch_xla
 # import torch_xla.core.xla_model as xm
 
@@ -756,6 +757,13 @@ class pc_conv_network(nn.Module):
 		# update activation parameters
 
 		if learn == 0:
+
+		for obj in gc.get_objects():
+			try:
+				if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+					print(type(obj), obj.size())
+			except:
+				pass
 			if i < self.nlayers -1:
 				self.opt_phi[i+1].zero_grad()
 				# this is slooooow. Why needed here?
