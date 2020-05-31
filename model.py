@@ -123,7 +123,7 @@ class sym_conv2D(nn.Module):
 		self.generate_weight_values()
 		self.generate_filter_structure()
 		self.generate_cov_matrix()
-		self.logdet()
+		self.log_det()
 		self.to(device)	
 
 	def add_jitter(self, mat, jitter_val=1e-6):
