@@ -405,7 +405,7 @@ class sym_conv2D(nn.Module):
 		i=0
 		while torch.isnan(T2[0,0]):
 			i+=1
-			T2 = torch.matrix_power(T2a, n/2**i).cuda()
+			T2 = torch.matrix_power(T2a, int(n/2**i)).cuda()
 			print(T2)
 
 
