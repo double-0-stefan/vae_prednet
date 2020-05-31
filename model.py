@@ -123,7 +123,7 @@ class sym_conv2D(nn.Module):
 		self.generate_weight_values()
 		self.generate_filter_structure()
 		self.generate_cov_matrix()
-		self.log_det()
+		# self.log_det()
 		self.to(device)	
 
 	def add_jitter(self, mat, jitter_val=1e-6):
@@ -297,6 +297,10 @@ class sym_conv2D(nn.Module):
 
 		self.register_buffer('C', C)
 
+		print(lhs)
+		print(rhs)
+		print(centre_block)
+		print(pre_cov)
 
 		# print(self.B)
 
@@ -347,7 +351,7 @@ class sym_conv2D(nn.Module):
 			B_inv = torch.inverse(B)
 		except:
 			B_inv = torch.inverse(self.add_jitter(B))
-		# print(B_inv)
+		print(B_inv)
 		# except RuntimeError:
 		# 	self.add_jitter(B,1e-6)
 		# 	B_inv = torch.inverse(B)
@@ -706,117 +710,117 @@ class pc_conv_network(nn.Module):
 		return x
 
 	def loss(self, i, learn=0):
-		with torch.autograd.detect_anomaly():
-			# if top layer - latents:
-			if i == self.nlayers -1:
-				# get kl_loss
-				kl_loss  = self.vae_loss(self.iteration, self.z_pc)
-				# get sample
-				x = self.lin_down(self.latent_sample()).view(self.bs,-1)
 
-			# if not top layer - phi from layer above:
-			else:
-				x = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)
-			
-			# calculate PE
-			if i == -1:
-				# print(x)
-				PE = self.images - x
-				# PE.cuda()
-				# do image prediction if required
-				if self.eval_:
-					self.pred = x.view(self.bs,1,32,32)
-			else:
-				PE = self.phi[i] - x
+		# if top layer - latents:
+		if i == self.nlayers -1:
+			# get kl_loss
+			kl_loss  = self.vae_loss(self.iteration, self.z_pc)
+			# get sample
+			x = self.lin_down(self.latent_sample()).view(self.bs,-1)
 
-
-
-			# calculate free energy - negative of usual formula so works with loss
-			if self.p['include_precision']:
-				# calculate inverse covariance matrix from cholesky factorisation
-				# NB using transpose (rather than conjugate transpose) ensures P is symmetric
-				P = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
-
-				f = 0.5*sum(sum(
-					- torch.logdet(P) # -ve here because more precise = good (nb will need to balance over layers somehow)
-					+ torch.mm(
-						torch.mm(PE,P), PE.t()
-						)
-					))
-				# for testing purposes:
-				# print(i)
-				print(self.P_chol[i+1])
-			
-			elif self.p['conv_precision']:
-
-				if i > -1:
-					chan = self.chan[i][-1]
-				else:
-					chan = self.p['imchan']
-
-				if learn == 1:
-					# print(-self.p['bs'] * self.Precision[i+1].log_det(PE.view(self.p['bs'], -1).size(1)))
-					f = 0.5*sum(sum(
-						- self.p['bs'] * self.Precision[i+1].log_det(PE.view(self.p['bs'], -1).size(1)) # -ve here because more precise = good (nb will need to balance over layers somehow)
-						+ torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
-						))
-				else:
-					# P = copy.deepcopy(self.Precision[i+1])#.clone().detach()
-					# P.requires_grad_(False)
-					f = 0.5*sum(sum(
-						torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
-						))
-					# del P
+		# if not top layer - phi from layer above:
+		else:
+			x = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)
+		
+		# calculate PE
+		if i == -1:
+			# print(x)
+			PE = self.images - x
+			# PE.cuda()
+			# do image prediction if required
+			if self.eval_:
+				self.pred = x.view(self.bs,1,32,32)
+		else:
+			PE = self.phi[i] - x
 
 
-			else:
-				f = 0.5*sum(sum(
-					torch.mm(PE, PE.t())
-					))
 
+		# calculate free energy - negative of usual formula so works with loss
+		if self.p['include_precision']:
+			# calculate inverse covariance matrix from cholesky factorisation
+			# NB using transpose (rather than conjugate transpose) ensures P is symmetric
+			P = torch.mm(torch.tril(self.P_chol[i+1]), torch.tril(self.P_chol[i+1]).t())
+
+			f = 0.5*sum(sum(
+				- torch.logdet(P) # -ve here because more precise = good (nb will need to balance over layers somehow)
+				+ torch.mm(
+					torch.mm(PE,P), PE.t()
+					)
+				))
+			# for testing purposes:
 			# print(i)
-			# update activation parameters
+			print(self.P_chol[i+1])
+		
+		elif self.p['conv_precision']:
 
-			if learn == 0:
-
-				
-				if i < self.nlayers -1:
-					self.opt_phi[i+1].zero_grad()
-					# this is slooooow. Why needed here?
-					f.backward(retain_graph=True)
-					# f.backward(retain_graph=True)
-					self.opt_phi[i+1].step()
-					# self.phi[i+1].detach()
-				else:
-					f += kl_loss
-					self.opt_z_pc.zero_grad()
-					f.backward(retain_graph=True)
-					self.opt_z_pc.step()
-					# self.z_pc.detach()
-			# update synaptic parameters
+			if i > -1:
+				chan = self.chan[i][-1]
 			else:
-				
-				if self.p['conv_precision']:
-					self.opt_P[i+1].zero_grad() 
-				if i < self.nlayers - 1:
-					self.opt_ct[i+1].zero_grad()
-					f.backward(retain_graph=True)
-					# print(i)
-					# print(f)
-					self.opt_ct[i+1].step()
-				else:
-					f += kl_loss
-					self.opt_lin.zero_grad()
-					f.backward(retain_graph=True)
-					# print(i)
-					# print(f)
-					# print(kl_loss)
-					self.opt_lin.step()
-				if self.p['conv_precision']:
-					self.opt_P[i+1].step()
-			return f
+				chan = self.p['imchan']
 
-			# del PE
+			if learn == 1:
+				# print(-self.p['bs'] * self.Precision[i+1].log_det(PE.view(self.p['bs'], -1).size(1)))
+				f = 0.5*sum(sum(
+					- self.p['bs'] * self.Precision[i+1].log_det(PE.view(self.p['bs'], -1).size(1)) # -ve here because more precise = good (nb will need to balance over layers somehow)
+					+ torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
+					))
+			else:
+				# P = copy.deepcopy(self.Precision[i+1])#.clone().detach()
+				# P.requires_grad_(False)
+				f = 0.5*sum(sum(
+					torch.mm(PE, (self.Precision[i+1](PE.view(self.bs, chan, self.dim[i+1][0], self.dim[i+1][0]))).view(self.p['bs'],-1).t())
+					))
+				# del P
+
+
+		else:
+			f = 0.5*sum(sum(
+				torch.mm(PE, PE.t())
+				))
+
+		# print(i)
+		# update activation parameters
+
+		if learn == 0:
+
+			
+			if i < self.nlayers -1:
+				self.opt_phi[i+1].zero_grad()
+				# this is slooooow. Why needed here?
+				f.backward(retain_graph=True)
+				# f.backward(retain_graph=True)
+				self.opt_phi[i+1].step()
+				# self.phi[i+1].detach()
+			else:
+				f += kl_loss
+				self.opt_z_pc.zero_grad()
+				f.backward(retain_graph=True)
+				self.opt_z_pc.step()
+				# self.z_pc.detach()
+		# update synaptic parameters
+		else:
+			
+			if self.p['conv_precision']:
+				self.opt_P[i+1].zero_grad() 
+			if i < self.nlayers - 1:
+				self.opt_ct[i+1].zero_grad()
+				f.backward(retain_graph=True)
+				# print(i)
+				# print(f)
+				self.opt_ct[i+1].step()
+			else:
+				f += kl_loss
+				self.opt_lin.zero_grad()
+				f.backward(retain_graph=True)
+				# print(i)
+				# print(f)
+				# print(kl_loss)
+				self.opt_lin.step()
+			if self.p['conv_precision']:
+				self.opt_P[i+1].step()
+		return f
+
+		# del PE
 
 		
 	def inference(self):
