@@ -471,7 +471,7 @@ class sym_conv2D(nn.Module):
 			s = s[s<1/tol]
 			# print(s[s>tol or s < 1/tol].size())
 			print(s.size()) # can become zero
-			ldT = n* sum(torch.log(s))#[s>tol or s < 1/tol]))
+			ldB = n* sum(torch.log(s))#[s>tol or s < 1/tol]))
 
 
 
