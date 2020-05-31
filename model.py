@@ -21,7 +21,7 @@ import scipy.io as sio
 from torchvision.utils import save_image
 from torch.optim import Adam
 from torch.optim import SGD
-from gpuinfo import GPUInfo
+# from gpuinfo import GPUInfo
 import torch.nn.functional as F
 import copy
 # import torch_xla
@@ -698,7 +698,9 @@ class pc_conv_network(nn.Module):
 		
 		# calculate PE
 		if i == -1:
+			print(x)
 			PE = self.images - x
+			# PE.cuda()
 			# do image prediction if required
 			if self.eval_:
 				self.pred = x.view(self.bs,1,32,32)
@@ -769,6 +771,7 @@ class pc_conv_network(nn.Module):
 				# self.z_pc.detach()
 		# update synaptic parameters
 		else:
+			print(whos)
 			if self.p['conv_precision']:
 				self.opt_P[i+1].zero_grad() 
 			if i < self.nlayers - 1:
@@ -1736,6 +1739,8 @@ class pc_conv_network_old(nn.Module):
 			self.phi[i] = nn.Parameter(torch.rand_like(self.phi[i]))
 		# 	#self.Precision[i].weight = torch.nn.Parameter(torch.mm(self.P_chol[i],self.P_chol[i].t()).unsqueeze(0))
 		self.z_pc = nn.Parameter(torch.rand_like(self.z_pc))
+
+		self.cuda()
 		
 		self.inference()
 		print(iteration)
