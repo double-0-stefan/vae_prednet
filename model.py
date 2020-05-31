@@ -758,12 +758,7 @@ class pc_conv_network(nn.Module):
 
 		if learn == 0:
 
-			for obj in gc.get_objects():
-				try:
-					if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
-						print(type(obj), obj.size())
-				except:
-					pass
+			
 			if i < self.nlayers -1:
 				self.opt_phi[i+1].zero_grad()
 				# this is slooooow. Why needed here?
@@ -779,6 +774,12 @@ class pc_conv_network(nn.Module):
 				# self.z_pc.detach()
 		# update synaptic parameters
 		else:
+			for obj in gc.get_objects():
+				try:
+					if torch.is_tensor(obj) or (hasattr(obj, 'data') and torch.is_tensor(obj.data)):
+						print(type(obj), obj.size())
+				except:
+					pass
 			if self.p['conv_precision']:
 				self.opt_P[i+1].zero_grad() 
 			if i < self.nlayers - 1:
