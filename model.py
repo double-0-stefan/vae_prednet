@@ -771,7 +771,6 @@ class pc_conv_network(nn.Module):
 				# self.z_pc.detach()
 		# update synaptic parameters
 		else:
-			print(whos)
 			if self.p['conv_precision']:
 				self.opt_P[i+1].zero_grad() 
 			if i < self.nlayers - 1:
