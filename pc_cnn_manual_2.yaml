@@ -3,12 +3,28 @@ exp_name:
 
 conv_precision: True
 
+bilinear_precision:
+    - False
+
+include_precision:
+    - False
+
+vae:
+    - True
+
 pc_cnn:
     - True
 
-#xla: True
+xla:
+    - False
 
-imdim: [33] # expand to odd for padding reasons
+# change to maintian input size
+
+cov_size: 
+    - [5,5]
+
+
+imdim : [33, 33] # expand to odd for padding reasons
 
 train_gx: True
 train_fx: False
@@ -18,48 +34,57 @@ interactive: False
 generate_data: False
 rotating: False
 
-e    :  4
-b    :  5
-lr   :  0.005
+e    :  25000
+b    :  200
+lr   :  0.0005
 
 err_noise:
     - True
 
-plot_iter : 50
+plot_iter : 1
 gpu     : True
 early_stopping : True
 patience : 5
 
 layers: 
-    - 0
+    - 1
 
-layers_sb: 3
+# layers_sb:
+#     - 3
 
 precisions: # block any length > 1 has 2 precisions
-    - [[1, 1, 1], [0]]
+    - [[1,1,1,0]]
     # 0 = single number prior, 1 = diagonal prior
 
 ks:
-    - [[3, 5, 5] ,[5]]
+    - [[3,3],[3,3]]
 
-nblocks: 2 # Sections with precisions at top and bottom, but not within
+nblocks: 
+    - 2 # Sections with precisions at top and bottom, but not within
 
 imchan:
     - 1
+# maybe can't backprop through multiple layers
+# although does this in stnadard networks
 
-chan: [[1,4,8], [16]]
+chan:
+    - [[16, 32],[32, 64]] #
 
-pad:  [1, 0, 0, 0]
+pad:
+    - 1
 
-iter:   5
+iter_outer:
+    - 1
 
-bs: 5
+iter:
+    - 10
+
+bs:
+    - 200
 
 imdim_sb:
     - 32
 
-vae:
-    - 0
 
 n_actions: 2
 
@@ -72,15 +97,18 @@ enc_h :
 enc_temp: 
     - 0.67
 
-nz_dis:
-    - [[10], 0, 0]
+# nz_dis:
+#      - [[10], 0, 0]
+
+# nz_dis:
+#      - [[0]]
 
 nz_con: 
-    - [32, 0,  0]
+    - [64]
         
-z_dis_capacity:
+# z_dis_capacity:
 
-    - [[0.0, 10.0, 100000, 100.0]]
+#     - [[0.0, 10.0, 100000, 100.0]]
 
 z_con_capacity:
     - [[0.0, 50.0, 100000, 100.0]]    
