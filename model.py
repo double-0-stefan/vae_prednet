@@ -430,7 +430,9 @@ class sym_conv2D(nn.Module):
 		# or n * logdet!
 
 		# This and other method look really similar
+
 		ldB = n * torch.logdet(B)
+
 		# print('logdetB1n')
 		# print(logdetB1n)
 		# Use spm_logdet approach to find log determinants
@@ -457,6 +459,19 @@ class sym_conv2D(nn.Module):
 			# print(s[s>tol or s < 1/tol].size())
 			print(s.size()) # can become zero
 			ldT = sum(torch.log(s))#[s>tol or s < 1/tol]))
+
+		if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
+			print('bad ldB')
+			print(B)
+			u, s, v = torch.svd(B)
+			
+			s = torch.diag(s)
+			print(s.size())
+			s = s[s>tol]
+			s = s[s<1/tol]
+			# print(s[s>tol or s < 1/tol].size())
+			print(s.size()) # can become zero
+			ldT = n* sum(torch.log(s))#[s>tol or s < 1/tol]))
 
 
 
