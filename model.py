@@ -706,7 +706,7 @@ class pc_conv_network(nn.Module):
 		return x
 
 	def loss(self, i, learn=0):
-		with autograd.detect_anomaly():
+		with torch.autograd.detect_anomaly():
 			# if top layer - latents:
 			if i == self.nlayers -1:
 				# get kl_loss
