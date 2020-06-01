@@ -726,7 +726,7 @@ class pc_conv_network(nn.Module):
 				self.opt_P[i]   = Adam(self.Precision[i].parameters(), lr=self.p['lr'])
 		for i in range(len(self.Precision)):
 			if self.p['conv_precision']:
-				self.opt_P[i]   = Adam(self.Precision[i].parameters(), lr=self.p['lr'])
+				self.opt_P[i]   = Adam(self.Precision[i].parameters(), lr=10*self.p['lr'])
 				# print(self.Precision[i].parameters())
 
 		self.opt_z_pc = Adam([self.z_pc], lr=self.p['lr'])
