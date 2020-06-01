@@ -138,8 +138,8 @@ class sym_conv2D(nn.Module):
 		w = []
 		for m in reversed(range(self.in_channels)):
 
-			a = torch.rand(int((self.kernel_size +1)/2), m+1)/10 # get explosion if too small/large?
-			a[-1,0] += 10 #torch.exp(torch.tensor(1.0))
+			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000 - 1/5000 # get explosion if too small/large?
+			a[-1,0] += 1 #torch.exp(torch.tensor(1.0))
 			w.append(nn.Parameter(a))
 			
 		self.weight_values = nn.ParameterList(w)
@@ -201,7 +201,10 @@ class sym_conv2D(nn.Module):
 		# fill matrices with weights
 		for i in range(self.out_channels):
 			for j in range(self.out_channels):
-				centre_block[i,j] = self.weight_values[j][-1,0]	
+				if j < i:
+					centre_block[i,j] = self.weight_values[j][-1,i]
+				else:
+					entre_block[i,j] = self.weight_values[i][-1,0]
 			
 			kount = -1
 			for k in range(1, middle):
@@ -257,19 +260,21 @@ class sym_conv2D(nn.Module):
 						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:].t()
 
 
-		s = centre_block.size(1) +rhs.size(1) -1
+		# s = centre_block.size(1) +rhs.size(1) -1
 
-		A = pre_cov[:s, :s].to('cuda')
-		B = pre_cov[:s, s:s+s].to('cuda')# upper triangle
-		C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
+		# A = pre_cov[:s, :s].to('cuda')
+		# B = pre_cov[:s, s:s+s].to('cuda')# upper triangle
+		# C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
 
-		print(pre_cov.size())
-		print(pre_cov[:,:])
-		print(pre_cov[3,:])
+		# print(pre_cov.size())
+		# print(pre_cov[:,:])
+		# print(pre_cov[3,:])
 
-		self.register_buffer('A', A)
-		self.register_buffer('B', B)
-		self.register_buffer('C', C)
+		# self.register_buffer('A', A)
+		# self.register_buffer('B', B)
+		# self.register_buffer('C', C)
+		self.register_buffer('precov', precov)
+
 
 
 	def log_det(self, phi_length=0):
@@ -284,6 +289,10 @@ class sym_conv2D(nn.Module):
 		'''
 		self.generate_cov_matrix()
 		self.generate_filter_structure()
+
+		# ld = torch.logdet(self.precov)
+
+		
 		A = self.A
 		B = self.B
 		C = self.C
@@ -397,7 +406,7 @@ class sym_conv2D(nn.Module):
 		# print(ldB)
 		print(logdetM)
 		return logdetM
-
+		
 
 	def forward(self, x):
 
