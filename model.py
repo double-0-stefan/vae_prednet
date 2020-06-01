@@ -264,6 +264,7 @@ class sym_conv2D(nn.Module):
 		C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
 
 		print(pre_cov.size())
+		print(pre_cov[:,:])
 
 		self.register_buffer('A', A)
 		self.register_buffer('B', B)
