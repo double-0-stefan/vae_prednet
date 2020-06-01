@@ -265,6 +265,7 @@ class sym_conv2D(nn.Module):
 
 		print(pre_cov.size())
 		print(pre_cov[:,:])
+		print(pre_cov[3,:])
 
 		self.register_buffer('A', A)
 		self.register_buffer('B', B)
