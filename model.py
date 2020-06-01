@@ -122,7 +122,7 @@ class sym_conv2D(nn.Module):
 
 		self.generate_weight_values()
 		self.generate_filter_structure()
-		self.generate_cov_matrix()
+		# self.generate_cov_matrix()
 		# self.log_det()
 		self.to(device)	
 
@@ -315,6 +315,8 @@ class sym_conv2D(nn.Module):
 
 		# B and C must be non-singular
 		'''
+		self.generate_cov_matrix()
+		self.generate_filter_structure()
 		A = self.A
 		B = self.B
 		C = self.C
