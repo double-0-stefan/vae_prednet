@@ -293,6 +293,8 @@ class sym_conv2D(nn.Module):
 		self.generate_filter_structure()
 
 		ld = torch.logdet(self.precov)
+		print(ld)
+		return ld
 
 		'''
 		A = self.A
