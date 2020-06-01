@@ -204,7 +204,7 @@ class sym_conv2D(nn.Module):
 				if j < i:
 					centre_block[i,j] = self.weight_values[j][-1,i]
 				else:
-					entre_block[i,j] = self.weight_values[i][-1,0]
+					centre_block[i,j] = self.weight_values[i][-1,0]
 			
 			kount = -1
 			for k in range(1, middle):
