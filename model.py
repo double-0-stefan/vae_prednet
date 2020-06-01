@@ -262,20 +262,20 @@ class sym_conv2D(nn.Module):
 						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:].t()
 
 
-		s = centre_block.size(1) +rhs.size(1) -1
+		# s = centre_block.size(1) +rhs.size(1) -1
 
-		A = pre_cov[:s, :s].to('cuda')
-		B = pre_cov[:s, s:s+s].to('cuda')# upper triangle
-		C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
+		# A = pre_cov[:s, :s].to('cuda')
+		# B = pre_cov[:s, s:s+s].to('cuda')# upper triangle
+		# C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
 
-		print(pre_cov.size())
-		print(pre_cov[:,:])
-		print(pre_cov[3,:])
+		# print(pre_cov.size())
+		# print(pre_cov[:,:])
+		# print(pre_cov[3,:])
 
-		self.register_buffer('A', A)
-		self.register_buffer('B', B)
-		self.register_buffer('C', C)
-		# self.register_buffer('pre_cov', pre_cov)
+		# self.register_buffer('A', A)
+		# self.register_buffer('B', B)
+		# self.register_buffer('C', C)
+		self.register_buffer('pre_cov', pre_cov)
 
 
 
@@ -292,9 +292,9 @@ class sym_conv2D(nn.Module):
 		self.generate_cov_matrix()
 		self.generate_filter_structure()
 
-		# ld = torch.logdet(self.precov)
+		ld = torch.logdet(self.precov)
 
-		
+		'''
 		A = self.A
 		B = self.B
 		C = self.C
@@ -408,7 +408,7 @@ class sym_conv2D(nn.Module):
 		# print(ldB)
 		print(logdetM)
 		return logdetM
-		
+		'''
 
 	def forward(self, x):
 
