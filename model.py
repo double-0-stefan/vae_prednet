@@ -797,7 +797,7 @@ class pc_conv_network(nn.Module):
 				# print(i)
 				# print(f)
 				self.opt_ct[i+1].step()
-				if i=-1:
+				if i==-1:
 					print(self.Precision[i+1].filter_weights)
 				else:
 					print(self.Precision[i+1].filter_weights[5,5,:,:])
