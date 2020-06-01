@@ -292,7 +292,7 @@ class sym_conv2D(nn.Module):
 		self.generate_cov_matrix()
 		self.generate_filter_structure()
 
-		ld = torch.logdet(self.precov)
+		ld = torch.logdet(self.pre_cov)
 		print(ld)
 		return ld
 
