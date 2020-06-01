@@ -60,7 +60,7 @@ class sym_conv2D(nn.Module):
 		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
 		# image: (in_channels, image_height, image_width, ...)
 		assert image_shape[0] == kernel.shape[1]
-		# assert len(image_shape[1:]) == len(kernel.shape[2:])
+		assert len(image_shape[1:]) == len(kernel.shape[2:])
 		result_dims = torch.tensor(image_shape[1:]) - torch.tensor(kernel.shape[2:]) + 1
 		m = torch.zeros((
 			kernel.shape[0], 
@@ -519,7 +519,7 @@ class pc_conv_network(nn.Module):
 		for i in range(-1, len(self.Precision)):
 		
 			toep = self.Precision[i+1].convmatrix2d(self.Precision[i+1].filter_weights, 
-				self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1]
+				self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1].shape()
 				))
 			print(toep)
 			print(toep.size())
