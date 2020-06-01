@@ -55,6 +55,23 @@ class sym_conv2D(nn.Module):
 		# self.log_det()
 		self.to(device)	
 
+	def convmatrix2d(kernel, image_shape):
+		# https://github.com/pytorch/pytorch/issues/26781
+		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
+		# image: (in_channels, image_height, image_width, ...)
+		assert image_shape[0] == kernel.shape[1]
+		assert len(image_shape[1:]) == len(kernel.shape[2:])
+		result_dims = torch.tensor(image_shape[1:]) - torch.tensor(kernel.shape[2:]) + 1
+		m = torch.zeros((
+			kernel.shape[0], 
+			*result_dims, 
+			*image_shape
+		))
+		for i in range(m.shape[1]):
+			for j in range(m.shape[2]):
+				m[:,i,j,:,i:i+kernel.shape[2],j:j+kernel.shape[3]] = kernel
+		return m.flatten(0, len(kernel.shape[2:])).flatten(1)
+
 	def add_jitter(self, mat, jitter_val=1e-6):
 	    """
 	    Adapted from gpytorch
@@ -368,6 +385,8 @@ class pc_conv_network(nn.Module):
 		self.imchan = p['imchan']
 		if self.p['conv_precision']:
 			self.init_covariance(p)
+		elif self.p['sparse_precision']:
+			self.init_sparse_covariance(p)
 		self.init_latents(p)
 		self.optimizer = None
 		# print(self)
@@ -495,6 +514,44 @@ class pc_conv_network(nn.Module):
 					)
 
 		self.Precision = nn.ModuleList(Precision).cuda()
+
+
+		for i in range(1, len(self.Precision)):
+		
+			toep = self.Precision[i].convmatrix2d(self.Precision[i].filter_weights, 
+				self.phi[i].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1]
+				))
+			print(toep)
+			print(toep.size())
+
+
+	def init_sparse_covariance(self,p):
+
+		Precision_i = []
+		Precision_v = []
+
+		# leading diagonal only
+		index = [torch.tensor([i,i]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
+		# other diagonals
+		for j in range(len(self.p['imchan']*self.p['imdim_']**2))
+		index = [torch.tensor([i,i+1]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
+
+		value = torch.ones(len(index))
+
+		Precision_i.append(index)
+		Precision_v.append(value)
+
+		for i in range(len(self.phi)):
+
+			index = [torch.tensor([i,i]) for i in range(len(self.phi[i]))]
+			value = torch.ones(len(index))
+
+			Precision_i.append(index)
+			Precision_v.append(value)
+
+		self.register_buffer('filter_weights', Precision_i)
+		self.Precision_v = nn.ParameterList(Precision_v)
+
 
 
 	def plot(self, i, input_image, plot_vars):
