@@ -29,77 +29,6 @@ import gc
 # import torch_xla.core.xla_model as xm
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
-# from https://github.com/pytorch/pytorch/issues/28293
-def compute_grad_V(U, S, V, grad_V):
-    N = S.shape[0]
-    K = svd_grad_K(S)
-    S = torch.eye(N).cuda(S.get_device()) * S.reshape((N, 1))
-    inner = K.T * (V.T @ grad_V)
-    inner = (inner + inner.T) / 2.0
-    return 2 * U @ S @ inner @ V.T
-
-
-def svd_grad_K(S):
-    N = S.shape[0]
-    s1 = S.view((1, N))
-    s2 = S.view((N, 1))
-    diff = s2 - s1
-    plus = s2 + s1
-
-    # TODO Look into it
-    eps = torch.ones((N, N)) * 10**(-6)
-    eps = eps.cuda(S.get_device())
-    max_diff = torch.max(torch.abs(diff), eps)
-    sign_diff = torch.sign(diff)
-
-    K_neg = sign_diff * max_diff
-
-    # gaurd the matrix inversion
-    K_neg[torch.arange(N), torch.arange(N)] = 10 ** (-6)
-    K_neg = 1 / K_neg
-    K_pos = 1 / plus
-
-    ones = torch.ones((N, N)).cuda(S.get_device())
-    rm_diag = ones - torch.eye(N).cuda(S.get_device())
-    K = K_neg * K_pos * rm_diag
-    return K
-
-
-class CustomSVD(Function):
-    """
-    Costum SVD to deal with the situations when the
-    singular values are equal. In this case, if dealt
-    normally the gradient w.r.t to the input goes to inf.
-    To deal with this situation, we replace the entries of
-    a K matrix from eq: 13 in https://arxiv.org/pdf/1509.07838.pdf
-    to high value.
-    Note: only applicable for the tall and square matrix and doesn't
-    give correct gradients for fat matrix. Maybe transpose of the
-    original matrix is requires to deal with this situation. Left for
-    future work.
-    """
-    @staticmethod
-    def forward(ctx, input):
-        # Note: input is matrix of size m x n with m >= n.
-        # Note: if above assumption is voilated, the gradients
-        # will be wrong.
-        try:
-            U, S, V = torch.svd(input, some=True)
-        except:
-            import ipdb; ipdb.set_trace()
-
-        ctx.save_for_backward(U, S, V)
-        return U, S, V
-
-    @staticmethod
-    def backward(ctx, grad_U, grad_S, grad_V):
-        U, S, V = ctx.saved_tensors
-        grad_input = compute_grad_V(U, S, V, grad_V)
-        return grad_input
-
-customsvd = CustomSVD.apply
-
-
 class sym_conv2D(nn.Module):
 	def __init__(self, in_channels, out_channels, kernel_size, stride=1, 
 		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
@@ -171,6 +100,16 @@ class sym_conv2D(nn.Module):
 
 				# reversed so stuff outside of 'field' gets overwritten
 				for n in reversed(range(int((self.kernel_size +1)/2))):
+
+					# right/bottom side
+					if n < int((self.kernel_size +1)/2) -1:# -1:
+						filter_weights[i,j,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
+						filter_weights[i,j,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
+
+						filter_weights[j,i,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
+						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
+
+
 					# left/top side -  first so centre 'cross' gets overwritten
 					filter_weights[i,j,n,:] = self.weight_values[i][n, j-i] #[j, full +mm]
 					filter_weights[i,j,:,n] = self.weight_values[i][n, j-i]#[j, full +mm]
@@ -178,13 +117,7 @@ class sym_conv2D(nn.Module):
 					filter_weights[j,i,n,:] = self.weight_values[i][n, j-i]#[j, full +mm]
 					filter_weights[j,i,:,n] = self.weight_values[i][n, j-i]#[j, full +mm]
 
-					# right/bottom side
-					if j < int((self.kernel_size +1)/2):# -1:
-						filter_weights[i,j,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
-						filter_weights[i,j,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
-
-						filter_weights[j,i,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
-						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
+					
 
 		# filter_weights #= filter_weights.cuda()
 
