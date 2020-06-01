@@ -29,18 +29,18 @@ import gc
 # import torch_xla.core.xla_model as xm
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
-def to_sparse(x):
-	#  https://discuss.pytorch.org/t/how-to-convert-a-dense-matrix-to-a-sparse-one/7809/3
-    """ converts dense tensor x to sparse format """
-	x_typename = torch.typename(x).split('.')[-1]
-	sparse_tensortype = getattr(torch.sparse, x_typename)
+# def to_sparse(x):
+# 	#  https://discuss.pytorch.org/t/how-to-convert-a-dense-matrix-to-a-sparse-one/7809/3
+#     """ converts dense tensor x to sparse format """
+# 	x_typename = torch.typename(x).split('.')[-1]
+# 	sparse_tensortype = getattr(torch.sparse, x_typename)
 
-	indices = torch.nonzero(x)
-	if len(indices.shape) == 0:  # if all elements are zeros
-		return sparse_tensortype(*x.shape)
-	indices = indices.t()
-	values = x[tuple(indices[i] for i in range(indices.shape[0]))]
-	return sparse_tensortype(indices, values, x.size())
+# 	indices = torch.nonzero(x)
+# 	if len(indices.shape) == 0:  # if all elements are zeros
+# 		return sparse_tensortype(*x.shape)
+# 	indices = indices.t()
+# 	values = x[tuple(indices[i] for i in range(indices.shape[0]))]
+# 	return sparse_tensortype(indices, values, x.size())
 
 
 class sym_conv2D(nn.Module):
