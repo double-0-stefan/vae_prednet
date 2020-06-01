@@ -69,11 +69,11 @@ class sym_conv2D(nn.Module):
 		# self.log_det()
 		self.to(device)	
 
-	def convmatrix2d(self, kernel, image_shape):
+	def convmatrix2d(self, image_shape):
 		# https://github.com/pytorch/pytorch/issues/26781
 		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
 		# image: (in_channels, image_height, image_width, ...)
-
+		kernel = self.filter_weights
 		print (image_shape)
 		print(kernel.size())
 		assert image_shape[0] == kernel.shape[1]
@@ -562,8 +562,7 @@ class pc_conv_network(nn.Module):
 
 		for i in range(0, len(self.Precision)):
 		
-			toep = self.Precision[i+1].convmatrix2d(self.Precision[i+1].filter_weights, 
-				[self.chan[i][-1], 10, 10])
+			toep = self.Precision[i+1].convmatrix2d([self.chan[i][-1], 10, 10])
 				
 			print(toep)
 			print(toep.size())
