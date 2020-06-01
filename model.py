@@ -263,6 +263,8 @@ class sym_conv2D(nn.Module):
 		B = pre_cov[:s, s:s+s].to('cuda')# upper triangle
 		C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
 
+		print(pre_cov.size())
+
 		self.register_buffer('A', A)
 		self.register_buffer('B', B)
 		self.register_buffer('C', C)
@@ -525,7 +527,6 @@ class pc_conv_network(nn.Module):
 
 	def init_covariance(self, p): 
 
-
 		Precision = []
 		Precision.append(
 
@@ -564,7 +565,7 @@ class pc_conv_network(nn.Module):
 		
 			toep = self.Precision[i+1].convmatrix2d([self.chan[i][-1], 10, 10])
 				
-			print(toep[:10,:10])
+			print(toep)
 			print(toep.size())
 
 
@@ -577,7 +578,7 @@ class pc_conv_network(nn.Module):
 		index = [torch.tensor([i,i]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
 		# other diagonals
 		for j in range(len(self.p['imchan']*self.p['imdim_']*self.p['imdim_'])):
-			index = [torch.tensor([i,i+1]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
+			index[j] = [torch.tensor([i,i+j]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
 
 		value = torch.ones(len(index))
 
