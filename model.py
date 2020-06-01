@@ -519,8 +519,8 @@ class pc_conv_network(nn.Module):
 		for i in range(-1, len(self.Precision)):
 		
 			toep = self.Precision[i+1].convmatrix2d(self.Precision[i+1].filter_weights, 
-				self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1]
-				).shape())
+				[self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1]])
+				
 			print(toep)
 			print(toep.size())
 
