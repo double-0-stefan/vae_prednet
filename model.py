@@ -179,7 +179,7 @@ class sym_conv2D(nn.Module):
 					filter_weights[j,i,:,n] = self.weight_values[i][n, j-i]#[j, full +mm]
 
 					# right/bottom side
-					if j < int((self.kernel_size +1)/2) -1:
+					if j < int((self.kernel_size +1)/2):# -1:
 						filter_weights[i,j,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
 						filter_weights[i,j,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
 
