@@ -429,7 +429,7 @@ class sym_conv2D(nn.Module):
 		ldT = segments * torch.logdet(T11)
 		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
 			print('bad ldT')
-			print(T11)
+			
 			u, s, v = torch.svd(T11)
 			
 			s = torch.diag(s)
@@ -442,7 +442,7 @@ class sym_conv2D(nn.Module):
 
 		if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
 			print('bad ldB')
-			print(B)
+			
 			u, s, v = torch.svd(B)
 			
 			s = torch.diag(s)
@@ -787,7 +787,7 @@ class pc_conv_network(nn.Module):
 				# self.z_pc.detach()
 		# update synaptic parameters
 		else:
-			
+			print(i)
 			if self.p['conv_precision']:
 				self.opt_P[i+1].zero_grad() 
 			if i < self.nlayers - 1:
@@ -862,7 +862,8 @@ class pc_conv_network(nn.Module):
 			# self.optimizer = Adam(self.parameters(), lr=self.p['lr'])#, weight_decay=1e-5)
 		self.opt_phi = [None] * len(self.phi)
 		self.opt_ct = [None] * len(self.phi)
-		self.opt_P = [None] * len(self.phi)
+		self.opt_P = [None] * (len(self.phi) +1)
+
 		for i in range(len(self.phi)):
 			self.opt_phi[i] = Adam([self.phi[i]], lr=self.p['lr'])
 			self.opt_ct[i]  = Adam(self.conv_trans[i].parameters(), lr=self.p['lr'])
