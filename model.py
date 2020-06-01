@@ -59,6 +59,9 @@ class sym_conv2D(nn.Module):
 		# https://github.com/pytorch/pytorch/issues/26781
 		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
 		# image: (in_channels, image_height, image_width, ...)
+
+		print (image_shape)
+		print(kernel.size())
 		assert image_shape[0] == kernel.shape[1]
 		assert len(image_shape[1:]) == len(kernel.shape[2:])
 		result_dims = torch.tensor(image_shape[1:]) - torch.tensor(kernel.shape[2:]) + 1
