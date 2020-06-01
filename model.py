@@ -561,12 +561,12 @@ class pc_conv_network(nn.Module):
 		self.Precision = nn.ModuleList(Precision).cuda()
 
 
-		for i in range(0, len(self.Precision)):
+		# for i in range(0, len(self.Precision)):
 		
-			toep = self.Precision[i+1].convmatrix2d([self.chan[i][-1], 10, 10])
+		# 	toep = self.Precision[i+1].convmatrix2d([self.chan[i][-1], 10, 10])
 				
-			print(toep)
-			print(toep.size())
+		# 	print(toep)
+		# 	print(toep.size())
 
 
 	def init_sparse_covariance(self,p):
