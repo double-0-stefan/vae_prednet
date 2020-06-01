@@ -29,6 +29,20 @@ import gc
 # import torch_xla.core.xla_model as xm
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
+def to_sparse(x):
+	#  https://discuss.pytorch.org/t/how-to-convert-a-dense-matrix-to-a-sparse-one/7809/3
+    """ converts dense tensor x to sparse format """
+	x_typename = torch.typename(x).split('.')[-1]
+	sparse_tensortype = getattr(torch.sparse, x_typename)
+
+	indices = torch.nonzero(x)
+	if len(indices.shape) == 0:  # if all elements are zeros
+		return sparse_tensortype(*x.shape)
+	indices = indices.t()
+	values = x[tuple(indices[i] for i in range(indices.shape[0]))]
+	return sparse_tensortype(indices, values, x.size())
+
+
 class sym_conv2D(nn.Module):
 	def __init__(self, in_channels, out_channels, kernel_size, stride=1, 
 		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
@@ -74,6 +88,33 @@ class sym_conv2D(nn.Module):
 			for j in range(m.shape[2]):
 				m[:,i,j,:,i:i+kernel.shape[2],j:j+kernel.shape[3]] = kernel
 		return m.flatten(0, len(kernel.shape[2:])).flatten(1)
+
+	def convmatrix2d_sparse(self, kernel, image_shape):
+		# https://github.com/pytorch/pytorch/issues/26781
+		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
+		# image: (in_channels, image_height, image_width, ...)
+
+		print (image_shape)
+		print(kernel.size())
+		assert image_shape[0] == kernel.shape[1]
+		assert len(image_shape[1:]) == len(kernel.shape[2:])
+		result_dims = torch.tensor(image_shape[1:]) - torch.tensor(kernel.shape[2:]) + 1
+		m = [kernel.shape[0], *result_dims,	*image_shape]
+
+		index = []
+		for i in range(m[1]):
+			for j in range(m[2]):
+				for a in range(kernel.shape[0]):
+					for b in range(m[2]):
+						for c in range([kernel.shape[2]]):
+							for d in range(kernel.shape[3]):
+								index.append(torch.tensor([a,i,j,b,i+c,j+d]))
+
+				# index = [torch.tensor([i,i+1]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
+		# 		m[:,i,j,:,i:i+kernel.shape[2],j:j+kernel.shape[3]] = kernel
+		# return m.flatten(0, len(kernel.shape[2:])).flatten(1)
+
+		return index
 
 	def add_jitter(self, mat, jitter_val=1e-6):
 	    """
