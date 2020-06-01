@@ -365,7 +365,7 @@ class sym_conv2D(nn.Module):
 			n = int(round(phi_length/m))
 		else:
 			n=4
-		print(n)
+		# print(n)
 
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)], 1).cuda()
@@ -428,29 +428,29 @@ class sym_conv2D(nn.Module):
 		# will have to see how accurate this is:
 		ldT = segments * torch.logdet(T11)
 		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
-			print('bad ldT')
+			# print('bad ldT')
 			
 			u, s, v = torch.svd(T11)
 			
 			s = torch.diag(s)
-			print(s.size())
+			# print(s.size())
 			s = s[s>tol]
 			s = s[s<1/tol]
 			# print(s[s>tol or s < 1/tol].size())
-			print(s.size()) # can become zero
+			# print(s.size()) # can become zero
 			ldT = segments * sum(torch.log(s))#[s>tol or s < 1/tol]))
 
 		if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
-			print('bad ldB')
+			# print('bad ldB')
 			
 			u, s, v = torch.svd(B)
 			
 			s = torch.diag(s)
-			print(s.size())
+			# print(s.size())
 			s = s[s>tol]
 			s = s[s<1/tol]
 			# print(s[s>tol or s < 1/tol].size())
-			print(s.size()) # can become zero
+			# print(s.size()) # can become zero
 			ldB = n* sum(torch.log(s))#[s>tol or s < 1/tol]))
 
 
@@ -458,10 +458,10 @@ class sym_conv2D(nn.Module):
 
 		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
 		logdetM =  ldT + ldB
-		print('ldT')
-		print(ldT)
-		print('ldB')
-		print(ldB)
+		# print('ldT')
+		# print(ldT)
+		# print('ldB')
+		# print(ldB)
 
 		return logdetM
 
@@ -796,6 +796,8 @@ class pc_conv_network(nn.Module):
 				# print(i)
 				# print(f)
 				self.opt_ct[i+1].step()
+
+				print(self.Precision[i+1].filter_weights)
 			else:
 				f += kl_loss
 				self.opt_lin.zero_grad()
