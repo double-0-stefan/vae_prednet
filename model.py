@@ -55,7 +55,7 @@ class sym_conv2D(nn.Module):
 		# self.log_det()
 		self.to(device)	
 
-	def convmatrix2d(kernel, image_shape):
+	def convmatrix2d(self, kernel, image_shape):
 		# https://github.com/pytorch/pytorch/issues/26781
 		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
 		# image: (in_channels, image_height, image_width, ...)
