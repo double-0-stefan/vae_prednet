@@ -58,13 +58,9 @@ class sym_conv2D(nn.Module):
 	def add_jitter(self, mat, jitter_val=1e-6):
 	    """
 	    Adapted from gpytorch
-
-	    Adds "jitter" to the diagonal of a matrix.
 	    This ensures that a matrix that *should* be positive definite *is* positive definate.
-
 	    Args:
 	        - mat (matrix nxn) - Positive definite matrxi
-
 	    Returns: (matrix nxn)
 	    """
 	    if hasattr(mat, "add_jitter"):
@@ -77,11 +73,12 @@ class sym_conv2D(nn.Module):
 	            return mat + diag
 
 	def generate_weight_values(self):
+
 		w = []
 		for m in reversed(range(self.in_channels)):
 
-			a = torch.rand(int((self.kernel_size +1)/2), m+1) # get explosion if too small/large?
-			a[-1,0] += 1 #torch.exp(torch.tensor(1.0))
+			a = torch.rand(int((self.kernel_size +1)/2), m+1)/10 # get explosion if too small/large?
+			a[-1,0] += 10 #torch.exp(torch.tensor(1.0))
 			w.append(nn.Parameter(a))
 			
 		self.weight_values = nn.ParameterList(w)
@@ -89,18 +86,13 @@ class sym_conv2D(nn.Module):
 
 	def generate_filter_structure(self):
 
-		# something seems to be wrong here
-
 		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
 			self.kernel_size, self.kernel_size)
 
 		for i in range(self.out_channels):
-
 			for j in range(i, self.out_channels):
-
 				# reversed so stuff outside of 'field' gets overwritten
 				for n in reversed(range(int((self.kernel_size +1)/2))):
-
 					# right/bottom side
 					if n < int((self.kernel_size +1)/2) -1:# -1:
 						filter_weights[i,j,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
@@ -116,10 +108,6 @@ class sym_conv2D(nn.Module):
 
 					filter_weights[j,i,n,:] = self.weight_values[i][n, j-i]#[j, full +mm]
 					filter_weights[j,i,:,n] = self.weight_values[i][n, j-i]#[j, full +mm]
-
-					
-
-		# filter_weights #= filter_weights.cuda()
 
 		self.register_buffer('filter_weights', filter_weights)
 
@@ -139,7 +127,6 @@ class sym_conv2D(nn.Module):
 		for k in range(temp.size(2)):
 			temp[:,:,k] += torch.transpose(torch.triu(temp[:,:,k],1), 0,1)
 
-		
 		# work out size of rhs matrix
 		kount = 0
 		for i in range(self.out_channels):
@@ -208,35 +195,17 @@ class sym_conv2D(nn.Module):
 					else:
 						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:].t()
 
-		# Make A, B and C matrices for determinant method
-		# print(pre_cov.size())
 
 		s = centre_block.size(1) +rhs.size(1) -1
-		# print(s)
-		# smaller matrix to ensure invertable 
 
 		A = pre_cov[:s, :s].to('cuda')
-
-		
-
 		B = pre_cov[:s, s:s+s].to('cuda')# upper triangle
 		C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
-		# print(self.A)
-		# print(self.B)
-		# print(self.C)
 
 		self.register_buffer('A', A)
-
 		self.register_buffer('B', B)
-
 		self.register_buffer('C', C)
 
-		# print(lhs)
-		# print(rhs)
-		# print(centre_block)
-		# print(pre_cov)
-
-		# print(self.B)
 
 	def log_det(self, phi_length=0):
 		# where phi_length is non-batch elements in phi
@@ -253,13 +222,6 @@ class sym_conv2D(nn.Module):
 		A = self.A
 		B = self.B
 		C = self.C
-
-		# print(B)
-
-		# is this always singular (lead diag is zero)
-		# could use try..
-		# B_inv = torch.inverse(self.B)
-
 
 		############# Maths notes ##############
 		
@@ -287,11 +249,6 @@ class sym_conv2D(nn.Module):
 			B_inv = torch.inverse(B)
 		except:
 			B_inv = torch.inverse(self.add_jitter(B))
-		# print(B_inv)
-		# except RuntimeError:
-		# 	self.add_jitter(B,1e-6)
-		# 	B_inv = torch.inverse(B)
-		
 
 		# lengths
 		m = A.size(0)
@@ -301,24 +258,18 @@ class sym_conv2D(nn.Module):
 			n = int(round(phi_length/m))
 		else:
 			n=4
-		# print(n)
-
 
 		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)], 1).cuda()
 
 		self.register_buffer('Im_Zm', Im_Zm)
-
-		# print(Im_Zm.size())
 		
 		T1 = torch.cat([
 			torch.cat([-A, -C], 1), 
 			self.Im_Zm
 			], 0)
-		# print(T1)
 
 		# if off-diagonal elements are too small (or, presumably, too large), this becomes nan
 		# can use product-determinant rule if this becomes problematic
-
 		# this rapidly becomes VAST
 
 		T2a = torch.cat([
@@ -326,18 +277,8 @@ class sym_conv2D(nn.Module):
 					-torch.mm(B_inv,A), -torch.mm(B_inv,C) ], 1), self.Im_Zm
 				],0).type(torch.cuda.DoubleTensor)
 
-
-
-		######### iterate through blocks if n > x ###############
-		######### use legdet all = ld a + ld b etc
-		# if torch.isnan(T2):
-
-
 		T2 = torch.matrix_power(T2a, n).cuda()
-		# print(T2a)
-		# print(T2)
-		# print(torch.mm(B_inv,A))
-		# print(torch.mm(B_inv,C))
+
 		segments=1
 		i=0
 		while torch.isnan(T2[0,0]):
@@ -359,40 +300,31 @@ class sym_conv2D(nn.Module):
 
 		ldB = n * torch.logdet(B)
 
-
 		tol = torch.tensor(1e-99)
 		# will have to see how accurate this is:
 		ldT = segments * torch.logdet(T11)
 		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
+
 			print('bad ldT')
-			
 			u, s, v = torch.svd(T11)
-			
 			s = torch.diag(s)
-			# print(s.size())
 			s = s[s>tol]
 			s = s[s<1/tol]
-			# print(s[s>tol or s < 1/tol].size())
-			# print(s.size()) # can become zero
+			print('SVD')
+			print(s)
 			ldT = segments * sum(torch.log(s))#[s>tol or s < 1/tol]))
 
 		if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
+
 			print('bad ldB')
-			
 			u, s, v = torch.svd(B)
-			
 			s = torch.diag(s)
-			# print(s.size())
 			s = s[s>tol]
 			s = s[s<1/tol]
-			# print(s[s>tol or s < 1/tol].size())
-			# print(s.size()) # can become zero
+			print('SVD')
+			print(s)
 			ldB = n* sum(torch.log(s))#[s>tol or s < 1/tol]))
 
-
-
-
-		# logdetM = (-1)**(n*m) + torch.logdet(T11) + torch.logdet(B1n)
 		logdetM =  ldT + ldB
 		# print('ldT')
 		# print(ldT)
