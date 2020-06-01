@@ -160,6 +160,7 @@ class sym_conv2D(nn.Module):
 
 	def generate_filter_structure(self):
 
+		# something seems to be wrong here
 
 		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
 			self.kernel_size, self.kernel_size)
@@ -796,8 +797,10 @@ class pc_conv_network(nn.Module):
 				# print(i)
 				# print(f)
 				self.opt_ct[i+1].step()
-
-				print(self.Precision[i+1].filter_weights)
+				if i=-1:
+					print(self.Precision[i+1].filter_weights)
+				else:
+					print(self.Precision[i+1].filter_weights[5,5,:,:])
 			else:
 				f += kl_loss
 				self.opt_lin.zero_grad()
