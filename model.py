@@ -516,7 +516,7 @@ class pc_conv_network(nn.Module):
 		self.Precision = nn.ModuleList(Precision).cuda()
 
 
-		for i in range(-1, len(self.Precision)):
+		for i in range(0, len(self.Precision)):
 		
 			toep = self.Precision[i+1].convmatrix2d(self.Precision[i+1].filter_weights, 
 				[self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1]])
