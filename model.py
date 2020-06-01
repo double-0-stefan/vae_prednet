@@ -200,11 +200,12 @@ class sym_conv2D(nn.Module):
 
 		# fill matrices with weights
 		for i in range(self.out_channels):
-			for j in range(self.out_channels):
-				if j < i:
-					centre_block[i,j] = self.weight_values[j][-1,i]
-				else:
-					centre_block[i,j] = self.weight_values[i][-1,0]
+			centre_block[i,i:] = self.weight_values[j][-1,:]
+			# for j in range(self.out_channels):
+			# 	if j < i:
+			# 		centre_block[i,j] = self.weight_values[j][-1,i]
+			# 	else:
+			# 		centre_block[i,j] = self.weight_values[i][-1,0]
 			
 			kount = -1
 			for k in range(1, middle):
@@ -213,6 +214,7 @@ class sym_conv2D(nn.Module):
 					# kount += 1
 					rhs[i, kount+1 : kount+1+ 4*k ] = temp[j, i, k-1]
 					kount += 4*k 
+		centre_block += torch.tril(centre_block.t(), -1)
 		# rotate 180 degrees to obtain lhs
 		lhs = torch.rot90(rhs, k=-2, dims=[0,1])
 		lhs.to('cuda')
