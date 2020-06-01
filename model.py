@@ -533,8 +533,8 @@ class pc_conv_network(nn.Module):
 		# leading diagonal only
 		index = [torch.tensor([i,i]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
 		# other diagonals
-		for j in range(len(self.p['imchan']*self.p['imdim_']**2))
-		index = [torch.tensor([i,i+1]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
+		for j in range(len(self.p['imchan']*self.p['imdim_']*self.p['imdim_'])):
+			index = [torch.tensor([i,i+1]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
 
 		value = torch.ones(len(index))
 
