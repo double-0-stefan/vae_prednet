@@ -61,8 +61,6 @@ class sym_conv2D(nn.Module):
 		self.bias = bias
 		self.padding_mode = padding_mode
 
-
-
 		self.generate_weight_values()
 		self.generate_filter_structure()
 		# self.generate_cov_matrix()
@@ -73,6 +71,8 @@ class sym_conv2D(nn.Module):
 		# https://github.com/pytorch/pytorch/issues/26781
 		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
 		# image: (in_channels, image_height, image_width, ...)
+		torch.set_printoptions(threshold=1000)
+
 		kernel = self.filter_weights
 		print (image_shape)
 		print(kernel.size())
