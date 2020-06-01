@@ -106,7 +106,7 @@ class sym_conv2D(nn.Module):
 			for j in range(m[2]):
 				for a in range(kernel.shape[0]):
 					for b in range(m[2]):
-						for c in range([kernel.shape[2]]):
+						for c in range(kernel.shape[2]):
 							for d in range(kernel.shape[3]):
 								index.append(torch.tensor([a,i,j,b,i+c,j+d]))
 
