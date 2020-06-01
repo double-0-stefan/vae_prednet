@@ -564,7 +564,7 @@ class pc_conv_network(nn.Module):
 		
 			toep = self.Precision[i+1].convmatrix2d([self.chan[i][-1], 10, 10])
 				
-			print(toep)
+			print(toep[:10,:10])
 			print(toep.size())
 
 
