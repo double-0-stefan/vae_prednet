@@ -563,7 +563,7 @@ class pc_conv_network(nn.Module):
 		for i in range(0, len(self.Precision)):
 		
 			toep = self.Precision[i+1].convmatrix2d_sparse(self.Precision[i+1].filter_weights, 
-				[self.chan[i][-1], self.dim[i][-1], self.dim[i][-1]])
+				[self.chan[i][-1], 3, 3])
 				
 			print(toep)
 			print(toep.size())
