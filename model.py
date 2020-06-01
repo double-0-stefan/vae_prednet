@@ -431,7 +431,7 @@ class sym_conv2D(nn.Module):
 		# will have to see how accurate this is:
 		ldT = segments * torch.logdet(T11)
 		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
-			# print('bad ldT')
+			print('bad ldT')
 			
 			u, s, v = torch.svd(T11)
 			
@@ -444,7 +444,7 @@ class sym_conv2D(nn.Module):
 			ldT = segments * sum(torch.log(s))#[s>tol or s < 1/tol]))
 
 		if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
-			# print('bad ldB')
+			print('bad ldB')
 			
 			u, s, v = torch.svd(B)
 			
@@ -616,9 +616,6 @@ class pc_conv_network(nn.Module):
 		for i in range(len(self.phi)):
 
 			if self.p['conv_precision']: 
-
-				# needs to be of channel below - ie after transconv and prediction error generation
-				# bottom is image
 				
 				Precision.append(
 
@@ -631,18 +628,6 @@ class pc_conv_network(nn.Module):
 						padding= int((self.p['cov_size'][i]-1)/2),
 						dilation=1, groups=1, bias=None, padding_mode='zero')
 					)
-			# if self['vae']:
-			# 	Precision.append(
-
-			# 		sym_conv2D(in_channels=self.p['chan'][i][-1], out_channels=self.p['chan'][i][-1], # do this as 2D over all channels
-
-			# 			# if kernel is odd, centroid is central pixel at current channel for input and output
-
-			# 			kernel_size= self.p['cov_size'][i],
-			# 			stride=1, 
-			# 			padding= int((self.p['cov_size'][i]-1)/2),
-			# 			dilation=1, groups=1, bias=None, padding_mode='zero')
-			# 		)
 
 		self.Precision = nn.ModuleList(Precision).cuda()
 
@@ -799,25 +784,22 @@ class pc_conv_network(nn.Module):
 				# print(i)
 				# print(f)
 				self.opt_ct[i+1].step()
+
 				if i==-1:
 					print(self.Precision[i+1].filter_weights)
 				else:
 					print(self.Precision[i+1].filter_weights[5,5,:,:])
+
 			else:
 				f += kl_loss
 				self.opt_lin.zero_grad()
 				f.backward(retain_graph=True)
-				# print(i)
-				# print(f)
-				# print(kl_loss)
+
 				self.opt_lin.step()
 			if self.p['conv_precision']:
 				self.opt_P[i+1].step()
 		return f
 
-		# del PE
-
-		
 	def inference(self):
 		loss = 0.
 		for j in range(self.p['iter_outer']):
@@ -851,8 +833,6 @@ class pc_conv_network(nn.Module):
 
 				# if i == 0:
 				print(loss)
-				
-			print(loss)
 
 	def forward(self, iteration, images, act=None, eval=False):
 		
