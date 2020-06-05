@@ -1,0 +1,139 @@
+intermodulation - onlibe dataset
+
+RuntimeError: The expanded size of the tensor (1600) must match the existing size (1599) at non-singleton dimension 0.  Target sizes: [1600].  Tensor sizes: [1599]
+
+
+get pc-cnn to output image of traversals
+MDP for letter-word conflict thing
+sensory learning & reinforcement study
+
+sysmic course - check
+
+reply to hardik
+
+
+selasa freesurfer - structural, functional -> FSL->fs; fs native
+
+
+covid survey work?
+
+blurred rather than 2 tone
+dont learm link but bias ala mshe bar
+
+
+pc_cnn
+- get working
+- talk to matthias - *develop presentation*
+
+vae
+- mimic letter context effect
+# assumes all have same autovariance
+
+
+
+#######
+notes on pc-cnn vs non-diagonal vae
+######################################
+HDM in brain paper - explicitly states lateral connections = precision
+how to include additive observation noise
+partitioning the variance? (DEM)
+spatial generalsied coordinates -> include derivatives of image
+DEM - covariances
+DEM: state dependant covariances (modelling context) - dealt with elsewhere. In DEM depend only on hyperparameters
+is this a crucial difference?
+
+"DEM hyperparameterises the covariance as a linear mixture of precisions"
+
+"Variational filtering can be further simplified by assuming the ensemble density conditional density is Gaussian, using the Laplace assumption. Crucially, under this approximation, the conditional covariance second moment of the conditional density becomes an analytic function of the conditional mean."
+
+so similar to the coVAE paper in which cvariance is a learnedfunction 
+DEM: fluctuation appear on states not causes - nope! z is noise on causes
+
+## predictive coding & pulvinar paper ##
+uses generalised filtering as precision is function of superordinate causes - via the pulvinar in some way
+so need seperate (descinding) prediction-producing units for expected mean and expected precision. The expected precision would presumably modulated the covariance matrix
+
+in this paper pi is a function of causes that modulates lower level precisions
+in this paper second level causes only predict log precision
+Figure 3 shows that pulvinar is top of herirachy
+"Crucially, these constraints are modulated by top-down predictions of their precision (blue arrows). These predictions are based upon expectations about precision in the highest level that are effectively driven by the variance or power of prediction errors at the lower level. Heuristically, expectations about precision release posterior expectations from constraints in the vicinity of an inferred object and allow them to respond more sensitively to ascending geniculate input"
+
+variance/power of lower level PE ->
+expectations about precision at higher level ->
+posterior precisions at lower level
+GAIN CONTROL (higher level here is pulvinar)
+
+implement this gain control network as parallel (mini-) heirarchy
+does not need to be variance/power of PEs - some learnable function will do!
+can either boost precision of [sensory] PEs (posner) or reduce precision of hidden causes
+
+#######
+SOME QUESTIONS
+structure of precision network
+structure of covariance matrices- in paper pulvinar modulates this matrix: (1,-1;-1,1) - but how to divide up massive parameter space? Single (log) expected precision/multiple of matrix?
+Which other levels influence each level's precision modulation?
+Simply layer above as in HDM - spm_LAP does it exactly like this so probably
+based on second order features of PEs as well?
+
+so level 2 has 1st order units predicting activity at level 1, and covariance on these
+also 2nd order prediction units prediciting precision at level 1, and covariance on these
+level 3 has first order predictin units predictive both at level 2, and 2nd order prediction units predicting cov at level 2, and then its own cov on these... etc
+
+#########
+default spm_LAP_ph does this with components: diagonal fixed log precision V, plus precision components h times M.Q. Default keeps this diagonal - but doesn't have to be so
+"precisions are functions of hyperparameters (at each level) and states"
+M.ph evaluated with spm_diff
+So will need to set prior log precision components for each level
+M.Q is covariance components (eachsame size as covariance matrix) - could be sparse like in coVAE
+h is precision hyperparam which multiplies these - one for each component
+
+Still questions of what constitutes synaptic parameters (lateral connectivity) vs active covariance matrix perhaps here we simply have active covariance element as descending precision control
+What is the objective function for all this stuff?
+(log) hyperparameters - just multiply precision matrices in free energy 
+
+buckley:
+slow synaptic efficacy theta and for the slower synaptic gain gamma
+parameters (theta): of the g/f fucntions
+hyperparameters (gamma): hyperparameters in the precisions
+
+happily, theta parameters are the weights in the conv netwroks
+that leaves just hyerparameters
+Looking at spm_LAP_ph - have variance components, multiplied by h - these are the gain of each variance component (could do for each entry in cov matrix but gues this gets massive fast). could then be updated in exactly the save way as covariances and parameters
+
+***************************
+SEE appendix A of Variational free energy and the Laplace approximation: Hyperparameteising Covariances************
+
+
+####### building the thing #######
+can have 'precision/covariance network' estimating precision components from latent representation of the image
+in LAP models this is done from layer above- in that the amplitude of these cov components (h) is determined by v's and the components are predetermined
+
+would how to work out how parameters of precision network fit into loss function
+or could optimise in similar way to parameters of trans_conv's: "accuracy-only"
+but would be good to have some regularisation on both of these
+
+In LAP models it is states at present level, *causes* at level above, prior expectation of precision (hE) at current level
+
+So, here: latent mean vector is filled *from level above*
+covariance matrix is computed from: 
+ - estimates of precision (multiplier) - at level above
+ - precision components/basis - same level
+ 
+So it's like pc_cnn expect each level has additional prior (as well as heirarchical empirical prior) - that values will stay close to Nmv(0,1). Over time maybe this prior can be learned.
+
+So each layer has:
+- states, incl states estimating precision components hE from layer below
+- Precision components Q (learned slowly over time, perhaps put in prior eventually)
+- Covariance matrix constructed from hE(above) and Q, and states (not hE)
+
+
+
+
+
+
+
+"his section considers the figure–ground segregation problem where, crucially, a figure is defined texturally—in terms of its second-order statistics; in other words, a visual object is manifest in terms of its texture or spectral power in the spatial domain. This segregation problem precludes recourse to first-order attributes, such as differences in luminance or colour. In other words, the quantities causing visual impressions are only defined in terms of their precision (or inverse variance). This presents an interesting problem for predictive coding (and the brain) that we use to illustrate the importance of gain control in finessing the inference problem.
+
+In statistics, this (inverse) problem is usually solved using some form of variance component estimation; for example, using covariance constraints in the electromagnetic source reconstruction problem. Here, we solve the same problem with predictive coding. In this setting, hidden causes in the generative model control the precision or variance of subordinate causes generating data. Expectations of these hierarchical causes are optimized with respect to variational free energy—using predictive coding. Here, variational free energy is a proxy for Bayesian model evidence and can be regarded as the sum of the (squared and precision-weighted) prediction error"
+
+nb precisiona are all log precision
