@@ -122,18 +122,82 @@ covariance matrix is computed from:
 So it's like pc_cnn expect each level has additional prior (as well as heirarchical empirical prior) - that values will stay close to Nmv(0,1). Over time maybe this prior can be learned.
 
 So each layer has:
-- states, incl states estimating precision components hE from layer below
+- states: 1st order states predicting states below; 2nd order states predicting precisions below (or precision components hE below)
 - Precision components Q (learned slowly over time, perhaps put in prior eventually)
-- Covariance matrix constructed from hE(above) and Q, and states (not hE)
+- Sparse ower tri matrix L (Cholesky decomposition of precision matrix), with diagonal entries +ve (ie the logs of these are estimated)
+
+- L is constructed from hE(above) and Q, and states (not hE)
+
+
+
+
+NB p(x|z) = N( mu(z), Sig(z))
+So if z is latent rep at certain level (spatial), mu could be the linear layers?
+In 2nd paper theta is parameters of generative model (ie conv network(s)); Phi is params of covariance network, mu ?has no params or is just vectorising? -> actually mu could be convs
+Ignore luminance stuff for colour images
+
+Prior on covariance matrix: adds to the VAE loss (ie additional to heir. predictive coding stuff). Considere inverse Wishart & Gamma-Gaussian, but went with their own custom loss function, with estimated covariance from image reconstruction (I think) residuals
+- hE, the expected precision, could be done on a by-component/basis basis (as in LAP, probably better), or with the alpha & beta params in eq12. (Or with alpha & beta params per component)
+
+Important to remember that what you are predicting on each level is not the image - but the states and Precision components at the level below. So sample from VAE will descend to predict lower level... and so on. "Generative deconvolutional networks with a herirachical latent code"
+Look at how Friston uses PEs (or PE trajectories) to work out (log) precisions:
+as a function of the Free Energy curvature (actualy precisions) 
+pE is function of higher states - or power of PEs
+
+Also - LAP precisions are all of PEs, not states that we might be encoding in vae. How do PE precisions relate to state precisions?
 
 
 
 
 
+***
+Consider additional comments re factorisation of covariance matrices from end of VBLA paper
+***
 
-
-"his section considers the figure–ground segregation problem where, crucially, a figure is defined texturally—in terms of its second-order statistics; in other words, a visual object is manifest in terms of its texture or spectral power in the spatial domain. This segregation problem precludes recourse to first-order attributes, such as differences in luminance or colour. In other words, the quantities causing visual impressions are only defined in terms of their precision (or inverse variance). This presents an interesting problem for predictive coding (and the brain) that we use to illustrate the importance of gain control in finessing the inference problem.
+"this section considers the figure–ground segregation problem where, crucially, a figure is defined texturally—in terms of its second-order statistics; in other words, a visual object is manifest in terms of its texture or spectral power in the spatial domain. This segregation problem precludes recourse to first-order attributes, such as differences in luminance or colour. In other words, the quantities causing visual impressions are only defined in terms of their precision (or inverse variance). This presents an interesting problem for predictive coding (and the brain) that we use to illustrate the importance of gain control in finessing the inference problem.
 
 In statistics, this (inverse) problem is usually solved using some form of variance component estimation; for example, using covariance constraints in the electromagnetic source reconstruction problem. Here, we solve the same problem with predictive coding. In this setting, hidden causes in the generative model control the precision or variance of subordinate causes generating data. Expectations of these hierarchical causes are optimized with respect to variational free energy—using predictive coding. Here, variational free energy is a proxy for Bayesian model evidence and can be regarded as the sum of the (squared and precision-weighted) prediction error"
 
 nb precisiona are all log precision
+
+
+kanai paper
+###########
+sum of squared thing:
+2nd order predictions (expected precision) are predictions of the magnitude of (sets of) prediction errors (precision-weighted here??)
+So doesn't care whether these are positive or negative errors (as updates to 1st order predictions do) - uses sum of the squared (+ve or -ve) PEs in it's set of interest, ie non-linear, multiplicative
+These second-order predictions (expected precision) play the role of attention and affect the gain of the covariance components (ie the h multiple of that component). They are a function of the causes at the higher level. (see eq 3.2) - note that in this model the second level ONLY does predictions of precision. If we were to make a properly heirarchical model, we'd have to have a subset of precision-predicting causes, or have a seperate structure - the pulvinar - to do this.
+
+So, what are these 2nd order expected precision predictions predicitng? ***The sum of squared prediction errors at the lower level*** They thus evince second-order prediction errors to the sum of squared prediciton errors, which adjusts this 2nd order prediction up or down (it is a log so always +ve)
+then - and this is bespoke to this example but is of relevance to what I'm doing - the deviations from the mean of this are multipled with the states...
+
+But, these 2nd order predictions are generated as a fucntion of hidden causes (v2)
+
+
+
+
+A universal feature of predictive coding is that connections to
+populations encoding expectations are from populations encod-
+ing prediction errors, and these connections are reciprocated. In
+the special case of hidden causes of precision, these projections
+must show substantial (but possibly topographic) convergence
+and divergence: it can be seen from equation (3.4) (third equal-
+ity) that the *expected causes of precision gather information
+from each component or set of prediction errors that share
+the same covariance or precision.*
+Furthermore, every prediction error unit contributing to the
+sum of squares receives reciprocal connections to modulate
+its gain or precision. Neuroanatomically, this suggests systems
+that encode and mediate expected precision must:
+— receive convergent projections from large ( possibly topo-
+graphically organized) regions of cortex, specifically from
+cells encoding prediction error (in supragranular layers);
+— reciprocate divergent projections to the same regions;
+— mediate some form of gain control over the cells encoding
+prediction error; and
+— possess bilateral projections to cortical areas with cortico-
+cortical connections, to control the relative precision of
+their respective prediction errors.
+
+Pulvinar - should areas encoding expected precision in neighboring cortical areas also have connections? Pulvinar gets info from one level on expected precision and encodes in lower?
+
