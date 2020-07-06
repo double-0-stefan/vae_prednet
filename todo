@@ -7,6 +7,8 @@ get pc-cnn to output image of traversals
 MDP for letter-word conflict thing
 sensory learning & reinforcement study
 
+perceptual precition paradox paper - prediction error vs prior precision
+
 sysmic course - check
 
 reply to hardik
@@ -124,10 +126,12 @@ So it's like pc_cnn expect each level has additional prior (as well as heirarchi
 So each layer has:
 - states: 1st order states predicting states below; 2nd order states predicting precisions below (or precision components hE below)
 - Precision components Q (learned slowly over time, perhaps put in prior eventually)
-- Sparse ower tri matrix L (Cholesky decomposition of precision matrix), with diagonal entries +ve (ie the logs of these are estimated)
+- These will be the 'learnable basis' B matrix in Dorta 2018a
+- Covariance network output becomes W(z) - weights - created on a per-image basis, while B is learned at train time and is shared. BW(z) is padded with zeros to make:
+- Sparse over tri matrix L (Cholesky decomposition of precision matrix), with diagonal entries +ve (ie the logs of these are estimated)
 
 - L is constructed from hE(above) and Q, and states (not hE)
-
+has clever methods to avoid ever constructing Sigma or Sigma^-1, incl for Free energy term
 
 
 
@@ -144,8 +148,8 @@ Look at how Friston uses PEs (or PE trajectories) to work out (log) precisions:
 as a function of the Free Energy curvature (actualy precisions) 
 pE is function of higher states - or power of PEs
 
-Also - LAP precisions are all of PEs, not states that we might be encoding in vae. How do PE precisions relate to state precisions?
-
+Also - LAP precisions are all of PEs, not states that we might be encoding in vae. How do PE precisions relate to state precisions? see eq. A2, a duet for one. Precision is the amplitude (exp(-p)) of random fluctuations. So exactly as anticipated in vae
+all params get lumped together
 
 
 
@@ -174,6 +178,7 @@ then - and this is bespoke to this example but is of relevance to what I'm doing
 But, these 2nd order predictions are generated as a fucntion of hidden causes (v2)
 
 
+Philos Trans R Soc Lond B Biol Sci. 2015 May 19;370(1668):20140169.
 
 
 A universal feature of predictive coding is that connections to

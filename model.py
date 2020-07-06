@@ -25,6 +25,7 @@ from torch.optim import SGD
 import torch.nn.functional as F
 import copy
 import gc
+import torch_sparse
 # import torch_xla
 # import torch_xla.core.xla_model as xm
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
@@ -448,10 +449,87 @@ class pc_conv_network(nn.Module):
 			self.init_covariance(p)
 		elif self.p['sparse_precision']:
 			self.init_sparse_covariance(p)
-		self.init_latents(p)
+
+		if p['mini_latents']:
+			self.init_mini_latents(p)
+		else:
+			self.init_latents(p)
 		self.optimizer = None
 		# print(self)
+
+	def init_dorta(self, p):
+		'''
+		Q[j] 	- learnable basis from Dorta or Precision components from Friston (behaves like the former here)
+				- parameter: learned at train time, not unique for each image
 		
+		W[i]	- weights on QB elements - in Dorta is output of covariance network
+					- size:
+		h[i] 	- (expected) log precisions
+		Q[i]    - Leading-diagonal elements of the user-specified components Q encode which innovations share the
+					same (i'th) precision
+		lambda[j] - log precision - see h
+		ph 		- precision function - calculates expected (log) precision (prediction of precision) from:
+					precision parameters (h?): exponentated to get lambda
+					
+
+		CN 		- covariance network - supposedly outputs W from z 
+		merge these last two?
+
+		pi = exp(lambda_i)Q_i
+
+		L = s(BW(z))
+
+		# magnitude of random fluctuations depend on precisions
+		# precision/covariance matrix depends on: cond. expectations of v from level above, x at current level,
+		and parameters associated with learning (gamma)
+
+		#Key question then: where does the prediction error on precision come from? See Eq 18-19 in Feldman & Friston
+		expected vs actual precision?
+		
+		# danizeua notes looks good: hyperparameters determine the prior covariance matrices of both the noise and parameters
+		'''
+
+	def init_mini_latents(self, p):
+
+		# top level: single latent space covering whole image
+		self.init_latents(p)
+
+		# linears
+
+		# topologically-limited continuous latent spaces (pixel-wise)
+		# all layers including top - this can have 'mini-latents' before combining
+		# want all of these to use same (ie weight-shared) linear network to project to this space
+		for i in range(len(p['ks'])):
+
+			# will have say 64x3x3 values to convert to say 10-dimensional space
+			# do I want to then convert back to 64x3x3 (or 64x1x1)
+			# alternatively can limit to 64x1x1 kernel
+
+		# actually as this is HDM, descending predictions could go directly to say 10xdimxdim space
+		# dimensionality of these could increase with height
+		# don't need as many channels as each is not a unique 'filter' - traversal along 1 dimensions
+		# produces many, many filters
+
+		# how to do SD? This will be a say 10^2 space (Could alternatively be diagonal)
+		# How to handle this seperately from covariance matrix across whole image??
+
+
+		# perhaps easier to compress (ie project to low dimensional space) and then uncompress at each level?
+		# and have diagonal covariance matrices for this (pixel-wise) compression
+		# but whole image covariance matrix could be for this compressed representation
+
+
+		# Another alternative: go directly to/from latent spaces using standard trans_cnn plus sampling
+		# increase latent dimensionality but decrease topological dimesnionality as ascend
+		# are conv nets sophisticated enough to do this?
+		# want location in latent space and location in pixel space to interact (or is this handled in lateral
+		# connections?). So going 0->1->2 in a latent dim may eg not be linear increase
+		# ?need angle efects too? imaginary? spherical coords?
+
+		# mini latents provide a nice way to think about eg sharpening of feature detectors (via SDs)
+
+
+
 	def init_latents(self, p):
 
 		# Initialise Distributions
@@ -477,6 +555,8 @@ class pc_conv_network(nn.Module):
 		lin.append(fc2)
 		lin.append(nn.ReLU())
 		self.lin_down = nn.Sequential(*lin)
+
+	def init_spatial_broadcast(self, p):
 
 	def init_conv_trans(self, p): 
 

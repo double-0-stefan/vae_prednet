@@ -69,7 +69,12 @@ imchan:
 # although does this in stnadard networks
 
 chan:
-    - [[16, 32],[32, 64]] #
+    - [[16, 32], [32, 64]] #
+
+# pixelwise dimensionality for mini-latents
+# note that all but last one of sublists do not get projected onto continuous latent space
+chan_dim_mini_latents:
+    - [[16, 10], [32, 10]]
 
 pad:
     - 1
