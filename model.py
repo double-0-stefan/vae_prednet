@@ -442,7 +442,10 @@ class pc_conv_network(nn.Module):
 		self.nlayers = p['nblocks']
 		self.chan = p['chan']
 
-		self.init_conv_trans(p)
+		if p['spatial_broadcast_decoder']:
+			self.init_spatial_broadcast(self, p)
+		else:
+			self.init_conv_trans(p)
 
 		self.imchan = p['imchan']
 		if self.p['conv_precision']:
@@ -557,6 +560,59 @@ class pc_conv_network(nn.Module):
 		self.lin_down = nn.Sequential(*lin)
 
 	def init_spatial_broadcast(self, p):
+
+		self.latents
+
+		x = torch.zeros([p['bs'],p['imchan'],self.p['imdim_'],self.p['imdim_']])
+
+		self.p['dim'] = []
+		self.conv = []
+		phi = []
+
+		# Create network starting from lowest level
+		for j in range(len(p['ks'])):
+			conv_block = []
+			dim_block = []
+			for i in reversed(range(len(p['ks'][j]))):
+				if i == 0:
+					if j == 0: # ie lowest level
+						conv_block.append(
+							Conv2d(p['chan'][0][0], p['imchan'], p['ks'][j][i], stride=1, padding=int(p['ks'][j][i])
+								))
+					else: 
+						conv_block.append(
+							Conv2d(p['chan'][j][i], p['chan'][j-1][-1], p['ks'][j][i], stride=1, padding=int(p['ks'][j][i])
+							))
+						conv_block.append(nn.ReLU())
+				else:
+					conv_block.append(
+						Conv2d(p['chan'][j][i], p['chan'][j][i-1], p['ks'][j][i], stride=1, padding=int(p['ks'][j][i])
+						))
+					conv_block.append(nn.BatchNorm2d(p['chan'][j][i-1]))
+					conv_block.append(nn.ReLU())
+
+			for i in reversed(range(len(p['ks'][j]))):
+				x = conv_block[i](x)
+				dim_block.append(x.size(2))
+
+			## CREATE PHI ABOVE EACH BLOCK ##
+			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1),requires_grad = True)) # need to add x, y coords
+
+			self.conv.append(nn.Sequential(*conv_block))
+			self.p['dim'].append(dim_block)
+
+		self.phi = nn.ParameterList(phi)
+		# top block
+		self.p['dim'].append(dim_block)
+
+		self.dim = self.p['dim']
+		self.conv = nn.ModuleList(self.conv)
+		# top level phi
+		if not self.p['vae']:
+			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1)))
+
+
+
 
 	def init_conv_trans(self, p): 
 
@@ -719,6 +775,38 @@ class pc_conv_network(nn.Module):
 		z = torch.cat(latent_sample, dim=-1) 
 		return z
 
+	def tile_latent_append_xy_grids(self, x):
+		# see Spatial Broadcast Decoder: A Simple Architecture for Learning Disentangled Representations in VAEs
+		# self.p['bs'] by dim means 
+
+		x = torch.unsqueeze(x,2)
+		x = torch.unsqueeze(x,3)
+
+		# bs ldim imdim imdim
+		x = x.repeat(1, 1, self.dim[-1][-1], self.dim[-1][-1])
+		x.size()
+
+		# add x,y coords -> make these differentiable?
+		coords = torch.linspace(-1, 1, steps=self.dim[-1][-1])
+		coords = torch.unsqueeze(1) # 
+
+		coords = coords.repeat(1,coords.size(0)) # 2D over image
+		# y coords
+		coords_y = coords.transpose(0,1)
+
+		# exapnd to batch
+		coords = coards.repeat(0,self.p['bs'])
+		coords_y = coards_y.repeat(0,self.p['bs'])
+
+		coords = coords.unsqueeze(1) # at ldim 
+		coords_y = coords_y.unsqueeze(1) # at ldim 
+
+		x = torch.cat((x,coords, coords_y), 1)
+
+		return x
+
+
+
 	def vae_loss(self, curiter, z_pc):
 
 		loss 			   = 0.		
@@ -753,11 +841,26 @@ class pc_conv_network(nn.Module):
 			# get kl_loss
 			kl_loss  = self.vae_loss(self.iteration, self.z_pc)
 			# get sample
-			x = self.lin_down(self.latent_sample()).view(self.bs,-1)
+
+			if self.p['spatial_broadcast_decoder']:
+				x = self.tile_latent_append_xy_grids(self.latent_sample())
+
+				# # not needed, go straight to first conv
+				# x = self.lin_down().view(self.bs,-1)
+
+				x = self.conv[i+1](x)
+
+
+			else:
+				x = self.lin_down(self.latent_sample()).view(self.bs,-1)
 
 		# if not top layer - phi from layer above:
 		else:
-			x = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)
+			if self.p['spatial_broadcast_decoder']:
+				
+				x = self.conv[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)
+			else:
+				x = self.conv_trans[i+1](self.phi[i+1].view(self.bs, self.chan[i+1][-1], self.dim[i+1][-1], self.dim[i+1][-1])).view(self.bs,-1)
 		
 		# calculate PE
 		if i == -1:
@@ -914,7 +1017,10 @@ class pc_conv_network(nn.Module):
 
 		for i in range(len(self.phi)):
 			self.opt_phi[i] = Adam([self.phi[i]], lr=self.p['lr'])
-			self.opt_ct[i]  = Adam(self.conv_trans[i].parameters(), lr=self.p['lr'])
+			if self.p['spatial_broadcast_decoder']:
+				self.opt_ct[i]  = Adam(self.conv[i].parameters(), lr=self.p['lr'])
+			else:
+				self.opt_ct[i]  = Adam(self.conv_trans[i].parameters(), lr=self.p['lr'])
 			if self.p['include_precision']:
 				self.opt_P[i]   = Adam([self.P_chol[i]], lr=self.p['lr'])
 			elif self.p['bilinear_precision']:
