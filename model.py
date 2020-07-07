@@ -534,8 +534,6 @@ class pc_conv_network(nn.Module):
 
 
 	def init_latents(self, p):
-
-		# Initialise Distributions
 		self.prior_dist, self.q_dist, self.x_dist= mutils.discheck(p)
 		
 		p['z_params']	= self.q_dist.nparams
@@ -558,10 +556,11 @@ class pc_conv_network(nn.Module):
 		lin.append(fc2)
 		lin.append(nn.ReLU())
 		self.lin_down = nn.Sequential(*lin)
+		
 
 	def init_spatial_broadcast(self, p):
 
-		self.latents
+		# self.latents
 
 		x = torch.zeros([p['bs'],p['imchan'],self.p['imdim_'],self.p['imdim_']])
 
