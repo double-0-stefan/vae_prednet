@@ -502,7 +502,7 @@ class pc_conv_network(nn.Module):
 		# topologically-limited continuous latent spaces (pixel-wise)
 		# all layers including top - this can have 'mini-latents' before combining
 		# want all of these to use same (ie weight-shared) linear network to project to this space
-		for i in range(len(p['ks'])):
+		# for i in range(len(p['ks'])):
 
 			# will have say 64x3x3 values to convert to say 10-dimensional space
 			# do I want to then convert back to 64x3x3 (or 64x1x1)
