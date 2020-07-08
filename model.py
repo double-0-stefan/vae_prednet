@@ -25,7 +25,7 @@ from torch.optim import SGD
 import torch.nn.functional as F
 import copy
 import gc
-import torch_sparse
+# import torch_sparse
 # import torch_xla
 # import torch_xla.core.xla_model as xm
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
