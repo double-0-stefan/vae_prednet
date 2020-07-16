@@ -557,6 +557,42 @@ class pc_conv_network(nn.Module):
 		lin.append(nn.ReLU())
 		self.lin_down = nn.Sequential(*lin)
 		
+	def tile_latent_append_xy_grids(self, x):
+		# see Spatial Broadcast Decoder: A Simple Architecture for Learning Disentangled Representations in VAEs
+		# self.p['bs'] by dim means 
+
+		#### Don't need this if using mini-VAEs
+		# x = torch.unsqueeze(x,2)
+		# x = torch.unsqueeze(x,3)
+
+		# # bs ldim imdim imdim
+		# x = x.repeat(1, 1, self.dim[-1][-1], self.dim[-1][-1])
+		# x.size()
+
+		# add x,y coords -> make these differentiable?
+		coords = torch.linspace(-1, 1, steps=self.dim[-1][-1])
+		coords = torch.unsqueeze(1) # 
+
+		coords = coords.repeat(1,coords.size(0)) # 2D over image
+		# y coords
+		coords_y = coords.transpose(0,1)
+
+		# exapnd to batch
+		coords = coards.repeat(0,self.p['bs'])
+		coords_y = coards_y.repeat(0,self.p['bs'])
+
+		coords = coords.unsqueeze(1) # at ldim 
+		coords_y = coords_y.unsqueeze(1) # at ldim 
+
+		x = torch.cat((x,coords, coords_y), 1)
+
+		return x
+
+	def append_generalised_spatial_coords(self, image, n):
+		# append (partial) derivatives of up to order n
+		# in practice get gradient and laplacian
+		a=1
+
 
 	def init_spatial_broadcast(self, p):
 
@@ -568,16 +604,38 @@ class pc_conv_network(nn.Module):
 
 		# Not an essential part of the project - but looked cool!
 
-		x = torch.zeros([p['bs'],p['imchan'],self.p['imdim_'],self.p['imdim_']])
 
-		self.p['dim'] = []
-		self.conv = []
-		phi = []
 
-		# Create network starting from lowest level
+
+		# This is random sample from latent space:
+		# Actual params need double this size
+		# Could we just have the expected precision network sort out the SDs??
+		# tiling this actually is easy - just take the latents from all over the image, as we already have topologically
+		# organised mini-VAEs - have seperate function collecting these from forward
+
+		top_phi = torch.rand(self.p['bs'], self.p['dim_latents'][-1], self.p['imdim_'],self.p['imdim_'])
+
+		top_phi = self.tile_latent_append_xy_grids(top_phi)
+
+		# x = torch.zeros([p['bs'],p['imchan'],self.p['imdim_'],self.p['imdim_']])
+		# DO MINI-LATENTS MODEL WITH DIAGONALS FIRST
+
+
+		# Create network 
 		for j in range(len(p['ks'])):
 			conv_block = []
 			dim_block = []
+
+			# go from latents to convolutional space if these are of different dimension
+			if p['dim_latents'][j] != p['chan'][j][-1]:
+				conv_block.append(
+					Conv2d(p['dim_latents'][j], p['chan'][j][-1], p['imchan'], p['ks'][j][i], stride=1, padding=int(p['ks'][j][i])
+						))
+			# forward will have concat_samples function to make block of this size
+			# Use sine activation function as well here?? - as coming off latent space
+			# conv_block.append(nn.ReLU())
+
+
 			for i in reversed(range(len(p['ks'][j]))):
 				if i == 0:
 					if j == 0: # ie lowest level
@@ -601,6 +659,8 @@ class pc_conv_network(nn.Module):
 				dim_block.append(x.size(2))
 
 			## CREATE PHI ABOVE EACH BLOCK ##
+			# will need to be more complex - including covariance matrix
+			# but could just do this with diagonals first
 			phi.append(nn.Parameter((torch.rand_like(x)).view(self.bs,-1),requires_grad = True)) # need to add x, y coords
 
 			self.conv.append(nn.Sequential(*conv_block))
@@ -779,37 +839,6 @@ class pc_conv_network(nn.Module):
 		latent_sample.append(norm_sample)
 		z = torch.cat(latent_sample, dim=-1) 
 		return z
-
-	def tile_latent_append_xy_grids(self, x):
-		# see Spatial Broadcast Decoder: A Simple Architecture for Learning Disentangled Representations in VAEs
-		# self.p['bs'] by dim means 
-
-		x = torch.unsqueeze(x,2)
-		x = torch.unsqueeze(x,3)
-
-		# bs ldim imdim imdim
-		x = x.repeat(1, 1, self.dim[-1][-1], self.dim[-1][-1])
-		x.size()
-
-		# add x,y coords -> make these differentiable?
-		coords = torch.linspace(-1, 1, steps=self.dim[-1][-1])
-		coords = torch.unsqueeze(1) # 
-
-		coords = coords.repeat(1,coords.size(0)) # 2D over image
-		# y coords
-		coords_y = coords.transpose(0,1)
-
-		# exapnd to batch
-		coords = coards.repeat(0,self.p['bs'])
-		coords_y = coards_y.repeat(0,self.p['bs'])
-
-		coords = coords.unsqueeze(1) # at ldim 
-		coords_y = coords_y.unsqueeze(1) # at ldim 
-
-		x = torch.cat((x,coords, coords_y), 1)
-
-		return x
-
 
 
 	def vae_loss(self, curiter, z_pc):
