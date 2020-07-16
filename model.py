@@ -443,7 +443,7 @@ class pc_conv_network(nn.Module):
 		self.chan = p['chan']
 
 		if p['spatial_broadcast_decoder']:
-			self.init_spatial_broadcast(self, p)
+			self.init_spatial_broadcast(p)
 		else:
 			self.init_conv_trans(p)
 
@@ -560,7 +560,13 @@ class pc_conv_network(nn.Module):
 
 	def init_spatial_broadcast(self, p):
 
-		# self.latents
+		# implements technique from
+		# Spatial Broadcast Decoder: A Simple Architecture for Learning Disentangled Representations in VAEs
+		# Nicholas Watters, Loic Matthey, Christopher P. Burgess, Alexander Lerchner
+		# DeepMind
+		# https://arxiv.org/abs/1901.07017
+
+		# Not an essential part of the project - but looked cool!
 
 		x = torch.zeros([p['bs'],p['imchan'],self.p['imdim_'],self.p['imdim_']])
 
