@@ -71,7 +71,7 @@ prednet:
     - False
 
 vae: 
-    - True
+    - False
     
 conv:
     - True
