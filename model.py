@@ -30,6 +30,87 @@ import gc
 # import torch_xla.core.xla_model as xm
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
+# What do I absolutely need to make this?
+# PC set-up (largely already done)
+# sparse-esque covariance matrix
+# Fisher scoring method for gradient ascent
+
+# Cholesky factorisation: logdet = -2*sum( log(diagonal_entry))
+
+
+# chol_log_precision = unvec(basis * weights) -> diag entries must be Positive for +ve semi def   L lower tri
+# basis
+# weights
+
+#  total entries of L will be n +(n -1) +(n- 2)... etc   = 0.5*n^2 
+#  non zero (with neighbourhood): n* (1+ (f-1)/2 )
+#  with basis and weight:
+
+
+
+class pc_conv_network(nn.Module):
+	def __init__(self,p):
+		super(pc_conv_network, self).__init__()
+
+		l=0 # sb add for conveience/testing
+		self.latents = sum(p['z_dim'][l:l+2]) 
+		self.hidden	  = p['enc_h'][l] 
+
+		self.err_plot_flag = True
+		self.plot_errs = []
+		self.enc_mode = False
+		
+		self.p = p
+		self.p['ldim'] = [[1,1,32,32]]
+		self.p['imdim_'] = self.p['imdim'][1]
+		self.bs = p['bs']
+		self.iter = p['iter']
+		self.nlayers = p['nblocks']
+		self.chan = p['chan']
+
+		if p['spatial_broadcast_decoder']:
+			self.init_spatial_broadcast(p)
+		else:
+			self.init_conv_trans(p)
+
+		self.imchan = p['imchan']
+		if self.p['conv_precision']:
+			self.init_covariance(p)
+		elif self.p['sparse_precision']:
+			self.init_sparse_covariance(p)	
+
+
+		p['f'] # neighbourhood - distance in pixels to be included
+		p['chan'] # all chans inlcuded
+
+basis = []
+
+	def setup_stuff(self):
+		for i in range(len(self.p['ks'])):
+
+
+		# goes direct to cholesky
+		# AND - sample in latent space, not image space!!
+
+		# (f^2 − 1)/2 + 1 × nb
+		# f = neighbourhood
+
+		length = self.phi
+
+		for i in range(self.p['ldim'][-1]):
+			for j in range(self.p['ldim'][-1]):
+
+
+# only non-zero if i ≥ j and i and j are neighbours in the image plane,
+# where pixels i and j are neighbours if a patch of size f centred at i contains j.
+
+			size_non_zero = 
+
+			cov.append 
+			basis.append( torch.rand([self.p['chan'][i][-1]*(1+(self.p['f'][i]^2-1)/2),  self.p['nb'][i]]) )
+										# n spaces to fill                                 n bases
+			# p5, dorta: f(f), number bases
+
 # def to_sparse(x):
 # 	#  https://discuss.pytorch.org/t/how-to-convert-a-dense-matrix-to-a-sparse-one/7809/3
 #     """ converts dense tensor x to sparse format """
@@ -44,379 +125,6 @@ torch.set_default_tensor_type('torch.cuda.FloatTensor')
 # 	return sparse_tensortype(indices, values, x.size())
 
 
-class sym_conv2D(nn.Module):
-	def __init__(self, in_channels, out_channels, kernel_size, stride=1, 
-		padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
-
-		device = 'cuda' if torch.cuda.is_available() else 'cpu'
-		
-		super(sym_conv2D, self).__init__()
-		self.to(device)	
-		self.in_channels = in_channels
-		self.out_channels = out_channels
-		self.kernel_size = kernel_size
-		self.stride = stride
-		self.padding = padding
-		self.dilation = dilation
-		self.groups = groups
-		self.bias = bias
-		self.padding_mode = padding_mode
-
-		self.generate_weight_values()
-		self.generate_filter_structure()
-		# self.generate_cov_matrix()
-		# self.log_det()
-		self.to(device)	
-
-	def convmatrix2d(self, image_shape):
-		# https://github.com/pytorch/pytorch/issues/26781
-		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
-		# image: (in_channels, image_height, image_width, ...)
-		torch.set_printoptions(threshold=1000)
-
-		kernel = self.filter_weights
-		print (image_shape)
-		print(kernel.size())
-		assert image_shape[0] == kernel.shape[1]
-		assert len(image_shape[1:]) == len(kernel.shape[2:])
-		result_dims = torch.tensor(image_shape[1:]) - torch.tensor(kernel.shape[2:]) + 1
-		m = torch.zeros((
-			kernel.shape[0], 
-			*result_dims, 
-			*image_shape
-		))
-		for i in range(m.shape[1]):
-			for j in range(m.shape[2]):
-				m[:,i,j,:,i:i+kernel.shape[2],j:j+kernel.shape[3]] = kernel
-		return m.flatten(0, len(kernel.shape[2:])).flatten(1)
-
-	def convmatrix2d_sparse(self, kernel, image_shape):
-		# https://github.com/pytorch/pytorch/issues/26781
-		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
-		# image: (in_channels, image_height, image_width, ...)
-
-		print (image_shape)
-		print(kernel.size())
-		assert image_shape[0] == kernel.shape[1]
-		assert len(image_shape[1:]) == len(kernel.shape[2:])
-		result_dims = torch.tensor(image_shape[1:]) - torch.tensor(kernel.shape[2:]) + 1
-		m = [kernel.shape[0], *result_dims,	*image_shape]
-
-		index = []
-		for i in range(m[1]):
-			for j in range(m[2]):
-				for a in range(kernel.shape[0]):
-					for b in range(m[2]):
-						for c in range(kernel.shape[2]):
-							for d in range(kernel.shape[3]):
-								index.append(torch.tensor([a,i,j,b,i+c,j+d]))
-
-				# index = [torch.tensor([i,i+1]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
-		# 		m[:,i,j,:,i:i+kernel.shape[2],j:j+kernel.shape[3]] = kernel
-		# return m.flatten(0, len(kernel.shape[2:])).flatten(1)
-
-		return index
-
-	def add_jitter(self, mat, jitter_val=1e-6):
-	    """
-	    Adapted from gpytorch
-	    This ensures that a matrix that *should* be positive definite *is* positive definate.
-	    Args:
-	        - mat (matrix nxn) - Positive definite matrxi
-	    Returns: (matrix nxn)
-	    """
-	    if hasattr(mat, "add_jitter"):
-	        return mat.add_jitter(jitter_val)
-	    else:
-	        diag = torch.eye(mat.size(-1), dtype=mat.dtype, device=mat.device).mul_(jitter_val)
-	        if mat.ndimension() == 3:
-	            return mat + diag.unsqueeze(0).expand(mat.size(0), mat.size(1), mat.size(2))
-	        else:
-	            return mat + diag
-
-	def generate_weight_values(self):
-
-		w = []
-		for m in reversed(range(self.in_channels)):
-
-			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000 - 1/5000 # get explosion if too small/large?
-			a[-1,0] += 1 #torch.exp(torch.tensor(1.0))
-			w.append(nn.Parameter(a))
-			
-		self.weight_values = nn.ParameterList(w)
-		
-
-	def generate_filter_structure(self):
-
-		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
-			self.kernel_size, self.kernel_size)
-
-		for i in range(self.out_channels):
-			for j in range(i, self.out_channels):
-				# reversed so stuff outside of 'field' gets overwritten
-				for n in reversed(range(int((self.kernel_size +1)/2))):
-					# right/bottom side
-					if n < int((self.kernel_size +1)/2) -1:# -1:
-						filter_weights[i,j,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
-						filter_weights[i,j,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
-
-						filter_weights[j,i,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
-						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
-
-
-					# left/top side -  first so centre 'cross' gets overwritten
-					filter_weights[i,j,n,:] = self.weight_values[i][n, j-i] #[j, full +mm]
-					filter_weights[i,j,:,n] = self.weight_values[i][n, j-i]#[j, full +mm]
-
-					filter_weights[j,i,n,:] = self.weight_values[i][n, j-i]#[j, full +mm]
-					filter_weights[j,i,:,n] = self.weight_values[i][n, j-i]#[j, full +mm]
-
-		self.register_buffer('filter_weights', filter_weights)
-
-	def generate_cov_matrix(self):
-
-		middle = int((self.kernel_size +1)/2)
-			
-		# make temp matrix of weights
-		temp = torch.zeros([self.out_channels,self.out_channels,middle-1]).to('cuda')
-		
-		for i in range(self.out_channels):
-			for j in range(self.weight_values[i].size(1)):
-				for k in range(middle -1):
-					temp[j,i,k] = self.weight_values[i][k,j]
-
-		temp = torch.rot90(temp, k=-1, dims=[0,1])
-		for k in range(temp.size(2)):
-			temp[:,:,k] += torch.transpose(torch.triu(temp[:,:,k],1), 0,1)
-
-		# work out size of rhs matrix
-		kount = 0
-		for i in range(self.out_channels):
-			# for j in range(self.out_channels):  # not needed as only for one value of i per line
-			for k in range(1, middle):
-				kount += 4*k 
-		
-		rhs = torch.zeros([self.out_channels, kount]).to('cuda')
-		centre_block = torch.zeros([self.out_channels, self.out_channels]).to('cuda')
-
-		# fill matrices with weights
-		for i in range(self.out_channels):
-			centre_block[i,i:] = self.weight_values[j][-1,:]
-			# for j in range(self.out_channels):
-			# 	if j < i:
-			# 		centre_block[i,j] = self.weight_values[j][-1,i]
-			# 	else:
-			# 		centre_block[i,j] = self.weight_values[i][-1,0]
-			
-			kount = -1
-			for k in range(1, middle):
-				for j in range(self.out_channels):
-
-					# kount += 1
-					rhs[i, kount+1 : kount+1+ 4*k ] = temp[j, i, k-1]
-					kount += 4*k 
-		centre_block += torch.tril(centre_block.t(), -1)
-		# rotate 180 degrees to obtain lhs
-		lhs = torch.rot90(rhs, k=-2, dims=[0,1])
-		lhs.to('cuda')
-
-		# Make (square) pre-cov matrix from which A,B,C will be taken #
-		length = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) # twice the size of whole thing minus size centre
-		height = length#centre_block.size(1) + 2*rhs.size(1) #+ 2*rhs.size(1) 
-		pre_cov = torch.zeros(length, height).to('cuda')
-
-		if centre_block.size(1) == 1:
-			rhs.squeeze()
-			lhs.squeeze()
-
-		for i in range(int(height/centre_block.size(1))): # ie number of tilings
-			start_centre = i*centre_block.size(1)
-			end_centre = i*centre_block.size(1) +centre_block.size(1)
-			pre_cov[start_centre:end_centre, start_centre:end_centre] = centre_block
-
-			#RHS
-			if i < int(height/centre_block.size(1)) -1: # ie all but last 
-				if end_centre +rhs.size(1)  < length+1:
-					if centre_block.size(1) == 1:
-						pre_cov[end_centre : end_centre +rhs.size(1), start_centre] = rhs
-					else:
-						pre_cov[end_centre : end_centre +rhs.size(1), start_centre:end_centre] = rhs.t()
-				else:
-
-					if centre_block.size(1) == 1:
-						pre_cov[end_centre:, start_centre] = rhs[:,:(length-end_centre)]
-					else:
-						pre_cov[end_centre:, start_centre:end_centre] = rhs[:,:(length-end_centre)].t()
-
-			# LHS
-			if i > 0:
-				if start_centre - rhs.size(1) > 0:
-
-					if centre_block.size(1) == 1:
-						pre_cov[start_centre-rhs.size(1):start_centre, start_centre] = lhs
-					else:
-						pre_cov[start_centre-rhs.size(1):start_centre,start_centre:end_centre] = lhs.t()
-				else:
-					if centre_block.size(1) == 1:
-						pre_cov[:start_centre, start_centre] = lhs[:,-start_centre:]
-					else:
-						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:].t()
-
-
-		# s = centre_block.size(1) +rhs.size(1) -1
-
-		# A = pre_cov[:s, :s].to('cuda')
-		# B = pre_cov[:s, s:s+s].to('cuda')# upper triangle
-		# C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
-
-		# print(pre_cov.size())
-		# print(pre_cov[:,:])
-		# print(pre_cov[3,:])
-
-		# self.register_buffer('A', A)
-		# self.register_buffer('B', B)
-		# self.register_buffer('C', C)
-		self.register_buffer('pre_cov', pre_cov)
-
-
-
-	def log_det(self, phi_length=0):
-		# where phi_length is non-batch elements in phi
-		'''
-		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
-		https://www.sciencedirect.com/science/article/pii/S0024379508003200?via%3Dihub
-		or
-		https://arxiv.org/abs/0712.0681
-
-		# B and C must be non-singular
-		'''
-		self.generate_cov_matrix()
-		self.generate_filter_structure()
-
-		ld = torch.logdet(self.pre_cov)
-		print(ld)
-		return ld
-
-		'''
-		A = self.A
-		B = self.B
-		C = self.C
-
-		############# Maths notes ##############
-		
-		# dealing with log of -ve det:
-		# from PyTorch docs logdet:
-		# Result is -inf if input has zero log determinant, 
-		# and is nan if input has negative determinant.
-
-		# triangular matrices:
-		# determinant equals the product of the diagonal entries
-		# so if s is half length of pre_cov, det B1n will always be zero
-
-		# A triangular matrix is invertible if and only if no diagonal entries are zero.
-		# so have to have elements on leading diagonal: s < pre_cov/2
-
-
-		# matrix product: det(AB) = detA.detB
-
-		##########################################
-		# spm_logdet implementation:
-		# For non-positive definite cases, the determinant is considered to be the
-		# product of the positive singular values
-
-		try:
-			B_inv = torch.inverse(B)
-		except:
-			B_inv = torch.inverse(self.add_jitter(B))
-
-		# lengths
-		m = A.size(0)
-
-		if phi_length > 0:
-
-			n = int(round(phi_length/m))
-		else:
-			n=4
-
-		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)], 1).cuda()
-
-		self.register_buffer('Im_Zm', Im_Zm)
-		
-		T1 = torch.cat([
-			torch.cat([-A, -C], 1), 
-			self.Im_Zm
-			], 0)
-
-		# if off-diagonal elements are too small (or, presumably, too large), this becomes nan
-		# can use product-determinant rule if this becomes problematic
-		# this rapidly becomes VAST
-
-		T2a = torch.cat([
-				torch.cat([
-					-torch.mm(B_inv,A), -torch.mm(B_inv,C) ], 1), self.Im_Zm
-				],0).type(torch.cuda.DoubleTensor)
-
-		T2 = torch.matrix_power(T2a, n).cuda()
-
-		segments=1
-		i=0
-		while torch.isnan(T2[0,0]):
-			i+=1
-			T2 = torch.matrix_power(T2a, int(n/2**i)).cuda()
-			# print(T2)
-			segments = int(2**i)
-
-
-		T3 = torch.cat([
-			torch.cat([-torch.mm(B_inv,A), -B_inv], 1), 
-			self.Im_Zm
-			], 0).cuda()
-
-
-		T = torch.chain_matmul(T1.type(torch.cuda.DoubleTensor),T2,T3.type(torch.cuda.DoubleTensor)).cuda()
-		T11 = T[:m,:m]
-
-
-		ldB = n * torch.logdet(B)
-
-		tol = torch.tensor(1e-99)
-		# will have to see how accurate this is:
-		ldT = segments * torch.logdet(T11)
-		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
-
-			print('bad ldT')
-			u, s, v = torch.svd(T11)
-			s = torch.diag(s)
-			s = s[s>tol]
-			s = s[s<1/tol]
-			print('SVD')
-			print(s)
-			ldT = segments * sum(torch.log(s))#[s>tol or s < 1/tol]))
-
-		if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
-
-			print('bad ldB')
-			u, s, v = torch.svd(B)
-			s = torch.diag(s)
-			s = s[s>tol]
-			s = s[s<1/tol]
-			print('SVD')
-			print(s)
-			ldB = n* sum(torch.log(s))#[s>tol or s < 1/tol]))
-
-		logdetM =  ldT + ldB
-		# print('ldT')
-		# print(ldT)
-		# print('ldB')
-		# print(ldB)
-		print(logdetM)
-		return logdetM
-		'''
-
-	def forward(self, x):
-
-		return F.conv2d(x, weight=self.filter_weights, bias=self.bias, stride=self.stride,
-			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda()
 
 
 
@@ -1095,6 +803,171 @@ class pc_conv_network(nn.Module):
 
 
 
+############# 2020
+class conv2d_cov(nn.Module):
+	def __init__(self, in_channels, out_channels, kernel_size, stride=1, 
+		padding=0, dilation=1, groups=1, bias=None, image_size, padding_mode='circular'):
+
+		'''
+		Re-imagines the connections in a predictive coding covariance matrix as a (stack of) 2D convolutions
+		Resulting connections are sparse, their number determined by kernel_size
+		Kernels are symmetric about the centre of each filter (guaranteeing invertibility), and this implementation 
+		only stores each weight once, thus resulting in very few parameters
+
+		Currently only implemented for circular padding, but could be done for any type of padding
+		key bit based on based on https://github.com/RoyiAvital/StackExchangeCodes/tree/master/StackOverflow/Q2080835
+		
+		in perception can just be applied to state vector to produce Sigma * V-transpose
+
+		once params updated after learning will need to call self.update_conv_weights
+
+		*** STILL NEED THING IN FWD TO TURN GRADIENTS OFF/ON IF LEARNING OR PERCEPTION
+
+		'''
+
+		# need image (at this level) size to make cov matrix
+
+		device = 'cuda' if torch.cuda.is_available() else 'cpu'
+		
+		super(sym_conv2D, self).__init__()
+
+		self.in_channels = in_channels
+		self.out_channels = out_channels
+		self.kernel_size = kernel_size
+		self.stride = stride
+		self.padding = padding
+		self.dilation = dilation
+		self.groups = groups
+		self.bias = bias
+		self.padding_mode = padding_mode
+		self.image_size = image_size
+
+		self.init_conv_cov(self.in_channels, self.out_channels, self.kernel_size)
+
+		self.to(device)
+
+
+	def init_conv_cov(self):
+		
+		in_channels = self.in_channels
+		out_channels = self.out_channels
+		kernel_size = self.kernel_size
+
+		assert in_channels == out_channels
+		unique_per_filter = int((kernel_size+1)/2)
+	 	unique_conv_weights = int((in_channels * (in_channels+1)/2) * unique_per_filter)
+
+	 	self.register_parameter('unique_conv_weights', torch.rand([unique_conv_weights]))
+
+	 	self.register_parameter('conv_weights', torch.zeros(in_channels, in_channels, kernel_size, kernel_size))
+
+	 	self.update_conv_weights()
+
+		
+	def update_conv_weights(self)
+
+		in_channels = self.in_channels
+		out_channels = self.out_channels
+		kernel_size = self.kernel_size
+
+		# assign weights
+		# paste more central weights over the top of more peripheral ones
+		# weights = torch.zeros(in_channels, in_channels, kernel_size, kernel_size)
+		count=-1
+		for i in range(in_channels):
+			for j in range(i, in_channels):
+				for k in range(unique_per_filter):
+					count += 1
+					if i == j and k == unique_per_filter -1:
+						# self-centre
+						weights[i,j, k:-k, k:-k] = torch.exp(unique_conv_weights[count])
+
+					elif k == 0:
+						# because symetric
+						self.conv_weights[i,j, :,:] = self.unique_conv_weights[count]
+						self.conv_weights[j,i, :,:] = self.unique_conv_weights[count]
+					else:
+						# because symetric
+						self.conv_weights[i,j, k:-k, k:-k] = self.unique_conv_weights[count]
+						self.conv_weights[j,i, k:-k, k:-k] = self.unique_conv_weights[count]		
+
+	def logdet_cov_matrix(self):
+
+		total_elements = self.in_channels * self.image_size * self.image_size
+		matrix = torch.zeros(total_elements, total_elements)
+
+		m_stride = self.image_size * self.image_size
+
+		for i in range(self.in_channels):
+			for j in range(self.out_channels):
+				matrix[i*m_stride:(i+1)*m_stride, j*m_stride:(j+1)*m_stride] = make_cov_matrix(i, j)
+
+		print(matrix)
+
+		return matrix.logdet()
+
+
+	def make_cov_matrix(self, i, j):
+		'''
+		based on MATLAB code https://github.com/RoyiAvital/StackExchangeCodes/tree/master/StackOverflow/Q2080835
+		to do more than one filter stack these in array (in_channel, out_channel)
+	    leading diag block has the self->self channels
+		'''
+		# circular padding initially (as most likely to be +ve definite!)
+
+		# mh is a 2D kernel only!!
+		# so needs to be called multiple times
+
+		kernel = self.conv_weights(i,j,:,:).squeeze()
+
+
+		numRows = self.image_size
+		numCols = self.image_size
+		numElementsImage = numRows*numCols
+		numRowsKernel = self.kernel_size
+		numColsKernel = self.kernel_size
+		numElementsKernel = numRowsKernel * numColsKernel
+
+		vRows = torch.LongTensor(list(range(numElementsImage))).unsqueeze(0).repeat(numElementsKernel,1).T.reshape(-1)
+		# vCols = torch.zeros(numElementsImage * numElementsKernel,dtype=torch.long)
+		# vVals = torch.zeros(numElementsImage * numElementsKernel,dtype=torch.long)
+
+		circulant = torch.zeros(numElementsImage,numElementsImage)
+		kernelRadiusV = math.floor(numRowsKernel / 2)
+		kernelRadiusH = math.floor(numColsKernel / 2)
+		pxIdx = -1
+		elmntIdx = -1
+		for jj in range(numCols):
+			for ii in range(numRows):
+				pxIdx = pxIdx + 1
+				for ll in range(-kernelRadiusH,kernelRadiusH+1):
+					for kk in range(-kernelRadiusV,kernelRadiusV+1):
+						elmntIdx = elmntIdx + 1
+						# Pixel Index Shift such that pxIdx + pxShift is the linear
+						# index of the pixel in the image
+						pxShift = (ll * numRows) + kk
+						if ii + kk > numRows -1:
+							pxShift = pxShift - numRows                    
+						if ii + kk < 0:
+							pxShift = pxShift + numRows                  
+						if jj + ll > numCols -1:
+							pxShift = pxShift - (numCols * numRows)            
+						if jj + ll < 0:
+							pxShift = pxShift + (numCols * numRows)
+						circulant[vRows[elmntIdx], pxIdx + pxShift] = kernel[kk + kernelRadiusV, ll + kernelRadiusH]
+		return circulant
+
+		# SPECIAL CASE OF DIAGONAL COV MATRIX: 1X1 KERNERL??
+		# will also restrict to where i == j, so very small
+
+		# can I back the unique weights or some variety of them into a lower cholesky matrix?
+
+
+	def forward(self, x):
+
+
+		return F.conv2d(x, weight=self.conv_weights, bias=self.bias, stride=self.stride,
+			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda()
 
 
 
@@ -1112,19 +985,462 @@ class pc_conv_network(nn.Module):
 
 
 
+class conv2d_cov_old(nn.Module):
+
+
+# return F.conv2d(x, weight=self.weights, bias=self.bias, stride=self.stride,
+# 			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda()
+
+	def init_params(self):
+
+		# number of weights: self.n_channels^2 * self.kernel_size^2 
+
+		# log diagonal
+		self.register_parameter('log_diagonal', torch.zeros(self.n_channels^2 * self.kernel_size^2))
+
+		# everything above the diagnoal
+		tril_1 = 0.5*(self.n_channels^2 * self.kernel_size^2)^2 - self.n_channels^2 * self.kernel_size^2
+		self.register_parameter('tril_1', torch.rand(tril_1))
+		
+
+		# get indices for upper trangular
+		i = torch.tril_indices(self.n_channels^2 * self.kernel_size^2, self.n_channels^2 * self.kernel_size^2, 1)
+		# strictly positive diagonal
+		weights = torch.diag(torch.exp(self.log_diagonal))
+		# add upper diagonal
+		weights[tuple[i]] = self.tril_1 
+		# de-cholesky
+		weights = torch.matmul(weights, weights.T()).view(self.n_channels, self.n_channels, self.kernel_size, self.kernel_size)
+
+		# register weights as buffer
+		self.register_buffer('weights', weights)
+		
+
+	def update_buffers(self):
+		# will need to be called after learning
+
+		# get indices for upper trangular
+		i = torch.tril_indices(self.n_channels^2 * self.kernel_size^2, self.n_channels^2 * self.kernel_size^2, 1)
+		# strictly positive diagonal
+		weights = torch.diag(torch.exp(self.log_diagonal))
+		# add upper diagonal
+		weights[tuple[i]] = self.tril_1 
+		# de-cholesky
+		self.weights = torch.matmul(weights, weights.T()).view(self.n_channels, self.n_channels, self.kernel_size, self.kernel_size)
+
+	def toeplitz_mult_ch(kernel, input_size):
+		"""Compute toeplitz matrix for 2d conv with multiple in and out channels.
+		Args:
+			kernel: shape=(n_out, n_in, H_k, W_k)
+			input_size: (n_in, H_i, W_i)
+		https://stackoverflow.com/questions/56702873/is-there-an-function-in-pytorch-for-converting-convolutions-to-fully-connected-n"""
+
+		kernel_size = kernel.shape
+		output_size = (kernel_size[0], input_size[1] - (kernel_size[1]-1), input_size[2] - (kernel_size[2]-1))
+		T = np.zeros((output_size[0], int(np.prod(output_size[1:])), input_size[0], int(np.prod(input_size[1:]))))
+
+		for i,ks in enumerate(kernel):  # loop over output channel
+			for j,k in enumerate(ks):  # loop over input channel
+				T_k = toeplitz_1_ch(k, input_size[1:])
+				T[i, :, j, :] = T_k
+
+		T.shape = (np.prod(output_size), np.prod(input_size))
+
+		return T
+
+	def toeplitz_1_ch(kernel, input_size):
+		# shapes
+		k_h, k_w = kernel.shape
+		i_h, i_w = input_size
+		o_h, o_w = i_h-k_h+1, i_w-k_w+1
+
+		# construct 1d conv toeplitz matrices for each row of the kernel
+		toeplitz = []
+		for r in range(k_h):
+			toeplitz.append(scipy.linalg.toeplitz(c=(kernel[r,0], *np.zeros(i_w-k_w)), r=(*kernel[r], *np.zeros(i_w-k_w))) ) 
+
+		# construct toeplitz matrix of toeplitz matrices (just for padding=0)
+		h_blocks, w_blocks = o_h, i_h
+		h_block, w_block = toeplitz[0].shape
+
+		W_conv = np.zeros((h_blocks, h_block, w_blocks, w_block))
+
+		for i, B in enumerate(toeplitz):
+			for j in range(o_h):
+				W_conv[j, :, i+j, :] = B
+
+		W_conv.shape = (h_blocks*h_block, w_blocks*w_block)
+
+		return W_conv
+
+
+	def log_determinant(self):
+
+		-2* sum(torch.sum(torch.diagonal(self.weights)))
+
+
+	def forward(self, x):
+
+		return F.conv2d(x, weight=self.weights, bias=self.bias, stride=self.stride,
+			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda()
+
+
+		
 
 
 
 
 
+	def convmatrix2d(self, image_shape):
+		# https://github.com/pytorch/pytorch/issues/26781
+		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
+		# image: (in_channels, image_height, image_width, ...)
+		torch.set_printoptions(threshold=1000)
+
+		kernel = self.filter_weights
+		print (image_shape)
+		print(kernel.size())
+		assert image_shape[0] == kernel.shape[1]
+		assert len(image_shape[1:]) == len(kernel.shape[2:])
+		result_dims = torch.tensor(image_shape[1:]) - torch.tensor(kernel.shape[2:]) + 1
+		m = torch.zeros((
+			kernel.shape[0], 
+			*result_dims, 
+			*image_shape
+		))
+		for i in range(m.shape[1]):
+			for j in range(m.shape[2]):
+				m[:,i,j,:,i:i+kernel.shape[2],j:j+kernel.shape[3]] = kernel
+		return m.flatten(0, len(kernel.shape[2:])).flatten(1)
+
+	def convmatrix2d_sparse(self, kernel, image_shape):
+		# https://github.com/pytorch/pytorch/issues/26781
+		# kernel: (out_channels, in_channels, kernel_height, kernel_width, ...)
+		# image: (in_channels, image_height, image_width, ...)
+
+		print (image_shape)
+		print(kernel.size())
+		assert image_shape[0] == kernel.shape[1]
+		assert len(image_shape[1:]) == len(kernel.shape[2:])
+		result_dims = torch.tensor(image_shape[1:]) - torch.tensor(kernel.shape[2:]) + 1
+		m = [kernel.shape[0], *result_dims,	*image_shape]
+
+		index = []
+		for i in range(m[1]):
+			for j in range(m[2]):
+				for a in range(kernel.shape[0]):
+					for b in range(m[2]):
+						for c in range(kernel.shape[2]):
+							for d in range(kernel.shape[3]):
+								index.append(torch.tensor([a,i,j,b,i+c,j+d]))
+
+				# index = [torch.tensor([i,i+1]) for i in range(len(self.p['imchan']*self.p['imdim_']**2))]
+		# 		m[:,i,j,:,i:i+kernel.shape[2],j:j+kernel.shape[3]] = kernel
+		# return m.flatten(0, len(kernel.shape[2:])).flatten(1)
+
+		return index
+
+	def add_jitter(self, mat, jitter_val=1e-6):
+	    """
+	    Adapted from gpytorch
+	    This ensures that a matrix that *should* be positive definite *is* positive definate.
+	    Args:
+	        - mat (matrix nxn) - Positive definite matrxi
+	    Returns: (matrix nxn)
+	    """
+	    if hasattr(mat, "add_jitter"):
+	        return mat.add_jitter(jitter_val)
+	    else:
+	        diag = torch.eye(mat.size(-1), dtype=mat.dtype, device=mat.device).mul_(jitter_val)
+	        if mat.ndimension() == 3:
+	            return mat + diag.unsqueeze(0).expand(mat.size(0), mat.size(1), mat.size(2))
+	        else:
+	            return mat + diag
+
+	def generate_weight_values(self):
+
+		w = []
+		for m in reversed(range(self.in_channels)):
+
+			a = torch.rand(int((self.kernel_size +1)/2), m+1)/1000 - 1/5000 # get explosion if too small/large?
+			a[-1,0] += 1 #torch.exp(torch.tensor(1.0))
+			w.append(nn.Parameter(a))
+			
+		self.weight_values = nn.ParameterList(w)
 
 
 
+	def generate_filter_structure(self):
+
+		filter_weights = torch.zeros(self.out_channels,int(self.in_channels/self.groups),
+			self.kernel_size, self.kernel_size)
+
+		for i in range(self.out_channels):
+			for j in range(i, self.out_channels):
+				# reversed so stuff outside of 'field' gets overwritten
+				for n in reversed(range(int((self.kernel_size +1)/2))):
+					# right/bottom side
+					if n < int((self.kernel_size +1)/2) -1:# -1:
+						filter_weights[i,j,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
+						filter_weights[i,j,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
+
+						filter_weights[j,i,-(n+1),:] = self.weight_values[i][n, j-i]#[j, full +mm]
+						filter_weights[j,i,:,-(n+1)] = self.weight_values[i][n, j-i]#[j, full +mm]
+
+
+					# left/top side -  first so centre 'cross' gets overwritten
+					filter_weights[i,j,n,:] = self.weight_values[i][n, j-i] #[j, full +mm]
+					filter_weights[i,j,:,n] = self.weight_values[i][n, j-i]#[j, full +mm]
+
+					filter_weights[j,i,n,:] = self.weight_values[i][n, j-i]#[j, full +mm]
+					filter_weights[j,i,:,n] = self.weight_values[i][n, j-i]#[j, full +mm]
+
+		self.register_buffer('filter_weights', filter_weights)
+
+	def generate_cov_matrix(self):
+
+		middle = int((self.kernel_size +1)/2)
+			
+		# make temp matrix of weights
+		temp = torch.zeros([self.out_channels,self.out_channels,middle-1]).to('cuda')
+		
+		for i in range(self.out_channels):
+			for j in range(self.weight_values[i].size(1)):
+				for k in range(middle -1):
+					temp[j,i,k] = self.weight_values[i][k,j]
+
+		temp = torch.rot90(temp, k=-1, dims=[0,1])
+		for k in range(temp.size(2)):
+			temp[:,:,k] += torch.transpose(torch.triu(temp[:,:,k],1), 0,1)
+
+		# work out size of rhs matrix
+		kount = 0
+		for i in range(self.out_channels):
+			# for j in range(self.out_channels):  # not needed as only for one value of i per line
+			for k in range(1, middle):
+				kount += 4*k 
+		
+		rhs = torch.zeros([self.out_channels, kount]).to('cuda')
+		centre_block = torch.zeros([self.out_channels, self.out_channels]).to('cuda')
+
+		# fill matrices with weights
+		for i in range(self.out_channels):
+			centre_block[i,i:] = self.weight_values[j][-1,:]
+			# for j in range(self.out_channels):
+			# 	if j < i:
+			# 		centre_block[i,j] = self.weight_values[j][-1,i]
+			# 	else:
+			# 		centre_block[i,j] = self.weight_values[i][-1,0]
+			
+			kount = -1
+			for k in range(1, middle):
+				for j in range(self.out_channels):
+
+					# kount += 1
+					rhs[i, kount+1 : kount+1+ 4*k ] = temp[j, i, k-1]
+					kount += 4*k 
+		centre_block += torch.tril(centre_block.t(), -1)
+		# rotate 180 degrees to obtain lhs
+		lhs = torch.rot90(rhs, k=-2, dims=[0,1])
+		lhs.to('cuda')
+
+		# Make (square) pre-cov matrix from which A,B,C will be taken #
+		length = centre_block.size(1) + 2*rhs.size(1) + 2*rhs.size(1) # twice the size of whole thing minus size centre
+		height = length#centre_block.size(1) + 2*rhs.size(1) #+ 2*rhs.size(1) 
+		pre_cov = torch.zeros(length, height).to('cuda')
+
+		if centre_block.size(1) == 1:
+			rhs.squeeze()
+			lhs.squeeze()
+
+		for i in range(int(height/centre_block.size(1))): # ie number of tilings
+			start_centre = i*centre_block.size(1)
+			end_centre = i*centre_block.size(1) +centre_block.size(1)
+			pre_cov[start_centre:end_centre, start_centre:end_centre] = centre_block
+
+			#RHS
+			if i < int(height/centre_block.size(1)) -1: # ie all but last 
+				if end_centre +rhs.size(1)  < length+1:
+					if centre_block.size(1) == 1:
+						pre_cov[end_centre : end_centre +rhs.size(1), start_centre] = rhs
+					else:
+						pre_cov[end_centre : end_centre +rhs.size(1), start_centre:end_centre] = rhs.t()
+				else:
+
+					if centre_block.size(1) == 1:
+						pre_cov[end_centre:, start_centre] = rhs[:,:(length-end_centre)]
+					else:
+						pre_cov[end_centre:, start_centre:end_centre] = rhs[:,:(length-end_centre)].t()
+
+			# LHS
+			if i > 0:
+				if start_centre - rhs.size(1) > 0:
+
+					if centre_block.size(1) == 1:
+						pre_cov[start_centre-rhs.size(1):start_centre, start_centre] = lhs
+					else:
+						pre_cov[start_centre-rhs.size(1):start_centre,start_centre:end_centre] = lhs.t()
+				else:
+					if centre_block.size(1) == 1:
+						pre_cov[:start_centre, start_centre] = lhs[:,-start_centre:]
+					else:
+						pre_cov[:start_centre, start_centre:end_centre] = lhs[:,-start_centre:].t()
+
+
+		# s = centre_block.size(1) +rhs.size(1) -1
+
+		# A = pre_cov[:s, :s].to('cuda')
+		# B = pre_cov[:s, s:s+s].to('cuda')# upper triangle
+		# C = pre_cov[s:s+s, :s].to('cuda')# lower triangle
+
+		# print(pre_cov.size())
+		# print(pre_cov[:,:])
+		# print(pre_cov[3,:])
+
+		# self.register_buffer('A', A)
+		# self.register_buffer('B', B)
+		# self.register_buffer('C', C)
+		self.register_buffer('pre_cov', pre_cov)
 
 
 
+	def log_det(self, phi_length=0):
+		# where phi_length is non-batch elements in phi
+		'''
+		Implements Molinari 2008 method to find determinant of block tridiagonal matrix
+		https://www.sciencedirect.com/science/article/pii/S0024379508003200?via%3Dihub
+		or
+		https://arxiv.org/abs/0712.0681
+
+		# B and C must be non-singular
+		'''
+		self.generate_cov_matrix()
+		self.generate_filter_structure()
+
+		ld = torch.logdet(self.pre_cov)
+		print(ld)
+		return ld
+
+		'''
+		A = self.A
+		B = self.B
+		C = self.C
+
+		############# Maths notes ##############
+		
+		# dealing with log of -ve det:
+		# from PyTorch docs logdet:
+		# Result is -inf if input has zero log determinant, 
+		# and is nan if input has negative determinant.
+
+		# triangular matrices:
+		# determinant equals the product of the diagonal entries
+		# so if s is half length of pre_cov, det B1n will always be zero
+
+		# A triangular matrix is invertible if and only if no diagonal entries are zero.
+		# so have to have elements on leading diagonal: s < pre_cov/2
 
 
+		# matrix product: det(AB) = detA.detB
+
+		##########################################
+		# spm_logdet implementation:
+		# For non-positive definite cases, the determinant is considered to be the
+		# product of the positive singular values
+
+		try:
+			B_inv = torch.inverse(B)
+		except:
+			B_inv = torch.inverse(self.add_jitter(B))
+
+		# lengths
+		m = A.size(0)
+
+		if phi_length > 0:
+
+			n = int(round(phi_length/m))
+		else:
+			n=4
+
+		Im_Zm = torch.cat([torch.eye(m), torch.zeros(m, m)], 1).cuda()
+
+		self.register_buffer('Im_Zm', Im_Zm)
+		
+		T1 = torch.cat([
+			torch.cat([-A, -C], 1), 
+			self.Im_Zm
+			], 0)
+
+		# if off-diagonal elements are too small (or, presumably, too large), this becomes nan
+		# can use product-determinant rule if this becomes problematic
+		# this rapidly becomes VAST
+
+		T2a = torch.cat([
+				torch.cat([
+					-torch.mm(B_inv,A), -torch.mm(B_inv,C) ], 1), self.Im_Zm
+				],0).type(torch.cuda.DoubleTensor)
+
+		T2 = torch.matrix_power(T2a, n).cuda()
+
+		segments=1
+		i=0
+		while torch.isnan(T2[0,0]):
+			i+=1
+			T2 = torch.matrix_power(T2a, int(n/2**i)).cuda()
+			# print(T2)
+			segments = int(2**i)
+
+
+		T3 = torch.cat([
+			torch.cat([-torch.mm(B_inv,A), -B_inv], 1), 
+			self.Im_Zm
+			], 0).cuda()
+
+
+		T = torch.chain_matmul(T1.type(torch.cuda.DoubleTensor),T2,T3.type(torch.cuda.DoubleTensor)).cuda()
+		T11 = T[:m,:m]
+
+
+		ldB = n * torch.logdet(B)
+
+		tol = torch.tensor(1e-99)
+		# will have to see how accurate this is:
+		ldT = segments * torch.logdet(T11)
+		if torch.isnan(ldT) == True or torch.isinf(ldT) == True:
+
+			print('bad ldT')
+			u, s, v = torch.svd(T11)
+			s = torch.diag(s)
+			s = s[s>tol]
+			s = s[s<1/tol]
+			print('SVD')
+			print(s)
+			ldT = segments * sum(torch.log(s))#[s>tol or s < 1/tol]))
+
+		if torch.isnan(ldB) == True or torch.isinf(ldB) == True:
+
+			print('bad ldB')
+			u, s, v = torch.svd(B)
+			s = torch.diag(s)
+			s = s[s>tol]
+			s = s[s<1/tol]
+			print('SVD')
+			print(s)
+			ldB = n* sum(torch.log(s))#[s>tol or s < 1/tol]))
+
+		logdetM =  ldT + ldB
+		# print('ldT')
+		# print(ldT)
+		# print('ldB')
+		# print(ldB)
+		print(logdetM)
+		return logdetM
+		'''
+
+	def forward(self, x):
+
+		return F.conv2d(x, weight=self.filter_weights, bias=self.bias, stride=self.stride,
+			padding=self.padding, dilation=self.dilation, groups=self.groups).cuda()
 
 
 
